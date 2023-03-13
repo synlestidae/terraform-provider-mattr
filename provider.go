@@ -7,17 +7,10 @@ import (
 )
 
 func Provider() *schema.Provider {
-	return &schema.Provider {
-			ResourcesMap: map[string]*schema.Resource { 
-				"example_server": resourceServer(),
+	return &schema.Provider{
+		ResourcesMap: map[string]*schema.Resource{
+			"example_server": resourceServer(),
+			"did":            resourceDid(),
 		},
 	}
 }
-
-/*func Provider() *schema.Provider {
-        return &schema.Provider{
-                ResourcesMap: map[string]*schema.Resource{
-                     "example_server": resourceServer(),
-                },
-        }
-}*/
