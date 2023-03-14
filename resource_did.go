@@ -6,9 +6,7 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"net/http"
-	//"net/http"
-
-	//"log"
+  "io/ioutil"
 	"os"
 )
 
@@ -29,6 +27,20 @@ type AuthResponse struct {
 	AccessToken string `json:"access_token"`
 	ExpiresIn   int    `json:"expires_in"`
 	TokenType   string `json:"token_type"`
+}
+
+type DidRequest struct {
+        Method string `json:"method"`
+        Options DidRequestOptions
+}
+
+type DidRequestOptions struct {
+        KeyType string `json:"keyType"`
+        Url string `json:"url"`
+}
+
+type DidResponse struct {
+        Did string `json:"did"`
 }
 
 func resourceDid() *schema.Resource {
@@ -72,12 +84,52 @@ func resourceDidCreate(d *schema.ResourceData, m interface{}) error {
 	base_url := os.Getenv(ENV_API_URL)
 	url := fmt.Sprintf("%s/core/v1/dids")
 
-	req, err := http.NewRequest("POST", "base_url", nil)
+	req, err := http.NewRequest("POST", base_url, nil)
 	if err != nil {
 		return err
 	}
 
 	access_token, err := getAccessToken()
+
+  method := d.Get("method").(string)
+  did_request := DidRequest {
+          Method: method,
+  }
+
+	req_body_json, err := json.Marshal(did_request)
+	if err != nil {
+		return err
+	}
+	req, err = http.NewRequest("POST", url, bytes.NewBuffer(req_body_json))
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", access_token))
+	client := http.DefaultClient
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+
+	defer resp.Body.Close()
+
+  // read raw json body
+  response_body , err := ioutil.ReadAll(resp.Body)
+  if err != nil {
+        return err
+  }
+
+  // parse the body
+  var response DidResponse 
+  err = json.Unmarshal(response_body, &response)
+  if err != nil {
+        return err
+  }
+
+  d.Set("did", response.Did)
+  // TODO all the other stuff
 
 	return nil
 }
@@ -135,7 +187,13 @@ func getAccessToken() (string, error) {
   response_body , err := ioutil.ReadAll(resp.Body)
   if err != nil {
         // handle error
+        return "", err
   }
-  json.Unmarshal
-  return "", err
+  var response AuthResponse
+  err = json.Unmarshal(response_body, &response)
+  if err != nil {
+        return "", err
+  }
+
+  return response.AccessToken, nil
 }

@@ -63,3 +63,4 @@ terraform.rc
 # End of https://www.toptal.com/developers/gitignore/api/terraform,go
 
 terraform-provider-mattr    
+example/.terraform.lock.hcl

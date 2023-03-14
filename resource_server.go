@@ -3,8 +3,8 @@ package main
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"log"
-	"net/http"
+	//"log"
+	//"net/http"
 )
 
 func resourceServer() *schema.Resource {
