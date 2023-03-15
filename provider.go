@@ -10,7 +10,7 @@ func Provider() *schema.Provider {
 	return &schema.Provider{
 		ResourcesMap: map[string]*schema.Resource{
 			"example_server": resourceServer(),
-			"example_did":            resourceDid(),
+			"example_did":    resourceDid(),
 		},
 	}
 }

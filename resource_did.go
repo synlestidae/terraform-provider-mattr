@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"io/ioutil"
 	"net/http"
-  "io/ioutil"
 	"os"
 )
 
@@ -30,17 +30,18 @@ type AuthResponse struct {
 }
 
 type DidRequest struct {
-        Method string `json:"method"`
-        Options DidRequestOptions
+	Method  string            `json:"method,omitempty"`
+	Options DidRequestOptions `json:"options"`
 }
 
 type DidRequestOptions struct {
-        KeyType string `json:"keyType"`
-        Url string `json:"url"`
+	KeyType string `json:"keyType,omitempty"`
+	Url     string `json:"url,omitempty"`
 }
 
 type DidResponse struct {
-        Did string `json:"did"`
+	Did                string `json:"did"`
+	RegistrationStatus string `json:"did"`
 }
 
 func resourceDid() *schema.Resource {
@@ -68,7 +69,7 @@ func resourceDid() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"registered": &schema.Schema{
+			"registration_status": &schema.Schema{
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
@@ -81,32 +82,38 @@ func resourceDid() *schema.Resource {
 }
 
 func resourceDidCreate(d *schema.ResourceData, m interface{}) error {
-	base_url := os.Getenv(ENV_API_URL)
-	url := fmt.Sprintf("%s/core/v1/dids")
-
-	req, err := http.NewRequest("POST", base_url, nil)
-	if err != nil {
-		return err
+	// prepare the did body request
+	method := d.Get("method").(string)
+	options := DidRequestOptions{
+		KeyType: d.Get("key_type").(string),
+		Url:     d.Get("url").(string),
 	}
-
-	access_token, err := getAccessToken()
-
-  method := d.Get("method").(string)
-  did_request := DidRequest {
-          Method: method,
-  }
+	did_request := DidRequest{
+		Method:  method,
+		Options: options,
+	}
 
 	req_body_json, err := json.Marshal(did_request)
 	if err != nil {
 		return err
 	}
+
+	// prep the request
+	base_url := os.Getenv(ENV_API_URL)
+	url := fmt.Sprintf("%s/core/v1/dids", base_url)
+	req, err := http.NewRequest("POST", base_url, nil)
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	access_token, err := getAccessToken()
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", access_token))
 	req, err = http.NewRequest("POST", url, bytes.NewBuffer(req_body_json))
 	if err != nil {
 		return err
 	}
 
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", access_token))
+	// perform the request
 	client := http.DefaultClient
 	resp, err := client.Do(req)
 	if err != nil {
@@ -115,21 +122,22 @@ func resourceDidCreate(d *schema.ResourceData, m interface{}) error {
 
 	defer resp.Body.Close()
 
-  // read raw json body
-  response_body , err := ioutil.ReadAll(resp.Body)
-  if err != nil {
-        return err
-  }
+	// read raw json body
+	response_body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
 
-  // parse the body
-  var response DidResponse 
-  err = json.Unmarshal(response_body, &response)
-  if err != nil {
-        return err
-  }
+	// parse the body
+	var response DidResponse
+	err = json.Unmarshal(response_body, &response)
+	if err != nil {
+		return err
+	}
 
-  d.Set("did", response.Did)
-  // TODO all the other stuff
+	d.Set("did", response.Did)
+	d.Set("registration_status", response.RegistrationStatus)
+	// TODO all the other stuff
 
 	return nil
 }
@@ -184,16 +192,16 @@ func getAccessToken() (string, error) {
 
 	defer resp.Body.Close()
 
-  response_body , err := ioutil.ReadAll(resp.Body)
-  if err != nil {
-        // handle error
-        return "", err
-  }
-  var response AuthResponse
-  err = json.Unmarshal(response_body, &response)
-  if err != nil {
-        return "", err
-  }
+	response_body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		// handle error
+		return "", err
+	}
+	var response AuthResponse
+	err = json.Unmarshal(response_body, &response)
+	if err != nil {
+		return "", err
+	}
 
-  return response.AccessToken, nil
+	return response.AccessToken, nil
 }
