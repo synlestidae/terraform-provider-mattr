@@ -8,11 +8,14 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"log"
 )
+
+import _ "github.com/motemen/go-loghttp/global"
 
 const ENV_API_URL = "MATTR_API_URL"
 const ENV_AUTH_URL = "MATTR_AUTH_URL"
-const ENV_AUTH_AUDIENCE = "MATTR_AUTH_AUDIENCE"
+const ENV_AUTH_AUDIENCE = "MATTR_AUDIENCE"
 const ENV_CLIENT_ID = "MATTR_CLIENT_ID"
 const ENV_CLIENT_SECRET = "MATTR_CLIENT_SECRET"
 
@@ -82,6 +85,8 @@ func resourceDid() *schema.Resource {
 }
 
 func resourceDidCreate(d *schema.ResourceData, m interface{}) error {
+	log.Println("Creating did...")
+
 	// prepare the did body request
 	method := d.Get("method").(string)
 	options := DidRequestOptions{
@@ -107,6 +112,9 @@ func resourceDidCreate(d *schema.ResourceData, m interface{}) error {
 	}
 	req.Header.Set("Content-Type", "application/json")
 	access_token, err := getAccessToken()
+	if err != nil {
+		return nil
+	}
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", access_token))
 	req, err = http.NewRequest("POST", url, bytes.NewBuffer(req_body_json))
 	if err != nil {
@@ -121,6 +129,10 @@ func resourceDidCreate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	defer resp.Body.Close()
+
+	if resp.StatusCode < 200 || 200 < resp.StatusCode {
+		return fmt.Errorf("Got status code %d from API", resp.StatusCode)
+	}
 
 	// read raw json body
 	response_body, err := ioutil.ReadAll(resp.Body)
@@ -156,8 +168,10 @@ func resourceDidDelete(d *schema.ResourceData, m interface{}) error {
 }
 
 func getAccessToken() (string, error) {
+	log.Println("Getting access token")
+
 	client_id := os.Getenv(ENV_CLIENT_ID)
-	client_secret := os.Getenv(ENV_CLIENT_ID)
+	client_secret := os.Getenv(ENV_CLIENT_SECRET)
 
 	auth_url := os.Getenv(ENV_AUTH_URL)
 	if len(auth_url) == 0 {
@@ -175,6 +189,8 @@ func getAccessToken() (string, error) {
 		GrantType:    "client_credentials",
 	}
 	req_body_json, err := json.Marshal(req_body)
+	log.Printf(string(req_body_json))
+
 	if err != nil {
 		return "", err
 	}
@@ -193,6 +209,7 @@ func getAccessToken() (string, error) {
 	defer resp.Body.Close()
 
 	response_body, err := ioutil.ReadAll(resp.Body)
+	log.Printf(string(response_body))
 	if err != nil {
 		// handle error
 		return "", err
