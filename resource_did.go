@@ -24,20 +24,20 @@ type DidRequestOptions struct {
 }
 
 type DidResponse struct {
-	Did                string `json:"did"`
-	RegistrationStatus string `json:"registrationStatus"`
-	LocalMetadata      LocalMetadata    `json:"localMetadata"`
+	Did                string        `json:"did"`
+	RegistrationStatus string        `json:"registrationStatus"`
+	LocalMetadata      LocalMetadata `json:"localMetadata"`
 }
 
 type LocalMetadata struct {
-    Keys           []KeyMetadata `json:"keys"`
-    Registered     int64           `json:"registered"`
-    InitialDidDoc  json.RawMessage `json:"initialDidDocument"`
+	Keys          []KeyMetadata   `json:"keys"`
+	Registered    int64           `json:"registered"`
+	InitialDidDoc json.RawMessage `json:"initialDidDocument"`
 }
 
 type KeyMetadata struct {
-    DidDocumentKeyId string `json:"didDocumentKeyId"`
-    KmsKeyId         string `json:"kmsKeyId"`
+	DidDocumentKeyId string `json:"didDocumentKeyId"`
+	KmsKeyId         string `json:"kmsKeyId"`
 }
 
 func resourceDid() *schema.Resource {
@@ -73,24 +73,24 @@ func resourceDid() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"registered": &schema.Schema {
-				Type: schema.TypeInt,
+			"registered": &schema.Schema{
+				Type:     schema.TypeInt,
 				Computed: true,
 			},
 			"keys": &schema.Schema{
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
-						Schema: map[string]*schema.Schema{
-								"did_document_key_id": {
-										Type:     schema.TypeString,
-										Optional: true,
-								},
-								"kms_key_id": {
-										Type:     schema.TypeString,
-										Optional: true,
-								},
+					Schema: map[string]*schema.Schema{
+						"did_document_key_id": {
+							Type:     schema.TypeString,
+							Optional: true,
 						},
+						"kms_key_id": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+					},
 				},
 			},
 		},
@@ -98,7 +98,9 @@ func resourceDid() *schema.Resource {
 }
 
 func resourceDidCreate(d *schema.ResourceData, m interface{}) error {
-	log.Println("Creating did...")
+	log.Println("Creating did")
+
+	// TODO: check if the did exists first
 
 	// prepare the did body request
 	method := d.Get("method").(string)
@@ -117,22 +119,21 @@ func resourceDidCreate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	// prep the request
-	base_url := os.Getenv(ENV_API_URL)
+	base_url, err := getBaseUrl()
+	if err != nil {
+		return err
+	}
 	url := fmt.Sprintf("%s/core/v1/dids", base_url)
-	req, err := http.NewRequest("POST", base_url, nil)
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(req_body_json))
 	if err != nil {
 		return err
 	}
 	req.Header.Set("Content-Type", "application/json")
 	access_token, err := getAccessToken()
 	if err != nil {
-		return nil
-	}
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", access_token))
-	req, err = http.NewRequest("POST", url, bytes.NewBuffer(req_body_json))
-	if err != nil {
 		return err
 	}
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", access_token))
 
 	// perform the request
 	client := http.DefaultClient
@@ -154,30 +155,42 @@ func resourceDidCreate(d *schema.ResourceData, m interface{}) error {
 }
 
 func processDidData(d *schema.ResourceData, response *DidResponse) {
-	d.Set("id", response.Did)
+	d.SetId(response.Did)
 	d.Set("did", response.Did)
 	d.Set("registration_status", response.RegistrationStatus)
+
+	log.Printf("did: %s", response.Did)
+	log.Printf("status: %s", response.RegistrationStatus)
 
 	keys := []interface{}{}
 
 	for _, k := range response.LocalMetadata.Keys {
+		log.Printf("status: %s", k.DidDocumentKeyId)
+		log.Printf("status: %s", k.KmsKeyId)
 		key := map[string]string{
 			"did_document_key_id": k.DidDocumentKeyId,
-			"kms_key_id": k.KmsKeyId,
+			"kms_key_id":          k.KmsKeyId,
 		}
 		keys = append(keys, key)
 	}
+
+	d.Set("keys", keys)
 }
 
 func resourceDidRead(d *schema.ResourceData, m interface{}) error {
+	log.Println("Reading did resource...")
 	var err error
 	did := d.Get("id").(string)
-	base_url := os.Getenv(ENV_API_URL)
+	log.Printf("Did is %s\n", did)
+	base_url, err := getBaseUrl()
+	if err != nil {
+		return err
+	}
 	url := fmt.Sprintf("%s/core/v1/dids/%s", base_url, did)
 
 	// formulate request
 	request, err := didRequest("GET", url, nil)
-	
+
 	// perform the request
 	client := http.DefaultClient
 	resp, err := client.Do(request)
@@ -196,24 +209,29 @@ func resourceDidRead(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceDidUpdate(d *schema.ResourceData, m interface{}) error {
+	log.Println("Updating did resource...")
 	// TODO this method seems a bit dodgy
 	err := resourceDidDelete(d, m) // cannot update did in place. need to delete and re-create
 	if err != nil {
 		return err
 	}
-	
+
 	return resourceDidCreate(d, m)
 }
 
 func resourceDidDelete(d *schema.ResourceData, m interface{}) error {
+	log.Println("Deleting did resource...")
 	var err error
 	did := d.Get("id").(string)
-	base_url := os.Getenv(ENV_API_URL)
+	base_url, err := getBaseUrl()
+	if err != nil {
+		return err
+	}
 	url := fmt.Sprintf("%s/core/v1/dids/%s", base_url, did)
 
 	// formulate request
 	request, err := didRequest("DELETE", url, nil)
-	
+
 	// perform the request
 	client := http.DefaultClient
 	resp, err := client.Do(request)
@@ -221,7 +239,7 @@ func resourceDidDelete(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	if resp.StatusCode < 200 || 200 < resp.StatusCode{
+	if resp.StatusCode < 200 || 299 < resp.StatusCode {
 		return fmt.Errorf("Got status code %d from API", resp.StatusCode)
 	}
 
@@ -232,7 +250,7 @@ func resourceDidDelete(d *schema.ResourceData, m interface{}) error {
 func processDidResponse(resp *http.Response) (DidResponse, error) {
 	var response DidResponse
 
-	if resp.StatusCode < 200 || 200 < resp.StatusCode {
+	if resp.StatusCode < 200 || 299 < resp.StatusCode {
 		return response, fmt.Errorf("Got status code %d from API", resp.StatusCode)
 	}
 
@@ -270,9 +288,18 @@ func didRequest(method string, url string, did_request *DidRequest) (*http.Reque
 		if err != nil {
 			return req, err
 		}
-	
+
 		return http.NewRequest(method, url, bytes.NewBuffer(req_body_json))
 	}
 
 	return http.NewRequest(method, url, nil)
+}
+
+func getBaseUrl() (string, error) {
+	var err error
+	base_url := os.Getenv(ENV_API_URL)
+	if len(base_url) == 0 {
+		err = fmt.Errorf("%s environment variable not set", ENV_API_URL)
+	}
+	return base_url, err
 }
