@@ -6,16 +6,16 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
-	"log"
 )
 
 import _ "github.com/motemen/go-loghttp/global"
 
 type DidRequest struct {
-	Method  string            `json:"method,omitempty"`
-	Options DidRequestOptions `json:"options"`
+	Method  string            `json:"method"`
+	Options DidRequestOptions `json:"options,omitempty"`
 }
 
 type DidRequestOptions struct {
@@ -25,7 +25,19 @@ type DidRequestOptions struct {
 
 type DidResponse struct {
 	Did                string `json:"did"`
-	RegistrationStatus string `json:"did"`
+	RegistrationStatus string `json:"registrationStatus"`
+	LocalMetadata      LocalMetadata    `json:"localMetadata"`
+}
+
+type LocalMetadata struct {
+    Keys           []KeyMetadata `json:"keys"`
+    Registered     int64           `json:"registered"`
+    InitialDidDoc  json.RawMessage `json:"initialDidDocument"`
+}
+
+type KeyMetadata struct {
+    DidDocumentKeyId string `json:"didDocumentKeyId"`
+    KmsKeyId         string `json:"kmsKeyId"`
 }
 
 func resourceDid() *schema.Resource {
@@ -60,6 +72,26 @@ func resourceDid() *schema.Resource {
 			"initial_did_document": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
+			},
+			"registered": &schema.Schema {
+				Type: schema.TypeInt,
+				Computed: true,
+			},
+			"keys": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+								"did_document_key_id": {
+										Type:     schema.TypeString,
+										Optional: true,
+								},
+								"kms_key_id": {
+										Type:     schema.TypeString,
+										Optional: true,
+								},
+						},
+				},
 			},
 		},
 	}
@@ -111,39 +143,136 @@ func resourceDidCreate(d *schema.ResourceData, m interface{}) error {
 
 	defer resp.Body.Close()
 
-	if resp.StatusCode < 200 || 200 < resp.StatusCode {
+	response, err := processDidResponse(resp)
+	if err != nil {
+		return err
+	}
+
+	processDidData(d, &response)
+
+	return nil
+}
+
+func processDidData(d *schema.ResourceData, response *DidResponse) {
+	d.Set("id", response.Did)
+	d.Set("did", response.Did)
+	d.Set("registration_status", response.RegistrationStatus)
+
+	keys := []interface{}{}
+
+	for _, k := range response.LocalMetadata.Keys {
+		key := map[string]string{
+			"did_document_key_id": k.DidDocumentKeyId,
+			"kms_key_id": k.KmsKeyId,
+		}
+		keys = append(keys, key)
+	}
+}
+
+func resourceDidRead(d *schema.ResourceData, m interface{}) error {
+	var err error
+	did := d.Get("id").(string)
+	base_url := os.Getenv(ENV_API_URL)
+	url := fmt.Sprintf("%s/core/v1/dids/%s", base_url, did)
+
+	// formulate request
+	request, err := didRequest("GET", url, nil)
+	
+	// perform the request
+	client := http.DefaultClient
+	resp, err := client.Do(request)
+	if err != nil {
+		return err
+	}
+
+	// consume the request
+	did_response, err := processDidResponse(resp)
+	if err != nil {
+		return err
+	}
+
+	processDidData(d, &did_response)
+	return err
+}
+
+func resourceDidUpdate(d *schema.ResourceData, m interface{}) error {
+	// TODO this method seems a bit dodgy
+	err := resourceDidDelete(d, m) // cannot update did in place. need to delete and re-create
+	if err != nil {
+		return err
+	}
+	
+	return resourceDidCreate(d, m)
+}
+
+func resourceDidDelete(d *schema.ResourceData, m interface{}) error {
+	var err error
+	did := d.Get("id").(string)
+	base_url := os.Getenv(ENV_API_URL)
+	url := fmt.Sprintf("%s/core/v1/dids/%s", base_url, did)
+
+	// formulate request
+	request, err := didRequest("DELETE", url, nil)
+	
+	// perform the request
+	client := http.DefaultClient
+	resp, err := client.Do(request)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode < 200 || 200 < resp.StatusCode{
 		return fmt.Errorf("Got status code %d from API", resp.StatusCode)
+	}
+
+	d.SetId("")
+	return err
+}
+
+func processDidResponse(resp *http.Response) (DidResponse, error) {
+	var response DidResponse
+
+	if resp.StatusCode < 200 || 200 < resp.StatusCode {
+		return response, fmt.Errorf("Got status code %d from API", resp.StatusCode)
 	}
 
 	// read raw json body
 	response_body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return err
+		return response, err
 	}
 
 	// parse the body
-	var response DidResponse
 	err = json.Unmarshal(response_body, &response)
 	if err != nil {
-		return err
+		return response, err
 	}
 
-	d.Set("did", response.Did)
-	d.Set("registration_status", response.RegistrationStatus)
-	// TODO all the other stuff
-
-	return nil
+	return response, nil
 }
 
-func resourceDidRead(d *schema.ResourceData, m interface{}) error {
-	return nil
-}
+func didRequest(method string, url string, did_request *DidRequest) (*http.Request, error) {
+	// prep the request
+	base_url := os.Getenv(ENV_API_URL)
+	req, err := http.NewRequest(method, base_url, nil)
+	if err != nil {
+		return req, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	access_token, err := getAccessToken()
+	if err != nil {
+		return req, nil
+	}
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", access_token))
 
-func resourceDidUpdate(d *schema.ResourceData, m interface{}) error {
-	return resourceDidRead(d, m)
-}
+	if did_request != nil {
+		req_body_json, err := json.Marshal(did_request)
+		if err != nil {
+			return req, err
+		}
+	
+		return http.NewRequest(method, url, bytes.NewBuffer(req_body_json))
+	}
 
-func resourceDidDelete(d *schema.ResourceData, m interface{}) error {
-	d.SetId("")
-	return nil
+	return http.NewRequest(method, url, nil)
 }
