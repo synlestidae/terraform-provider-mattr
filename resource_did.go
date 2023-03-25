@@ -24,7 +24,7 @@ type DidRequestOptions struct {
 }
 
 type DidResponse struct {
-	Did                string        `json:"did"`
+	Did                string        `json:"did"` // TODO not available on GET
 	RegistrationStatus string        `json:"registrationStatus"`
 	LocalMetadata      LocalMetadata `json:"localMetadata"`
 }
@@ -44,32 +44,26 @@ func resourceDid() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceDidCreate,
 		Read:   resourceDidRead,
-		Update: resourceDidUpdate,
 		Delete: resourceDidDelete,
 
 		Schema: map[string]*schema.Schema{
 			"method": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 			"url": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "Domain or URL from which hostname will be extracted",
+				ForceNew: true,
 			},
 			"key_type": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
+				ForceNew: true,
 			},
 			"did": &schema.Schema{
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"registration_status": &schema.Schema{
-				Type:     schema.TypeInt,
-				Computed: true,
-			},
-			"initial_did_document": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -150,23 +144,18 @@ func resourceDidCreate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	processDidData(d, &response)
+	d.SetId(response.Did)
 
 	return nil
 }
 
 func processDidData(d *schema.ResourceData, response *DidResponse) {
-	d.SetId(response.Did)
-	d.Set("did", response.Did)
 	d.Set("registration_status", response.RegistrationStatus)
-
-	log.Printf("did: %s", response.Did)
-	log.Printf("status: %s", response.RegistrationStatus)
+	d.Set("registered", response.LocalMetadata.Registered)
 
 	keys := []interface{}{}
 
 	for _, k := range response.LocalMetadata.Keys {
-		log.Printf("status: %s", k.DidDocumentKeyId)
-		log.Printf("status: %s", k.KmsKeyId)
 		key := map[string]string{
 			"did_document_key_id": k.DidDocumentKeyId,
 			"kms_key_id":          k.KmsKeyId,
@@ -178,9 +167,10 @@ func processDidData(d *schema.ResourceData, response *DidResponse) {
 }
 
 func resourceDidRead(d *schema.ResourceData, m interface{}) error {
+	// TODO: handle 404 - 404 means SetId("") i think
 	log.Println("Reading did resource...")
 	var err error
-	did := d.Get("id").(string)
+	did := d.Id()
 	log.Printf("Did is %s\n", did)
 	base_url, err := getBaseUrl()
 	if err != nil {
@@ -205,24 +195,14 @@ func resourceDidRead(d *schema.ResourceData, m interface{}) error {
 	}
 
 	processDidData(d, &did_response)
+	d.SetId(did)
 	return err
-}
-
-func resourceDidUpdate(d *schema.ResourceData, m interface{}) error {
-	log.Println("Updating did resource...")
-	// TODO this method seems a bit dodgy
-	err := resourceDidDelete(d, m) // cannot update did in place. need to delete and re-create
-	if err != nil {
-		return err
-	}
-
-	return resourceDidCreate(d, m)
 }
 
 func resourceDidDelete(d *schema.ResourceData, m interface{}) error {
 	log.Println("Deleting did resource...")
 	var err error
-	did := d.Get("id").(string)
+	did := d.Id()
 	base_url, err := getBaseUrl()
 	if err != nil {
 		return err
@@ -249,13 +229,17 @@ func resourceDidDelete(d *schema.ResourceData, m interface{}) error {
 
 func processDidResponse(resp *http.Response) (DidResponse, error) {
 	var response DidResponse
+	//response_body, _ := ioutil.ReadAll(resp.Body)
 
 	if resp.StatusCode < 200 || 299 < resp.StatusCode {
+		response_body, _ := ioutil.ReadAll(resp.Body)
+		log.Println("Response body: ", string(response_body))
 		return response, fmt.Errorf("Got status code %d from API", resp.StatusCode)
 	}
 
 	// read raw json body
 	response_body, err := ioutil.ReadAll(resp.Body)
+	log.Println("Response body: ", string(response_body))
 	if err != nil {
 		return response, err
 	}
@@ -270,29 +254,30 @@ func processDidResponse(resp *http.Response) (DidResponse, error) {
 }
 
 func didRequest(method string, url string, did_request *DidRequest) (*http.Request, error) {
-	// prep the request
-	base_url := os.Getenv(ENV_API_URL)
-	req, err := http.NewRequest(method, base_url, nil)
-	if err != nil {
-		return req, err
-	}
-	req.Header.Set("Content-Type", "application/json")
+	var req *http.Request
 	access_token, err := getAccessToken()
 	if err != nil {
 		return req, nil
 	}
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", access_token))
 
 	if did_request != nil {
+		req.Header.Set("Content-Type", "application/json")
 		req_body_json, err := json.Marshal(did_request)
 		if err != nil {
 			return req, err
 		}
 
-		return http.NewRequest(method, url, bytes.NewBuffer(req_body_json))
+		req, err = http.NewRequest(method, url, bytes.NewBuffer(req_body_json))
+	} else {
+		req, err = http.NewRequest(method, url, nil)
+		req.Header.Set("Accept", "application/json")
+	}
+	if err != nil {
+		return req, err
 	}
 
-	return http.NewRequest(method, url, nil)
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", access_token))
+	return req, err
 }
 
 func getBaseUrl() (string, error) {

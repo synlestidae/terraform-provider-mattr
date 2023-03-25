@@ -1,4 +1,4 @@
 resource "example_did" "did" {
 	method = "web"
-	url = "test.nz"
+	url = "test0006.nz"
 }
