@@ -229,7 +229,6 @@ func resourceDidDelete(d *schema.ResourceData, m interface{}) error {
 
 func processDidResponse(resp *http.Response) (DidResponse, error) {
 	var response DidResponse
-	//response_body, _ := ioutil.ReadAll(resp.Body)
 
 	if resp.StatusCode < 200 || 299 < resp.StatusCode {
 		response_body, _ := ioutil.ReadAll(resp.Body)

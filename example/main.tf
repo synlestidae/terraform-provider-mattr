@@ -1,4 +1,4 @@
-resource "example_did" "did" {
+resource "mattr_did" "did" {
 	method = "web"
-	url = "test0006.nz"
+	url = "antunovic.nz"
 }

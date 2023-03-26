@@ -1,6 +1,6 @@
 terraform {
   required_providers {
-    example = {
+    mattr = {
       version = "~> 0.0.1"
       source  = "antunovic.nz/synlestidae/mattr"
     }
