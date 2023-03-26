@@ -65,3 +65,4 @@ terraform.rc
 terraform-provider-mattr    
 mattr-terraform-provider
 example/.terraform.lock.hcl
+.DS_Store
