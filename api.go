@@ -16,7 +16,55 @@ type Api struct {
 	ApiUrl string
 }
 
+type WebhookRequest struct {
+	Events []string `json:"events"`
+	Url string
+	disabled bool
+}
+
 type WebhookResponse struct {
+	Id string `json:"id"`
+	Events []string `json:"events"`
+	Url string
+	disabled bool
+}
+
+type IssuerCredential struct {
+	IssuerDid string `json:"issuerDid"`
+	IssuerLogoUrl string `json:"issuerLogoUrl"`
+	IssuerIconUrl string `json:"issuerIconUrl"`
+	Name string `json:"name"`
+	Description string `json:"description"`
+	Context []string `json:"string"`
+	Type string `json:"string"`
+	CredentialBranding []CredentialBranding `json:"credentialBranding"`
+	FederatedProvider FederatedProvider `json:"federatedProvider"`
+	StaticRequestParameters map[string]any `json:"staticRequestParameters"`
+	ForwardedRequestParameters []string `json:"forwardedRequestParameters"`
+	ClaimMappings []ClaimMapping
+}
+
+type FederatedProvider struct {
+	Url string 
+	Scope string `json:"scope"`
+	ClientId string `json:"clientId"`
+	ClientSecret string `json:"clientSecret"` 
+	TokenEndpointAuthMethod string `json:"tokenEndpointAuth"`
+	// TODO
+}
+
+type ClaimMapping struct {
+	JsonLdTerm string `json:"jsonLdTerm"`
+	OidcClaim string `json:"oidcClaim"`
+}
+
+type CredentialBranding struct {
+	BackgroundColor string `json:"backgroundColor"`
+	WatermarkImageUrl string `json:"watermarkImageUrl"`
+}
+
+type IssuerRequest struct {
+	Credential IssuerCredential `json:"credential"`
 }
 
 type WebhookListResponse struct {
@@ -72,11 +120,11 @@ func (a *Api) DeleteDid() error {
 }
 
 // Webhooks
-func (a *Api) PostWebhook() (*WebhookResponse, error) {
+func (a *Api) PostWebhook(*WebhookRequest) (*WebhookResponse, error) {
 	return nil, fmt.Errorf("Not quite implemented yet")
 }
 
-func (a *Api) GetWebhook() (*WebhookResponse, error) {
+func (a *Api) GetWebhook(id string) (*WebhookResponse, error) {
 	return nil, fmt.Errorf("Not quite implemented yet")
 }
 
@@ -84,11 +132,11 @@ func (a *Api) GetWebhooks() (*WebhookListResponse, error) {
 	return nil, fmt.Errorf("Not quite implemented yet")
 }
 
-func (a *Api) PutWebhook() (*WebhookResponse, error) {
+func (a *Api) PutWebhook(webhook *WebhookRequest) (*WebhookResponse, error) {
 	return nil, fmt.Errorf("Not quite implemented yet")
 }
 
-func (a *Api) DeleteWebhook() error {
+func (a *Api) DeleteWebhook(id string) error {
 	return fmt.Errorf("Not quite implemented yet")
 }
 
