@@ -29,6 +29,9 @@ type WebhookResponse struct {
 	disabled bool
 }
 
+type WebhookListResponse struct {
+}
+
 type IssuerCredential struct {
 	IssuerDid string `json:"issuerDid"`
 	IssuerLogoUrl string `json:"issuerLogoUrl"`
@@ -39,18 +42,15 @@ type IssuerCredential struct {
 	Type string `json:"string"`
 	CredentialBranding []CredentialBranding `json:"credentialBranding"`
 	FederatedProvider FederatedProvider `json:"federatedProvider"`
-	StaticRequestParameters map[string]any `json:"staticRequestParameters"`
-	ForwardedRequestParameters []string `json:"forwardedRequestParameters"`
-	ClaimMappings []ClaimMapping
 }
 
 type FederatedProvider struct {
 	Url string 
-	Scope string `json:"scope"`
+	Scope []string `json:"scope"`
 	ClientId string `json:"clientId"`
 	ClientSecret string `json:"clientSecret"` 
-	TokenEndpointAuthMethod string `json:"tokenEndpointAuth"`
-	// TODO
+	TokenEndpointAuthMethod string `json:"tokenEndpointAuthMethod"`
+	ClaimsSource string `json:"claimsSource"`
 }
 
 type ClaimMapping struct {
@@ -65,12 +65,19 @@ type CredentialBranding struct {
 
 type IssuerRequest struct {
 	Credential IssuerCredential `json:"credential"`
-}
-
-type WebhookListResponse struct {
+	FederatedProvider FederatedProvider `json:"federatedProvider"` 
+	StaticRequestParameters map[string]any `json:"staticRequestParameters"`
+	ForwardedRequestParameters []string `json:"forwardedRequestParameters"`
+	ClaimMappings []ClaimMapping `json:"claimMappings"`
 }
 
 type IssuerResponse struct {
+	Id string `json:"id"`
+	Credential IssuerCredential `json:"credential"`
+	FederatedProvider FederatedProvider `json:"federatedProvider"` 
+	StaticRequestParameters map[string]any `json:"staticRequestParameters"`
+	ForwardedRequestParameters []string `json:"forwardedRequestParameters"`
+	ClaimMappings []ClaimMapping `json:"claimMappings"`
 }
 
 type IssuerListResponse struct {
