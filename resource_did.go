@@ -56,7 +56,7 @@ func resourceDid() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "Domain or URL from which hostname will be extracted",
-				ForceNew: true,
+				ForceNew:    true,
 			},
 			"key_type": &schema.Schema{
 				Type:     schema.TypeString,

@@ -2,107 +2,154 @@ package main
 
 import (
 	"bytes"
-	"fmt"
-	"net/http"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
+	"net/http"
 )
 
 type Api struct {
-	ClientId string
+	ClientId     string
 	ClientSecret string
-	Audience string
-	AuthUrl string
-	ApiUrl string
+	Audience     string
+	AuthUrl      string
+	ApiUrl       string
 }
 
 type WebhookRequest struct {
-	Events []string `json:"events"`
-	Url string
+	Events   []string `json:"events"`
+	Url      string
 	disabled bool
 }
 
 type WebhookResponse struct {
-	Id string `json:"id"`
-	Events []string `json:"events"`
-	Url string
+	Id       string   `json:"id"`
+	Events   []string `json:"events"`
+	Url      string
 	disabled bool
 }
 
 type WebhookListResponse struct {
+	NextCursor string `json:"nextCursor"`
 }
 
 type IssuerCredential struct {
-	IssuerDid string `json:"issuerDid"`
-	IssuerLogoUrl string `json:"issuerLogoUrl"`
-	IssuerIconUrl string `json:"issuerIconUrl"`
-	Name string `json:"name"`
-	Description string `json:"description"`
-	Context []string `json:"string"`
-	Type string `json:"string"`
+	IssuerDid          string               `json:"issuerDid"`
+	IssuerLogoUrl      string               `json:"issuerLogoUrl"`
+	IssuerIconUrl      string               `json:"issuerIconUrl"`
+	Name               string               `json:"name"`
+	Description        string               `json:"description"`
+	Context            []string             `json:"string"`
+	Type               string               `json:"string"`
 	CredentialBranding []CredentialBranding `json:"credentialBranding"`
-	FederatedProvider FederatedProvider `json:"federatedProvider"`
+	FederatedProvider  FederatedProvider    `json:"federatedProvider"`
 }
 
 type FederatedProvider struct {
-	Url string 
-	Scope []string `json:"scope"`
-	ClientId string `json:"clientId"`
-	ClientSecret string `json:"clientSecret"` 
-	TokenEndpointAuthMethod string `json:"tokenEndpointAuthMethod"`
-	ClaimsSource string `json:"claimsSource"`
+	Url                     string
+	Scope                   []string `json:"scope"`
+	ClientId                string   `json:"clientId"`
+	ClientSecret            string   `json:"clientSecret"`
+	TokenEndpointAuthMethod string   `json:"tokenEndpointAuthMethod"`
+	ClaimsSource            string   `json:"claimsSource"`
 }
 
 type ClaimMapping struct {
 	JsonLdTerm string `json:"jsonLdTerm"`
-	OidcClaim string `json:"oidcClaim"`
+	OidcClaim  string `json:"oidcClaim"`
 }
 
 type CredentialBranding struct {
-	BackgroundColor string `json:"backgroundColor"`
+	BackgroundColor   string `json:"backgroundColor"`
 	WatermarkImageUrl string `json:"watermarkImageUrl"`
 }
 
 type IssuerRequest struct {
-	Credential IssuerCredential `json:"credential"`
-	FederatedProvider FederatedProvider `json:"federatedProvider"` 
-	StaticRequestParameters map[string]any `json:"staticRequestParameters"`
-	ForwardedRequestParameters []string `json:"forwardedRequestParameters"`
-	ClaimMappings []ClaimMapping `json:"claimMappings"`
+	Credential                 IssuerCredential  `json:"credential"`
+	FederatedProvider          FederatedProvider `json:"federatedProvider"`
+	StaticRequestParameters    map[string]any    `json:"staticRequestParameters"`
+	ForwardedRequestParameters []string          `json:"forwardedRequestParameters"`
+	ClaimMappings              []ClaimMapping    `json:"claimMappings"`
 }
 
 type IssuerResponse struct {
-	Id string `json:"id"`
-	Credential IssuerCredential `json:"credential"`
-	FederatedProvider FederatedProvider `json:"federatedProvider"` 
-	StaticRequestParameters map[string]any `json:"staticRequestParameters"`
-	ForwardedRequestParameters []string `json:"forwardedRequestParameters"`
-	ClaimMappings []ClaimMapping `json:"claimMappings"`
+	Id                         string            `json:"id"`
+	Credential                 IssuerCredential  `json:"credential"`
+	FederatedProvider          FederatedProvider `json:"federatedProvider"`
+	StaticRequestParameters    map[string]any    `json:"staticRequestParameters"`
+	ForwardedRequestParameters []string          `json:"forwardedRequestParameters"`
+	ClaimMappings              []ClaimMapping    `json:"claimMappings"`
 }
 
 type IssuerListResponse struct {
+	Data       []IssuerResponse `json:"data"`
+	NextCursor string           `json:"nextCursor"`
 }
 
 type WellKnownResponse struct {
 }
 
+type IssuerClientRequest struct {
+	Name                     string `json:"string"`
+	RedirectUris             []string
+	ResponseTypes            []string
+	GrantTypes               []string
+	TokenEndpointAuthMethod  string `json:"tokenEndpointAuthMethod"`
+	IdTokenSignedResponseAlg string `json:"idTokenSignedResponseAlg"`
+	ApplicationType          string `json:"applicationType"`
+}
+
 type IssuerClientResponse struct {
+	Id                       string `json:"id"`
+	Secret                   string `json:"secret"`
+	Name                     string `json:"string"`
+	RedirectUris             []string
+	ResponseTypes            []string
+	GrantTypes               []string
+	TokenEndpointAuthMethod  string `json:"tokenEndpointAuthMethod"`
+	IdTokenSignedResponseAlg string `json:"idTokenSignedResponseAlg"`
+	ApplicationType          string `json:"applicationType"`
 }
 
 type IssuerClientListResponse struct {
+	NextCursor string                 `json:"nextCursor"`
+	Data       []IssuerClientResponse `json:"data"`
+}
+
+type VerifierRequest struct {
 }
 
 type VerifierResponse struct {
 }
 
 type VerifierListResponse struct {
+	NextCursor string             `json:"nextCursor"`
+	Data       []VerifierResponse `json:"data"`
+}
+
+type VerifierClientRequest struct {
+	VerifierDid            string         `json:"verifierDid"`
+	PresentationTemplateId string         `json:"presentationTemplateId"`
+	ClaimMappings          []ClaimMapping `json:"claimMappings"`
+}
+
+type VerifierClientResponse struct {
+	Id                     string         `json:"id"`
+	VerifierDid            string         `json:"verifierDid"`
+	PresentationTemplateId string         `json:"presentationTemplateId"`
+	ClaimMappings          []ClaimMapping `json:"claimMappings"`
+}
+
+type VerifierClientListResponse struct {
+	NextCursor string             `json:"nextCursor"`
+	Data       []VerifierResponse `json:"data"`
 }
 
 // OK so this is good
 // 12 structs need to be declared (6 requests, 6 responses)
 // there will also be an error struct, with the mattr format messages
 
-// also need to write 
+// also need to write
 // * the http request thing, and it should support keepalive
 // * an order of URL inference
 // * inferring the URL from access token
@@ -117,7 +164,7 @@ func (a *Api) GetDid() (*DidResponse, error) {
 	return nil, fmt.Errorf("Not quite implemented yet")
 	//request, err := a.Request("GET", "/core/v1/dids", nil)
 	//if err == nil {
-//		return nil, err
+	//		return nil, err
 	//}
 	// todo
 }
@@ -195,23 +242,23 @@ func (a *Api) DeleteIssuerClient() error {
 }
 
 // Verifiers
-func (a *Api) CreateVerifier() (*VerifierResponse, error) {
+func (a *Api) CreateVerifier(verifier *VerifierRequest) (*VerifierResponse, error) {
 	return nil, fmt.Errorf("Not quite implemented yet")
 }
 
-func (a *Api) GetVerifiers() (*VerifierListResponse, error) {
+func (a *Api) GetVerifiers(cursor string) (*VerifierListResponse, error) {
 	return nil, fmt.Errorf("Not quite implemented yet")
 }
 
-func (a *Api) GetVerifier() (*VerifierResponse, error) {
+func (a *Api) GetVerifier(id string) (*VerifierResponse, error) {
 	return nil, fmt.Errorf("Not quite implemented yet")
 }
 
-func (a *Api) PutVerifier() (*VerifierResponse, error) {
+func (a *Api) PutVerifier(id string, verifier *VerifierRequest) (*VerifierResponse, error) {
 	return nil, fmt.Errorf("Not quite implemented yet")
 }
 
-func (a *Api) DeleteVerifier() error {
+func (a *Api) DeleteVerifier(id string) error {
 	return fmt.Errorf("Not quite implemented yet")
 }
 
