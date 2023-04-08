@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 )
 
@@ -145,53 +146,38 @@ type VerifierClientListResponse struct {
 	Data       []VerifierResponse `json:"data"`
 }
 
-// OK so this is good
-// 12 structs need to be declared (6 requests, 6 responses)
-// there will also be an error struct, with the mattr format messages
-
-// also need to write
-// * the http request thing, and it should support keepalive
-// * an order of URL inference
-// * inferring the URL from access token
-
-// oh and unit tests
-
-func (a *Api) PostDid() (*DidResponse, error) {
-	return nil, fmt.Errorf("Not quite implemented yet")
+func (a *Api) PostDid(did DidRequest) (*DidResponse, error) {
+	return Post[DidResponse](a, "/core/v1/dids", did)
 }
 
-func (a *Api) GetDid() (*DidResponse, error) {
-	return nil, fmt.Errorf("Not quite implemented yet")
-	//request, err := a.Request("GET", "/core/v1/dids", nil)
-	//if err == nil {
-	//		return nil, err
-	//}
-	// todo
+func (a *Api) GetDid(id string) (*DidResponse, error) {
+	return Get[DidResponse](a, "/core/v1/dids")
 }
 
-func (a *Api) DeleteDid() error {
-	return fmt.Errorf("Not quite implemented yet")
+func (a *Api) DeleteDid(id string) error {
+	return Delete[DidResponse](a, "/core/v1/dids")
 }
 
 // Webhooks
-func (a *Api) PostWebhook(*WebhookRequest) (*WebhookResponse, error) {
-	return nil, fmt.Errorf("Not quite implemented yet")
+func (a *Api) PostWebhook(webhook *WebhookRequest) (*WebhookResponse, error) {
+	//return nil, fmt.Errorf("Not quite implemented yet")
+	return Post[WebhookResponse](a, "/core/v1/webhooks", webhook)
 }
 
 func (a *Api) GetWebhook(id string) (*WebhookResponse, error) {
-	return nil, fmt.Errorf("Not quite implemented yet")
+	return Get[WebhookResponse](a, fmt.Sprintf("/core/v1/webhooks/%s", id))
 }
 
 func (a *Api) GetWebhooks() (*WebhookListResponse, error) {
-	return nil, fmt.Errorf("Not quite implemented yet")
+	return Get[WebhookListResponse](a, "/core/v1/webhooks")
 }
 
-func (a *Api) PutWebhook(webhook *WebhookRequest) (*WebhookResponse, error) {
-	return nil, fmt.Errorf("Not quite implemented yet")
+func (a *Api) PutWebhook(webhook *WebhookResponse) (*WebhookResponse, error) {
+	return Put[WebhookResponse](a, fmt.Sprintf("/core/v1/webhooks/%s", webhook.Id), webhook)
 }
 
 func (a *Api) DeleteWebhook(id string) error {
-	return fmt.Errorf("Not quite implemented yet")
+	return Delete[WebhookResponse](a, fmt.Sprintf("/core/v1/webhooks/%s", id))
 }
 
 // .well-known
@@ -317,7 +303,7 @@ func (a *Api) GetAccessToken() (string, error) {
 	return response.AccessToken, nil
 }
 
-func (a *Api) Request(method string, resource string, body *interface{}) (*http.Request, error) {
+func (a *Api) Request(method string, resource string, body interface{}) (*http.Request, error) {
 	url := fmt.Sprintf("%s%s", a.BaseUrl(), resource) // TODO remove trailing backslashes
 	var req *http.Request
 	access_token, err := a.GetAccessToken()
@@ -347,4 +333,97 @@ func (a *Api) Request(method string, resource string, body *interface{}) (*http.
 
 func (a *Api) BaseUrl() string {
 	return ""
+}
+
+func Get[T any](a *Api, path string) (*T, error) {
+	client := http.DefaultClient
+	request, err := a.Request("GET", path, nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := client.Do(request)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode < 200 || 299 < resp.StatusCode {
+		return nil, fmt.Errorf("Got status code %d from API", resp.StatusCode)
+	}
+
+	//result, err := processResponse[T](resp)
+	return processResponse[T](resp)
+}
+
+func Post[T any](a *Api, path string, body interface{}) (*T, error) {
+	return Send[T](a, "POST", path, body)
+}
+
+func Put[T any](a *Api, path string, body interface{}) (*T, error) {
+	return Send[T](a, "PUT", path, body)
+}
+
+func Delete[T any](a *Api, path string) error {
+	client := http.DefaultClient
+	request, err := a.Request("DELETE", path, nil)
+	if err != nil {
+		return err
+	}
+	resp, err := client.Do(request)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode < 200 || 299 < resp.StatusCode {
+		return fmt.Errorf("Got status code %d from API", resp.StatusCode)
+	}
+
+	return nil
+}
+
+func Send[T any](a *Api, method string, path string, body interface{}) (*T, error) {
+	client := http.DefaultClient
+	request, err := a.Request("POST", path, body)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := client.Do(request)
+	if err != nil {
+		return nil, err
+	}
+
+	result, err := processResponse[T](resp)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func processResponse[T any](resp *http.Response) (*T, error) {
+	defer resp.Body.Close()
+
+	if resp.StatusCode < 200 || 299 < resp.StatusCode {
+		response_body, _ := ioutil.ReadAll(resp.Body)
+		log.Println("Response body: ", string(response_body))
+		return nil, fmt.Errorf("Got status code %d from API", resp.StatusCode)
+	}
+
+	// read raw json body
+	response_body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	// parse the body
+	var response T
+	err = json.Unmarshal(response_body, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+}
+
+func unmarshal[T any](b []byte) (v T, err error) {
+	return v, json.Unmarshal(b, &v)
 }
