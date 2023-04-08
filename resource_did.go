@@ -1,16 +1,9 @@
 package main
 
 import (
-	"bytes"
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
 	"log"
-	"net/http"
-	"os"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-
 	_ "github.com/motemen/go-loghttp/global"
 )
 
@@ -70,6 +63,8 @@ func resourceDidCreate(d *schema.ResourceData, m interface{}) error {
 
 	// TODO: check if the did exists first
 
+	api := InitFromEnv()
+
 	// prepare the did body request
 	method := d.Get("method").(string)
 	options := DidRequestOptions{
@@ -81,46 +76,50 @@ func resourceDidCreate(d *schema.ResourceData, m interface{}) error {
 		Options: options,
 	}
 
-	req_body_json, err := json.Marshal(did_request)
+	did_response, err := api.PostDid(did_request)
 	if err != nil {
 		return err
 	}
 
-	// prep the request
-	base_url, err := getBaseUrl()
-	if err != nil {
-		return err
-	}
-	url := fmt.Sprintf("%s/core/v1/dids", base_url)
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(req_body_json))
-	if err != nil {
-		return err
-	}
-	req.Header.Set("Content-Type", "application/json")
-	access_token, err := getAccessToken()
-	if err != nil {
-		return err
-	}
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", access_token))
+	// success, process did
+	processDidData(d, did_response)
+	d.SetId(did_response.Did)
+	return nil
+}
 
-	// perform the request
-	client := http.DefaultClient
-	resp, err := client.Do(req)
+func resourceDidRead(d *schema.ResourceData, m interface{}) error {
+	// TODO: handle 404 - 404 means SetId("") i think
+	log.Println("Reading did")
+
+	api := InitFromEnv()
+
+	did := d.Id()
+	did_response, err := api.GetDid(did)
 	if err != nil {
 		return err
 	}
 
-	defer resp.Body.Close()
-
-	response, err := processDidResponse(resp)
-	if err != nil {
-		return err
-	}
-
-	processDidData(d, &response)
-	d.SetId(response.Did)
+	processDidData(d, did_response)
+	d.SetId(did)
 
 	return nil
+}
+
+func resourceDidDelete(d *schema.ResourceData, m interface{}) error {
+	log.Println("Reading did")
+
+	api := InitFromEnv()
+
+	did := d.Id()
+	err := api.DeleteDid(did)
+	if err != nil {
+		return err
+	}
+
+	d.SetId("")
+
+	return nil
+
 }
 
 func processDidData(d *schema.ResourceData, response *DidResponse) {
@@ -138,126 +137,4 @@ func processDidData(d *schema.ResourceData, response *DidResponse) {
 	}
 
 	d.Set("keys", keys)
-}
-
-func resourceDidRead(d *schema.ResourceData, m interface{}) error {
-	// TODO: handle 404 - 404 means SetId("") i think
-	log.Println("Reading did resource...")
-	var err error
-	did := d.Id()
-	log.Printf("Did is %s\n", did)
-	base_url, err := getBaseUrl()
-	if err != nil {
-		return err
-	}
-	url := fmt.Sprintf("%s/core/v1/dids/%s", base_url, did)
-
-	// formulate request
-	request, err := didRequest("GET", url, nil)
-
-	// perform the request
-	client := http.DefaultClient
-	resp, err := client.Do(request)
-	if err != nil {
-		return err
-	}
-
-	// consume the request
-	did_response, err := processDidResponse(resp)
-	if err != nil {
-		return err
-	}
-
-	processDidData(d, &did_response)
-	d.SetId(did)
-	return err
-}
-
-func resourceDidDelete(d *schema.ResourceData, m interface{}) error {
-	log.Println("Deleting did resource...")
-	var err error
-	did := d.Id()
-	base_url, err := getBaseUrl()
-	if err != nil {
-		return err
-	}
-	url := fmt.Sprintf("%s/core/v1/dids/%s", base_url, did)
-
-	// formulate request
-	request, err := didRequest("DELETE", url, nil)
-
-	// perform the request
-	client := http.DefaultClient
-	resp, err := client.Do(request)
-	if err != nil {
-		return err
-	}
-
-	if resp.StatusCode < 200 || 299 < resp.StatusCode {
-		return fmt.Errorf("Got status code %d from API", resp.StatusCode)
-	}
-
-	d.SetId("")
-	return err
-}
-
-func processDidResponse(resp *http.Response) (DidResponse, error) {
-	var response DidResponse
-
-	if resp.StatusCode < 200 || 299 < resp.StatusCode {
-		response_body, _ := ioutil.ReadAll(resp.Body)
-		log.Println("Response body: ", string(response_body))
-		return response, fmt.Errorf("Got status code %d from API", resp.StatusCode)
-	}
-
-	// read raw json body
-	response_body, err := ioutil.ReadAll(resp.Body)
-	log.Println("Response body: ", string(response_body))
-	if err != nil {
-		return response, err
-	}
-
-	// parse the body
-	err = json.Unmarshal(response_body, &response)
-	if err != nil {
-		return response, err
-	}
-
-	return response, nil
-}
-
-func didRequest(method string, url string, did_request *DidRequest) (*http.Request, error) {
-	var req *http.Request
-	access_token, err := getAccessToken()
-	if err != nil {
-		return req, nil
-	}
-
-	if did_request != nil {
-		req.Header.Set("Content-Type", "application/json")
-		req_body_json, err := json.Marshal(did_request)
-		if err != nil {
-			return req, err
-		}
-
-		req, err = http.NewRequest(method, url, bytes.NewBuffer(req_body_json))
-	} else {
-		req, err = http.NewRequest(method, url, nil)
-		req.Header.Set("Accept", "application/json")
-	}
-	if err != nil {
-		return req, err
-	}
-
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", access_token))
-	return req, err
-}
-
-func getBaseUrl() (string, error) {
-	var err error
-	base_url := os.Getenv(ENV_API_URL)
-	if len(base_url) == 0 {
-		err = fmt.Errorf("%s environment variable not set", ENV_API_URL)
-	}
-	return base_url, err
 }
