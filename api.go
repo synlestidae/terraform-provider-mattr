@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 )
 
 type Api struct {
@@ -15,6 +16,58 @@ type Api struct {
 	Audience     string
 	AuthUrl      string
 	ApiUrl       string
+}
+
+func (a *Api) Init() {
+	if len(a.AuthUrl) == 0 {
+		a.AuthUrl = "https://auth.mattr.global/oauth/token"
+	}
+	if len(a.Audience) == 0 {
+		a.Audience = "https://vii.mattr.global" // TODO it should work it out from auth_url
+	}
+}
+
+func InitFromEnv() Api {
+	clientId := os.Getenv(ENV_CLIENT_ID)
+	clientSecret := os.Getenv(ENV_CLIENT_SECRET)
+	authUrl := os.Getenv(ENV_AUTH_URL)
+	audience := os.Getenv(ENV_AUTH_AUDIENCE)
+	apiUrl := os.Getenv(ENV_API_URL)
+
+	return Api{
+		ClientId:     clientId,
+		ClientSecret: clientSecret,
+		AuthUrl:      authUrl,
+		Audience:     audience,
+		ApiUrl:       apiUrl,
+	}
+}
+
+type DidRequest struct {
+	Method  string            `json:"method"`
+	Options DidRequestOptions `json:"options,omitempty"`
+}
+
+type DidRequestOptions struct {
+	KeyType string `json:"keyType,omitempty"`
+	Url     string `json:"url,omitempty"`
+}
+
+type DidResponse struct {
+	Did                string        `json:"did,omitempty"` // Not available on GET
+	RegistrationStatus string        `json:"registrationStatus"`
+	LocalMetadata      LocalMetadata `json:"localMetadata"`
+}
+
+type LocalMetadata struct {
+	Keys          []KeyMetadata   `json:"keys"`
+	Registered    int64           `json:"registered"`
+	InitialDidDoc json.RawMessage `json:"initialDidDocument"`
+}
+
+type KeyMetadata struct {
+	DidDocumentKeyId string `json:"didDocumentKeyId"`
+	KmsKeyId         string `json:"kmsKeyId"`
 }
 
 type WebhookRequest struct {
@@ -304,7 +357,8 @@ func (a *Api) GetAccessToken() (string, error) {
 }
 
 func (a *Api) Request(method string, resource string, body interface{}) (*http.Request, error) {
-	url := fmt.Sprintf("%s%s", a.BaseUrl(), resource) // TODO remove trailing backslashes
+	url := fmt.Sprintf("%s%s", a.ApiUrl, resource) // TODO remove trailing backslashes
+
 	var req *http.Request
 	access_token, err := a.GetAccessToken()
 	if err != nil {
@@ -331,9 +385,17 @@ func (a *Api) Request(method string, resource string, body interface{}) (*http.R
 	return req, err
 }
 
-func (a *Api) BaseUrl() string {
-	return ""
-}
+/*func (a *Api) BaseUrl() (string, error) {
+	if len(a.ApiUrl) > 0 {
+		return a.ApiUrl
+	}
+	var err error
+	base_url := os.Getenv(ENV_API_URL)
+	if len(base_url) == 0 {
+		err = fmt.Errorf("%s environment variable not set", ENV_API_URL)
+	}
+	return base_url, err
+}*/
 
 func Get[T any](a *Api, path string) (*T, error) {
 	client := http.DefaultClient

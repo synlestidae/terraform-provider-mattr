@@ -4,41 +4,15 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+
+	_ "github.com/motemen/go-loghttp/global"
 )
-
-import _ "github.com/motemen/go-loghttp/global"
-
-type DidRequest struct {
-	Method  string            `json:"method"`
-	Options DidRequestOptions `json:"options,omitempty"`
-}
-
-type DidRequestOptions struct {
-	KeyType string `json:"keyType,omitempty"`
-	Url     string `json:"url,omitempty"`
-}
-
-type DidResponse struct {
-	Did                string        `json:"did"` // TODO not available on GET
-	RegistrationStatus string        `json:"registrationStatus"`
-	LocalMetadata      LocalMetadata `json:"localMetadata"`
-}
-
-type LocalMetadata struct {
-	Keys          []KeyMetadata   `json:"keys"`
-	Registered    int64           `json:"registered"`
-	InitialDidDoc json.RawMessage `json:"initialDidDocument"`
-}
-
-type KeyMetadata struct {
-	DidDocumentKeyId string `json:"didDocumentKeyId"`
-	KmsKeyId         string `json:"kmsKeyId"`
-}
 
 func resourceDid() *schema.Resource {
 	return &schema.Resource{
