@@ -20,12 +20,16 @@ func resourceWebhook() *schema.Resource {
 					Type:     schema.TypeString,
 					Optional: true,
 				},
+				Description: "Types of events we will look out for and send to the webhook",
 			},
-			"url": schema.Schema{
-				Type: schema.TypeString,
+			"url": &schema.Schema{
+				Type:        schema.TypeString,
+				Description: "URL of the webhook, to which event payloads are delivered",
 			},
-			"disabled": schema.Schema{
-				Type: schema.TypeString,
+			"disabled": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "If true, the webhook is disabled.",
 			},
 		},
 	}
@@ -33,23 +37,12 @@ func resourceWebhook() *schema.Resource {
 
 func resourceWebhookCreate(d *schema.ResourceData, m interface{}) error {
 	api := InitFromEnv()
-
-	webhook_request := WebhookRequest{
-		events:   d.Get("events").([]string),
-		url:      d.Get("url").(string),
-		disabled: d.Get("disabled").(bool),
-	}
-
+	webhook_request := fromTerraform(d)
 	webhook_response, err := api.PostWebhook(&webhook_request)
 	if err != nil {
 		return err
 	}
-
-	d.SetId(webhook_response.Id)
-	d.Set("url", webhook_response.Id)
-	d.Set("events", webhook_response.events)
-	d.Set("disabled", webhook_response.Disabled)
-
+	processWebhookData(webhook_response, d)
 	return nil
 }
 
@@ -65,17 +58,17 @@ func resourceWebhookDelete(d *schema.ResourceData, m interface{}) error {
 	return fmt.Errorf("Not quite implemented")
 }
 
-func toTerraform(webhook_response *WebhookResponse, d *schema.ResourceData) {
+func processWebhookData(webhook_response *WebhookResponse, d *schema.ResourceData) {
 	d.SetId(webhook_response.Id)
 	d.Set("url", webhook_response.Id)
-	d.Set("events", webhook_response.events)
+	d.Set("events", webhook_response.Events)
 	d.Set("disabled", webhook_response.Disabled)
 }
 
 func fromTerraform(d *schema.ResourceData) WebhookRequest {
 	return WebhookRequest{
-		events:   d.Get("events").([]string),
-		url:      d.Get("url").(string),
-		disabled: d.Get("disabled").(bool),
+		Events:   d.Get("events").([]string),
+		Url:      d.Get("url").(string),
+		Disabled: d.Get("disabled").(bool),
 	}
 }

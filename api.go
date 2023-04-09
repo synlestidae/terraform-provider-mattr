@@ -80,7 +80,7 @@ type WebhookResponse struct {
 	Id       string   `json:"id"`
 	Events   []string `json:"events"`
 	Url      string
-	disabled bool
+	Disabled bool
 }
 
 type WebhookListResponse struct {
