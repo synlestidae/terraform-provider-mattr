@@ -88,7 +88,6 @@ func resourceDidCreate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceDidRead(d *schema.ResourceData, m interface{}) error {
-	// TODO: handle 404 - 404 means SetId("") i think
 	log.Println("Reading did")
 
 	api := InitFromEnv()
