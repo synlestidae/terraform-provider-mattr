@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	_ "github.com/motemen/go-loghttp/global"
 )
@@ -17,17 +15,18 @@ func resourceWebhook() *schema.Resource {
 			"events": &schema.Schema{
 				Type: schema.TypeList,
 				Elem: &schema.Schema{
-					Type:     schema.TypeString,
-					Optional: true,
+					Type: schema.TypeString,
 				},
 				Description: "Types of events we will look out for and send to the webhook",
+				Required:    true,
 			},
 			"url": &schema.Schema{
 				Type:        schema.TypeString,
 				Description: "URL of the webhook, to which event payloads are delivered",
+				Required:    true,
 			},
 			"disabled": &schema.Schema{
-				Type:        schema.TypeString,
+				Type:        schema.TypeBool,
 				Optional:    true,
 				Description: "If true, the webhook is disabled.",
 			},
@@ -47,27 +46,56 @@ func resourceWebhookCreate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceWebhookRead(d *schema.ResourceData, m interface{}) error {
-	return fmt.Errorf("Not quite implemented")
+	api := InitFromEnv()
+	id := d.Id()
+	webhook, err := api.GetWebhook(id)
+	if err != nil {
+		return err
+	}
+	processWebhookData(webhook, d)
+
+	return nil
 }
 
 func resourceWebhookUpdate(d *schema.ResourceData, m interface{}) error {
-	return fmt.Errorf("Not quite implemented")
+	api := InitFromEnv()
+	id := d.Id()
+	webhook_request := fromTerraform(d)
+	webhook, err := api.PutWebhook(id, &webhook_request)
+	if err != nil {
+		return err
+	}
+	processWebhookData(webhook, d)
+	return nil
 }
 
 func resourceWebhookDelete(d *schema.ResourceData, m interface{}) error {
-	return fmt.Errorf("Not quite implemented")
+	api := InitFromEnv()
+	id := d.Id()
+	err := api.DeleteWebhook(id)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func processWebhookData(webhook_response *WebhookResponse, d *schema.ResourceData) {
 	d.SetId(webhook_response.Id)
-	d.Set("url", webhook_response.Id)
+	d.Set("url", webhook_response.Url)
 	d.Set("events", webhook_response.Events)
 	d.Set("disabled", webhook_response.Disabled)
 }
 
 func fromTerraform(d *schema.ResourceData) WebhookRequest {
+	event_list := d.Get("events").([]interface{})
+	events := make([]string, len(event_list), len(event_list))
+
+	for i, event := range event_list {
+		events[i] = event.(string)
+	}
+
 	return WebhookRequest{
-		Events:   d.Get("events").([]string),
+		Events:   events,
 		Url:      d.Get("url").(string),
 		Disabled: d.Get("disabled").(bool),
 	}

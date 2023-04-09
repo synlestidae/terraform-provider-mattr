@@ -72,15 +72,15 @@ type KeyMetadata struct {
 
 type WebhookRequest struct {
 	Events   []string `json:"events"`
-	Url      string
-	Disabled bool
+	Url      string   `json:"url"`
+	Disabled bool     `json:"disabled,omitempty"`
 }
 
 type WebhookResponse struct {
 	Id       string   `json:"id"`
 	Events   []string `json:"events"`
-	Url      string
-	Disabled bool
+	Url      string   `json:"url"`
+	Disabled bool     `json:"disabled,omitempty"`
 }
 
 type WebhookListResponse struct {
@@ -208,7 +208,7 @@ func (a *Api) GetDid(id string) (*DidResponse, error) {
 }
 
 func (a *Api) DeleteDid(id string) error {
-	return Delete[DidResponse](a, "/core/v1/dids")
+	return Delete[DidResponse](a, fmt.Sprintf("/core/v1/dids/%s", id))
 }
 
 // Webhooks
@@ -225,8 +225,8 @@ func (a *Api) GetWebhooks() (*WebhookListResponse, error) {
 	return Get[WebhookListResponse](a, "/core/v1/webhooks")
 }
 
-func (a *Api) PutWebhook(webhook *WebhookResponse) (*WebhookResponse, error) {
-	return Put[WebhookResponse](a, fmt.Sprintf("/core/v1/webhooks/%s", webhook.Id), webhook)
+func (a *Api) PutWebhook(id string, webhook *WebhookRequest) (*WebhookResponse, error) {
+	return Put[WebhookResponse](a, fmt.Sprintf("/core/v1/webhooks/%s", id), webhook)
 }
 
 func (a *Api) DeleteWebhook(id string) error {
@@ -302,12 +302,12 @@ func (a *Api) DeleteVerifier(id string) error {
 }
 
 func (a *Api) GetUrl(path string) (string, error) {
-	return "", fmt.Errorf("Not quite implemented yet")
+	return fmt.Sprintf("%s%s", a.ApiUrl, path), nil
 }
 
 func (a *Api) GetAccessToken() (string, error) {
-	var auth_url string
-	if len(a.AuthUrl) == 0 {
+	auth_url := a.AuthUrl
+	if len(auth_url) == 0 {
 		auth_url = "https://auth.mattr.global/oauth/token"
 	}
 	audience := a.Audience
@@ -356,50 +356,48 @@ func (a *Api) GetAccessToken() (string, error) {
 	return response.AccessToken, nil
 }
 
-func (a *Api) Request(method string, resource string, body interface{}) (*http.Request, error) {
-	url := fmt.Sprintf("%s%s", a.ApiUrl, resource) // TODO remove trailing backslashes
+func (a *Api) Request(method string, url string, body interface{}) (*http.Request, error) {
+	log.Printf("Preparing %s request to %s", method, url)
+	log.Println(body)
 
-	var req *http.Request
-	access_token, err := a.GetAccessToken()
+	req, err := http.NewRequest(method, url, nil)
 	if err != nil {
-		return req, nil
+		return nil, err
 	}
 
 	if body != nil {
-		req.Header.Set("Content-Type", "application/json")
+		log.Printf("Will upload JSON to %s", url)
 		req_body_json, err := json.Marshal(body)
+		log.Printf("JSON: %s", string(req_body_json))
 		if err != nil {
-			return req, err
+			return nil, err
 		}
-
-		req, err = http.NewRequest(method, url, bytes.NewBuffer(req_body_json))
-	} else {
-		req, err = http.NewRequest(method, url, nil)
-		req.Header.Set("Accept", "application/json")
+		req_body := bytes.NewBuffer(req_body_json)
+		req, err = http.NewRequest(method, url, req_body)
+		if err != nil {
+			return nil, err
+		}
+		req.Header.Set("Content-Type", "application/json")
 	}
+
+	req.Header.Set("Accept", "application/json")
+
+	log.Printf("Getting access token")
+
+	access_token, err := a.GetAccessToken()
 	if err != nil {
-		return req, err
+		return nil, err
 	}
-
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", access_token))
 	return req, err
 }
 
-/*func (a *Api) BaseUrl() (string, error) {
-	if len(a.ApiUrl) > 0 {
-		return a.ApiUrl
-	}
-	var err error
-	base_url := os.Getenv(ENV_API_URL)
-	if len(base_url) == 0 {
-		err = fmt.Errorf("%s environment variable not set", ENV_API_URL)
-	}
-	return base_url, err
-}*/
-
 func Get[T any](a *Api, path string) (*T, error) {
+	url, _ := a.GetUrl(path) // TODO error handling
+	log.Printf("GET from %s", url)
 	client := http.DefaultClient
-	request, err := a.Request("GET", path, nil)
+	request, err := a.Request("GET", url, nil)
+	fmt.Printf("Reqqo %s", request.URL)
 	if err != nil {
 		return nil, err
 	}
@@ -425,8 +423,10 @@ func Put[T any](a *Api, path string, body interface{}) (*T, error) {
 }
 
 func Delete[T any](a *Api, path string) error {
+	url, _ := a.GetUrl(path) // TODO error handling
+	log.Printf("DELETE %s", url)
 	client := http.DefaultClient
-	request, err := a.Request("DELETE", path, nil)
+	request, err := a.Request("DELETE", url, nil)
 	if err != nil {
 		return err
 	}
@@ -443,11 +443,14 @@ func Delete[T any](a *Api, path string) error {
 }
 
 func Send[T any](a *Api, method string, path string, body interface{}) (*T, error) {
+	url, _ := a.GetUrl(path) // TODO error handling
+	log.Printf("%s to %s", method, url)
 	client := http.DefaultClient
-	request, err := a.Request("POST", path, body)
+	request, err := a.Request(method, url, body)
 	if err != nil {
 		return nil, err
 	}
+	log.Printf("Doing request")
 	resp, err := client.Do(request)
 	if err != nil {
 		return nil, err
