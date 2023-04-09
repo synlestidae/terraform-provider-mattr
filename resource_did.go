@@ -86,7 +86,6 @@ func resourceDidCreate(d *schema.ResourceData, m interface{}) error {
 	d.SetId(did_response.Did)
 	return nil
 }
-
 func resourceDidRead(d *schema.ResourceData, m interface{}) error {
 	log.Println("Reading did")
 

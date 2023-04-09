@@ -73,7 +73,7 @@ type KeyMetadata struct {
 type WebhookRequest struct {
 	Events   []string `json:"events"`
 	Url      string
-	disabled bool
+	Disabled bool
 }
 
 type WebhookResponse struct {
