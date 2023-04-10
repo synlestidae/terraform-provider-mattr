@@ -29,22 +29,6 @@ func (a *Api) Init() {
 	}
 }
 
-/*func InitFromConfig() Api {
-	clientId := os.Getenv(ENV_CLIENT_ID)
-	clientSecret := os.Getenv(ENV_CLIENT_SECRET)
-	authUrl := os.Getenv(ENV_AUTH_URL)
-	audience := os.Getenv(ENV_AUTH_AUDIENCE)
-	apiUrl := os.Getenv(ENV_API_URL)
-
-	return Api{
-		ClientId:     clientId,
-		ClientSecret: clientSecret,
-		AuthUrl:      authUrl,
-		Audience:     audience,
-		ApiUrl:       apiUrl,
-	}
-}*/
-
 type DidRequest struct {
 	Method  string            `json:"method"`
 	Options DidRequestOptions `json:"options,omitempty"`
@@ -349,6 +333,9 @@ func (a *Api) GetAccessToken() (string, error) {
 
 	client := http.DefaultClient
 	resp, err := client.Do(req)
+	if resp.StatusCode < 200 || 299 < resp.StatusCode {
+		return "", fmt.Errorf("Invalid status code while retrieving token: %d", resp.StatusCode)
+	}
 	if err != nil {
 		return "", err
 	}
