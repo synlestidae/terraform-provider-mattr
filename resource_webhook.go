@@ -35,7 +35,7 @@ func resourceWebhook() *schema.Resource {
 }
 
 func resourceWebhookCreate(d *schema.ResourceData, m interface{}) error {
-	api := InitFromEnv()
+	api := m.(ProviderConfig).Api
 	webhook_request := fromTerraform(d)
 	webhook_response, err := api.PostWebhook(&webhook_request)
 	if err != nil {
@@ -46,7 +46,7 @@ func resourceWebhookCreate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceWebhookRead(d *schema.ResourceData, m interface{}) error {
-	api := InitFromEnv()
+	api := m.(ProviderConfig).Api
 	id := d.Id()
 	webhook, err := api.GetWebhook(id)
 	if err != nil {
@@ -58,7 +58,7 @@ func resourceWebhookRead(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceWebhookUpdate(d *schema.ResourceData, m interface{}) error {
-	api := InitFromEnv()
+	api := m.(ProviderConfig).Api
 	id := d.Id()
 	webhook_request := fromTerraform(d)
 	webhook, err := api.PutWebhook(id, &webhook_request)
@@ -70,7 +70,7 @@ func resourceWebhookUpdate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceWebhookDelete(d *schema.ResourceData, m interface{}) error {
-	api := InitFromEnv()
+	api := m.(ProviderConfig).Api
 	id := d.Id()
 	err := api.DeleteWebhook(id)
 	if err != nil {

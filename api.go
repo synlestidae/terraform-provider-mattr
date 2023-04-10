@@ -7,15 +7,17 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
+	"time"
 )
 
 type Api struct {
-	ClientId     string
-	ClientSecret string
-	Audience     string
-	AuthUrl      string
-	ApiUrl       string
+	ClientId             string
+	ClientSecret         string
+	Audience             string
+	AuthUrl              string
+	ApiUrl               string
+	AccessToken          string
+	AccessTokenExpiresAt int64
 }
 
 func (a *Api) Init() {
@@ -27,7 +29,7 @@ func (a *Api) Init() {
 	}
 }
 
-func InitFromEnv() Api {
+/*func InitFromConfig() Api {
 	clientId := os.Getenv(ENV_CLIENT_ID)
 	clientSecret := os.Getenv(ENV_CLIENT_SECRET)
 	authUrl := os.Getenv(ENV_AUTH_URL)
@@ -41,7 +43,7 @@ func InitFromEnv() Api {
 		Audience:     audience,
 		ApiUrl:       apiUrl,
 	}
-}
+}*/
 
 type DidRequest struct {
 	Method  string            `json:"method"`
@@ -306,6 +308,17 @@ func (a *Api) GetUrl(path string) (string, error) {
 }
 
 func (a *Api) GetAccessToken() (string, error) {
+	timeStarted := time.Now().Unix()
+
+	var expireTolerance int64 = 15 // get a new token 15 seconds before it expires
+
+	if len(a.AccessToken) != 0 && a.AccessTokenExpiresAt+expireTolerance < time.Now().Unix() {
+		log.Printf("Using cached access token")
+		return a.AccessToken, nil
+	}
+
+	log.Printf("Getting new access token")
+
 	auth_url := a.AuthUrl
 	if len(auth_url) == 0 {
 		auth_url = "https://auth.mattr.global/oauth/token"
@@ -353,6 +366,10 @@ func (a *Api) GetAccessToken() (string, error) {
 		return "", err
 	}
 
+	timeElapsed := time.Now().Unix() - timeStarted
+	a.AccessToken = response.AccessToken
+	a.AccessTokenExpiresAt = time.Now().Unix() + int64(response.ExpiresIn) - timeElapsed
+
 	return response.AccessToken, nil
 }
 
@@ -397,7 +414,6 @@ func Get[T any](a *Api, path string) (*T, error) {
 	log.Printf("GET from %s", url)
 	client := http.DefaultClient
 	request, err := a.Request("GET", url, nil)
-	fmt.Printf("Reqqo %s", request.URL)
 	if err != nil {
 		return nil, err
 	}
