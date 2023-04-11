@@ -74,15 +74,15 @@ type WebhookListResponse struct {
 }
 
 type IssuerCredential struct {
-	IssuerDid          string               `json:"issuerDid"`
-	IssuerLogoUrl      string               `json:"issuerLogoUrl"`
-	IssuerIconUrl      string               `json:"issuerIconUrl"`
-	Name               string               `json:"name"`
-	Description        string               `json:"description"`
-	Context            []string             `json:"string"`
-	Type               string               `json:"string"`
-	CredentialBranding []CredentialBranding `json:"credentialBranding"`
-	FederatedProvider  FederatedProvider    `json:"federatedProvider"`
+	IssuerDid          string             `json:"issuerDid"`
+	IssuerLogoUrl      string             `json:"issuerLogoUrl"`
+	IssuerIconUrl      string             `json:"issuerIconUrl"`
+	Name               string             `json:"name"`
+	Description        string             `json:"description"`
+	Context            []string           `json:"string"`
+	Type               string             `json:"string"`
+	CredentialBranding CredentialBranding `json:"credentialBranding"`
+	FederatedProvider  FederatedProvider  `json:"federatedProvider"`
 }
 
 type FederatedProvider struct {
@@ -318,6 +318,7 @@ func (a *Api) GetAccessToken() (string, error) {
 		Audience:     audience,
 		GrantType:    "client_credentials",
 	}
+	log.Println(req_body)
 	req_body_json, err := json.Marshal(req_body)
 
 	if err != nil {

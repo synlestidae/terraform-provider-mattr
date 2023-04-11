@@ -4,7 +4,6 @@ import (
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	_ "github.com/motemen/go-loghttp/global"
 )
 
 func resourceDid() *schema.Resource {
