@@ -38,6 +38,7 @@ func Provider() *schema.Provider {
 		ResourcesMap: map[string]*schema.Resource{
 			"mattr_did":     resourceDid(),
 			"mattr_webhook": resourceWebhook(),
+			"mattr_issuer":  resourceIssuer(),
 		},
 		ConfigureFunc: ProviderConfigure,
 	}

@@ -225,23 +225,23 @@ func (a *Api) GetWellKnown() (*WellKnownResponse, error) {
 }
 
 // OIDC Issuers
-func (a *Api) PostIssuer() (*IssuerResponse, error) {
-	return nil, fmt.Errorf("Not quite implemented yet")
+func (a *Api) PostIssuer(issuer *IssuerRequest) (*IssuerResponse, error) {
+	return Post[IssuerResponse](a, "/ext/oidc/v1/issuers", issuer)
 }
 
-func (a *Api) GetIssuer() (*IssuerResponse, error) {
-	return nil, fmt.Errorf("Not quite implemented yet")
+func (a *Api) GetIssuer(id string) (*IssuerResponse, error) {
+	return Get[IssuerResponse](a, fmt.Sprintf("/ext/oidc/v1/issuers/%s", id))
 }
 
 func (a *Api) GetIssuers() (*IssuerListResponse, error) {
-	return nil, fmt.Errorf("Not quite implemented yet")
+	return Get[IssuerListResponse](a, fmt.Sprintf("/ext/oidc/v1/issuers"))
 }
 
-func (a *Api) PutIssuer() (*IssuerResponse, error) {
-	return nil, fmt.Errorf("Not quite implemented yet")
+func (a *Api) PutIssuer(id string, issuer *IssuerRequest) (*IssuerResponse, error) {
+	return Post[IssuerResponse](a, fmt.Sprintf("/ext/oidc/v1/issuers/%s", id), issuer)
 }
 
-func (a *Api) DeleteIssuer() error {
+func (a *Api) DeleteIssuer(id string) error {
 	return fmt.Errorf("Not quite implemented yet")
 }
 

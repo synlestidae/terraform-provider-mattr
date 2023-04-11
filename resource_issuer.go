@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
@@ -123,19 +124,47 @@ func resourceIssuer() *schema.Resource {
 }
 
 func resourceIssuerCreate(d *schema.ResourceData, m interface{}) error {
+	log.Println("Creating issuer")
+	api := m.(ProviderConfig).Api
+	issuer_request := fromTerraformIssuer(d)
+	issuer_response, err := api.PostIssuer(&issuer_request)
+	if err != nil {
+		return err
+	}
+	processIssuerData(issuer_response, d)
 	return nil
 }
 
 func resourceIssuerRead(d *schema.ResourceData, m interface{}) error {
+	log.Println("Getting issuer")
+	issuer_id := d.Id()
+	api := m.(ProviderConfig).Api
+	issuer_response, err := api.GetIssuer(issuer_id)
+	if err != nil {
+		return err
+	}
+	processIssuerData(issuer_response, d)
 	return nil
 }
 
 func resourceIssuerUpdate(d *schema.ResourceData, m interface{}) error {
+	log.Println("Updating issuer %s", d.Id())
+	issuer_id := d.Id()
+	api := m.(ProviderConfig).Api
+	issuer_request := fromTerraformIssuer(d)
+	issuer_response, err := api.PutIssuer(issuer_id, &issuer_request)
+	if err != nil {
+		return err
+	}
+	processIssuerData(issuer_response, d)
 	return nil
 }
 
 func resourceIssuerDelete(d *schema.ResourceData, m interface{}) error {
-	return nil
+	log.Println("Deleting issuer %s", d.Id())
+	issuer_id := d.Id()
+	api := m.(ProviderConfig).Api
+	return api.DeleteIssuer(issuer_id)
 }
 
 func processIssuerData(issuerResponse *IssuerResponse, d *schema.ResourceData) error {
@@ -222,13 +251,30 @@ func fromTerraformIssuer(d *schema.ResourceData) IssuerRequest {
 }
 
 func flattenCredentialBranding(credentialBranding *CredentialBranding) map[string]string {
-	panic("Not implemented")
+	branding := make(map[string]string, 2)
+	branding["background_color"] = credentialBranding.BackgroundColor
+	branding["watermark_image_url"] = credentialBranding.WatermarkImageUrl
+	return branding
 }
 
-func flattenFederatedProvider(federatedProvider *FederatedProvider) map[string]string {
-	panic("Not implemented")
+func flattenFederatedProvider(federatedProvider *FederatedProvider) map[string]interface{} {
+	fpProvider := make(map[string]interface{}, 6)
+	fpProvider["url"] = federatedProvider.Url
+	fpProvider["scope"] = federatedProvider.Scope
+	fpProvider["client_id"] = federatedProvider.ClientId
+	fpProvider["client_secret"] = federatedProvider.ClientSecret
+	fpProvider["token_endpoint_auth_method"] = federatedProvider.TokenEndpointAuthMethod
+	fpProvider["claims_source"] = federatedProvider.ClaimsSource
+	return fpProvider
 }
 
 func flattenClaimMappings(claimMappings []ClaimMapping) []map[string]string {
-	panic("Not implemented")
+	mappings := make([]map[string]string, len(claimMappings))
+	for i, mapping := range claimMappings {
+		mappings[i] = map[string]string{
+			"json_ld_term": mapping.JsonLdTerm,
+			"oidc_claim":   mapping.OidcClaim,
+		}
+	}
+	return mappings
 }
