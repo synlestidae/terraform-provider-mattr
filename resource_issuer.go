@@ -98,6 +98,7 @@ func resourceIssuer() *schema.Resource {
 			"static_request_parameters": &schema.Schema{
 				Type:     schema.TypeMap,
 				Optional: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 			"forwarded_request_parameters": &schema.Schema{
 				Type:     schema.TypeList,
@@ -200,7 +201,22 @@ func processIssuerData(issuerResponse *IssuerResponse, d *schema.ResourceData) e
 	if err := d.Set("claim_mappings", flattenClaimMappings(issuerResponse.ClaimMappings)); err != nil {
 		return fmt.Errorf("error setting 'claim_mappings' field: %s", err)
 	}
-	if err := d.Set("static_request_parameters", &issuerResponse.StaticRequestParameters); err != nil {
+	static_request_parameters := issuerResponse.StaticRequestParameters
+	converted_params := make(map[string]string, len(static_request_parameters))
+	for k, v := range static_request_parameters {
+		switch v.(type) {
+		case int:
+			converted_params[k] = strconv.Itoa(v.(int))
+		case bool:
+			converted_params[k] = strconv.FormatBool(v.(bool))
+		case float32, float64:
+			converted_params[k] = fmt.Sprintf("%f", v)
+		default:
+			converted_params[k] = fmt.Sprintf("%v", v)
+		}
+	}
+
+	if err := d.Set("static_request_parameters", &converted_params); err != nil {
 		return fmt.Errorf("error setting 'static_request_parameters' field: %s", err)
 	}
 	if err := d.Set("forwarded_request_parameters", &issuerResponse.ForwardedRequestParameters); err != nil {
@@ -210,6 +226,8 @@ func processIssuerData(issuerResponse *IssuerResponse, d *schema.ResourceData) e
 }
 
 func fromTerraformIssuer(d *schema.ResourceData) IssuerRequest {
+	log.Println("Preparing issuer data")
+
 	cred := IssuerCredential{
 		IssuerDid:     castToString(d.Get("issuer_did")),
 		IssuerLogoUrl: castToString(d.Get("issuer_logo_url")),
@@ -251,6 +269,8 @@ func fromTerraformIssuer(d *schema.ResourceData) IssuerRequest {
 			staticRequestParameters["max_age"] = max_age_int
 		}
 	}
+
+	log.Println("Prepared issuer data")
 
 	return IssuerRequest{
 		Credential:                 &cred,

@@ -1,6 +1,6 @@
 resource "mattr_did" "did" {
   method = "web"
-  url    = "antunovic.nz"
+  url    = "www.antunovic.nz"
 }
 
 resource "mattr_webhook" "issue_webhook" {
@@ -31,7 +31,7 @@ resource "mattr_issuer" "antunovic_issuer" {
   }
   static_request_parameters = {
     prompt  = "login"
-    max_age = 10000
+    // max_age = "10000"
   }
   forwarded_request_parameters = ["login_hint"]
 
