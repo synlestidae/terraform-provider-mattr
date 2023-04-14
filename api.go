@@ -74,24 +74,24 @@ type WebhookListResponse struct {
 }
 
 type IssuerCredential struct {
-	IssuerDid          string             `json:"issuerDid"`
-	IssuerLogoUrl      string             `json:"issuerLogoUrl"`
-	IssuerIconUrl      string             `json:"issuerIconUrl"`
-	Name               string             `json:"name"`
-	Description        string             `json:"description"`
-	Context            []string           `json:"string"`
-	Type               string             `json:"string"`
-	CredentialBranding CredentialBranding `json:"credentialBranding"`
-	FederatedProvider  FederatedProvider  `json:"federatedProvider"`
+	IssuerDid          string              `json:"issuerDid,omitempty"`
+	IssuerLogoUrl      string              `json:"issuerLogoUrl,omitempty"`
+	IssuerIconUrl      string              `json:"issuerIconUrl,omitempty"`
+	Name               string              `json:"name,omitempty"`
+	Description        string              `json:"description,omitempty"`
+	Context            []string            `json:"context,omitempty"`
+	Type               []string            `json:"type,omitempty"`
+	CredentialBranding *CredentialBranding `json:"credentialBranding,omitempty"`
+	FederatedProvider  *FederatedProvider  `json:"federatedProvider,omitempty"`
 }
 
 type FederatedProvider struct {
-	Url                     string
+	Url                     string   `json:"url,omitempty"`
 	Scope                   []string `json:"scope"`
-	ClientId                string   `json:"clientId"`
-	ClientSecret            string   `json:"clientSecret"`
-	TokenEndpointAuthMethod string   `json:"tokenEndpointAuthMethod"`
-	ClaimsSource            string   `json:"claimsSource"`
+	ClientId                string   `json:"clientId,omitempty"`
+	ClientSecret            string   `json:"clientSecret,omitempty"`
+	TokenEndpointAuthMethod string   `json:"tokenEndpointAuthMethod,omitempty"`
+	ClaimsSource            string   `json:"claimsSource,omitempty"`
 }
 
 type ClaimMapping struct {
@@ -100,25 +100,25 @@ type ClaimMapping struct {
 }
 
 type CredentialBranding struct {
-	BackgroundColor   string `json:"backgroundColor"`
-	WatermarkImageUrl string `json:"watermarkImageUrl"`
+	BackgroundColor   string `json:"backgroundColor,omitempty"`
+	WatermarkImageUrl string `json:"watermarkImageUrl,omitempty"`
 }
 
 type IssuerRequest struct {
-	Credential                 IssuerCredential  `json:"credential"`
-	FederatedProvider          FederatedProvider `json:"federatedProvider"`
-	StaticRequestParameters    map[string]any    `json:"staticRequestParameters"`
-	ForwardedRequestParameters []string          `json:"forwardedRequestParameters"`
-	ClaimMappings              []ClaimMapping    `json:"claimMappings"`
+	Credential                 *IssuerCredential  `json:"credential,omitempty"`
+	FederatedProvider          *FederatedProvider `json:"federatedProvider,omitempty"`
+	StaticRequestParameters    map[string]any     `json:"staticRequestParameters,omitempty"`
+	ForwardedRequestParameters []string           `json:"forwardedRequestParameters"`
+	ClaimMappings              []ClaimMapping     `json:"claimMappings"`
 }
 
 type IssuerResponse struct {
-	Id                         string            `json:"id"`
-	Credential                 IssuerCredential  `json:"credential"`
-	FederatedProvider          FederatedProvider `json:"federatedProvider"`
-	StaticRequestParameters    map[string]any    `json:"staticRequestParameters"`
-	ForwardedRequestParameters []string          `json:"forwardedRequestParameters"`
-	ClaimMappings              []ClaimMapping    `json:"claimMappings"`
+	Id                         string             `json:"id"`
+	Credential                 *IssuerCredential  `json:"credential"`
+	FederatedProvider          *FederatedProvider `json:"federatedProvider"`
+	StaticRequestParameters    map[string]any     `json:"staticRequestParameters"`
+	ForwardedRequestParameters []string           `json:"forwardedRequestParameters"`
+	ClaimMappings              []ClaimMapping     `json:"claimMappings"`
 }
 
 type IssuerListResponse struct {
@@ -358,12 +358,13 @@ func (a *Api) GetAccessToken() (string, error) {
 	a.AccessToken = response.AccessToken
 	a.AccessTokenExpiresAt = time.Now().Unix() + int64(response.ExpiresIn) - timeElapsed
 
+	log.Println("Access token is %s", a.AccessToken)
+
 	return response.AccessToken, nil
 }
 
 func (a *Api) Request(method string, url string, body interface{}) (*http.Request, error) {
 	log.Printf("Preparing %s request to %s", method, url)
-	log.Println(body)
 
 	req, err := http.NewRequest(method, url, nil)
 	if err != nil {

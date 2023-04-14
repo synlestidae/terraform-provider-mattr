@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"log"
+	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
@@ -45,7 +47,7 @@ func resourceIssuer() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 			"credential_branding": &schema.Schema{
-				Type:     schema.TypeList,
+				Type:     schema.TypeMap,
 				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -61,8 +63,8 @@ func resourceIssuer() *schema.Resource {
 				},
 			},
 			"federated_provider": &schema.Schema{
-				Type:     schema.TypeList,
-				Required: true,
+				Type:     schema.TypeMap,
+				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"url": &schema.Schema{
@@ -96,7 +98,6 @@ func resourceIssuer() *schema.Resource {
 			"static_request_parameters": &schema.Schema{
 				Type:     schema.TypeMap,
 				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 			"forwarded_request_parameters": &schema.Schema{
 				Type:     schema.TypeList,
@@ -190,10 +191,10 @@ func processIssuerData(issuerResponse *IssuerResponse, d *schema.ResourceData) e
 	if err := d.Set("type", issuerResponse.Credential.Type); err != nil {
 		return fmt.Errorf("error setting 'type' field: %s", err)
 	}
-	if err := d.Set("credential_branding", flattenCredentialBranding(&issuerResponse.Credential.CredentialBranding)); err != nil {
+	if err := d.Set("credential_branding", flattenCredentialBranding(issuerResponse.Credential.CredentialBranding)); err != nil {
 		return fmt.Errorf("error setting 'credential_branding' field: %s", err)
 	}
-	if err := d.Set("federated_provider", flattenFederatedProvider(&issuerResponse.FederatedProvider)); err != nil {
+	if err := d.Set("federated_provider", flattenFederatedProvider(issuerResponse.FederatedProvider)); err != nil {
 		return fmt.Errorf("error setting 'federated_provider' field: %s", err)
 	}
 	if err := d.Set("claim_mappings", flattenClaimMappings(issuerResponse.ClaimMappings)); err != nil {
@@ -210,26 +211,28 @@ func processIssuerData(issuerResponse *IssuerResponse, d *schema.ResourceData) e
 
 func fromTerraformIssuer(d *schema.ResourceData) IssuerRequest {
 	cred := IssuerCredential{
-		IssuerDid:     d.Get("issuer_did").(string),
-		IssuerLogoUrl: d.Get("issuer_logo_url").(string),
-		IssuerIconUrl: d.Get("issuer_icon_url").(string),
-		Name:          d.Get("name").(string),
-		Description:   d.Get("description").(string),
-		Context:       d.Get("context").([]string),
-		Type:          d.Get("type").(string),
-		CredentialBranding: CredentialBranding{
-			BackgroundColor:   d.Get("background_color").(string),
-			WatermarkImageUrl: d.Get("watermark_image_url").(string),
+		IssuerDid:     castToString(d.Get("issuer_did")),
+		IssuerLogoUrl: castToString(d.Get("issuer_logo_url")),
+		IssuerIconUrl: castToString(d.Get("issuer_icon_url")),
+		Name:          castToString(d.Get("name")),
+		Description:   castToString(d.Get("description")),
+		Context:       castToStringSlice(d.Get("context")),
+		Type:          castToStringSlice(d.Get("type")),
+		CredentialBranding: &CredentialBranding{
+			BackgroundColor:   castToString(d.Get("background_color")),
+			WatermarkImageUrl: castToString(d.Get("watermark_image_url")),
 		},
 	}
 
+	federated_provider_data := d.Get("federated_provider").(map[string]interface{})
+
 	fedProv := FederatedProvider{
-		Url:                     d.Get("federated_provider_url").(string),
-		Scope:                   d.Get("federated_provider_scope").([]string),
-		ClientId:                d.Get("federated_provider_client_id").(string),
-		ClientSecret:            d.Get("federated_provider_client_secret").(string),
-		TokenEndpointAuthMethod: d.Get("federated_provider_token_endpoint_auth_method").(string),
-		ClaimsSource:            d.Get("federated_provider_claims_source").(string),
+		Url:                     castToString(federated_provider_data["url"]),
+		Scope:                   splitList(federated_provider_data["scope"]),
+		ClientId:                castToString(federated_provider_data["client_id"]),
+		ClientSecret:            castToString(federated_provider_data["client_secret"]),
+		TokenEndpointAuthMethod: castToString(federated_provider_data["token_endpoint_auth_method"]),
+		ClaimsSource:            castToString(federated_provider_data["claims_source"]),
 	}
 
 	var claimMappings []ClaimMapping
@@ -241,12 +244,20 @@ func fromTerraformIssuer(d *schema.ResourceData) IssuerRequest {
 		})
 	}
 
+	staticRequestParameters := d.Get("static_request_parameters").(map[string]interface{})
+
+	if max_age_string, ok := staticRequestParameters["max_age"].(string); ok {
+		if max_age_int, err := strconv.Atoi(max_age_string); err == nil {
+			staticRequestParameters["max_age"] = max_age_int
+		}
+	}
+
 	return IssuerRequest{
-		Credential:                 cred,
-		FederatedProvider:          fedProv,
+		Credential:                 &cred,
+		FederatedProvider:          &fedProv,
 		ClaimMappings:              claimMappings,
-		StaticRequestParameters:    d.Get("static_request_parameters").(map[string]interface{}),
-		ForwardedRequestParameters: d.Get("forwarded_request_parameters").([]string),
+		StaticRequestParameters:    staticRequestParameters,
+		ForwardedRequestParameters: castToStringSlice(d.Get("forwarded_request_parameters")),
 	}
 }
 
@@ -277,4 +288,30 @@ func flattenClaimMappings(claimMappings []ClaimMapping) []map[string]string {
 		}
 	}
 	return mappings
+}
+
+func splitList(val interface{}) []string {
+	if val == nil {
+		return []string{}
+	}
+	return strings.Split(val.(string), " ")
+}
+
+func castToString(val interface{}) string {
+	if val == nil {
+		return ""
+	}
+	return val.(string)
+}
+
+func castToStringSlice(val interface{}) []string {
+	if val == nil {
+		return make([]string, 0)
+	}
+	interfaceSlice := val.([]interface{})
+	stringSlice := make([]string, len(interfaceSlice))
+	for i, s := range interfaceSlice {
+		stringSlice[i] = s.(string)
+	}
+	return stringSlice
 }
