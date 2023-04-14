@@ -194,12 +194,11 @@ func (a *Api) GetDid(id string) (*DidResponse, error) {
 }
 
 func (a *Api) DeleteDid(id string) error {
-	return Delete[DidResponse](a, fmt.Sprintf("/core/v1/dids/%s", id))
+	return Delete(a, fmt.Sprintf("/core/v1/dids/%s", id))
 }
 
 // Webhooks
 func (a *Api) PostWebhook(webhook *WebhookRequest) (*WebhookResponse, error) {
-	//return nil, fmt.Errorf("Not quite implemented yet")
 	return Post[WebhookResponse](a, "/core/v1/webhooks", webhook)
 }
 
@@ -216,7 +215,7 @@ func (a *Api) PutWebhook(id string, webhook *WebhookRequest) (*WebhookResponse, 
 }
 
 func (a *Api) DeleteWebhook(id string) error {
-	return Delete[WebhookResponse](a, fmt.Sprintf("/core/v1/webhooks/%s", id))
+	return Delete(a, fmt.Sprintf("/core/v1/webhooks/%s", id))
 }
 
 // .well-known
@@ -242,7 +241,7 @@ func (a *Api) PutIssuer(id string, issuer *IssuerRequest) (*IssuerResponse, erro
 }
 
 func (a *Api) DeleteIssuer(id string) error {
-	return fmt.Errorf("Not quite implemented yet")
+	return Delete(a, fmt.Sprintf("/ext/oidc/v1/issuers/%s", id))
 }
 
 // Issuer Clients
@@ -427,7 +426,7 @@ func Put[T any](a *Api, path string, body interface{}) (*T, error) {
 	return Send[T](a, "PUT", path, body)
 }
 
-func Delete[T any](a *Api, path string) error {
+func Delete(a *Api, path string) error {
 	url, _ := a.GetUrl(path) // TODO error handling
 	log.Printf("DELETE %s", url)
 	client := http.DefaultClient
