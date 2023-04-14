@@ -201,6 +201,7 @@ func processIssuerData(issuerResponse *IssuerResponse, d *schema.ResourceData) e
 	if err := d.Set("claim_mappings", flattenClaimMappings(issuerResponse.ClaimMappings)); err != nil {
 		return fmt.Errorf("error setting 'claim_mappings' field: %s", err)
 	}
+
 	static_request_parameters := issuerResponse.StaticRequestParameters
 	converted_params := make(map[string]string, len(static_request_parameters))
 	for k, v := range static_request_parameters {
