@@ -237,7 +237,7 @@ func (a *Api) GetIssuers() (*IssuerListResponse, error) {
 }
 
 func (a *Api) PutIssuer(id string, issuer *IssuerRequest) (*IssuerResponse, error) {
-	return Post[IssuerResponse](a, fmt.Sprintf("/ext/oidc/v1/issuers/%s", id), issuer)
+	return Put[IssuerResponse](a, fmt.Sprintf("/ext/oidc/v1/issuers/%s", id), issuer)
 }
 
 func (a *Api) DeleteIssuer(id string) error {

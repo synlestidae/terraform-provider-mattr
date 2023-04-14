@@ -18,7 +18,7 @@ resource "mattr_issuer" "antunovic_issuer" {
   context         = ["https://schema.org"]
   type            = ["AlumniCredential"]
   federated_provider = {
-    url                        = "https://accounts.google.com"
+    url                        = "https://accounts.google.com/"
     scope                      = "openid"
     client_id                  = "UKNVhhnFUK2T0bR05R5IRLSImEw8mLCh"
     client_secret              = "LvBLr8yeVP9i8wCUY25720XNJ63zvBP-MtMSVQFiEhsFqP5uM4ORp51Owp6Vud7_"
@@ -31,7 +31,7 @@ resource "mattr_issuer" "antunovic_issuer" {
   }
   static_request_parameters = {
     prompt  = "login"
-    // max_age = "10000"
+    max_age = "10000"
   }
   forwarded_request_parameters = ["login_hint"]
 

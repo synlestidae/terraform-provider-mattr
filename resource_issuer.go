@@ -210,7 +210,7 @@ func processIssuerData(issuerResponse *IssuerResponse, d *schema.ResourceData) e
 		case bool:
 			converted_params[k] = strconv.FormatBool(v.(bool))
 		case float32, float64:
-			converted_params[k] = fmt.Sprintf("%f", v)
+			converted_params[k] = fmt.Sprintf("%g", v)
 		default:
 			converted_params[k] = fmt.Sprintf("%v", v)
 		}
@@ -228,6 +228,8 @@ func processIssuerData(issuerResponse *IssuerResponse, d *schema.ResourceData) e
 func fromTerraformIssuer(d *schema.ResourceData) IssuerRequest {
 	log.Println("Preparing issuer data")
 
+	credentialBranding := d.Get("credential_branding").(map[string]interface{})
+
 	cred := IssuerCredential{
 		IssuerDid:     castToString(d.Get("issuer_did")),
 		IssuerLogoUrl: castToString(d.Get("issuer_logo_url")),
@@ -237,13 +239,12 @@ func fromTerraformIssuer(d *schema.ResourceData) IssuerRequest {
 		Context:       castToStringSlice(d.Get("context")),
 		Type:          castToStringSlice(d.Get("type")),
 		CredentialBranding: &CredentialBranding{
-			BackgroundColor:   castToString(d.Get("background_color")),
-			WatermarkImageUrl: castToString(d.Get("watermark_image_url")),
+			BackgroundColor:   castToString(credentialBranding["background_color"]),
+			WatermarkImageUrl: castToString(credentialBranding["watermark_image_url"]),
 		},
 	}
 
 	federated_provider_data := d.Get("federated_provider").(map[string]interface{})
-
 	fedProv := FederatedProvider{
 		Url:                     castToString(federated_provider_data["url"]),
 		Scope:                   splitList(federated_provider_data["scope"]),
@@ -264,10 +265,16 @@ func fromTerraformIssuer(d *schema.ResourceData) IssuerRequest {
 
 	staticRequestParameters := d.Get("static_request_parameters").(map[string]interface{})
 
+	// TODO fix crappy conversion here
+
 	if max_age_string, ok := staticRequestParameters["max_age"].(string); ok {
 		if max_age_int, err := strconv.Atoi(max_age_string); err == nil {
 			staticRequestParameters["max_age"] = max_age_int
+		} else {
+			log.Println("No converty number")
 		}
+	} else {
+		log.Println("No converty string")
 	}
 
 	log.Println("Prepared issuer data")
@@ -282,6 +289,7 @@ func fromTerraformIssuer(d *schema.ResourceData) IssuerRequest {
 }
 
 func flattenCredentialBranding(credentialBranding *CredentialBranding) map[string]string {
+	log.Println("Brand", *credentialBranding)
 	branding := make(map[string]string, 2)
 	branding["background_color"] = credentialBranding.BackgroundColor
 	branding["watermark_image_url"] = credentialBranding.WatermarkImageUrl
@@ -291,7 +299,7 @@ func flattenCredentialBranding(credentialBranding *CredentialBranding) map[strin
 func flattenFederatedProvider(federatedProvider *FederatedProvider) map[string]interface{} {
 	fpProvider := make(map[string]interface{}, 6)
 	fpProvider["url"] = federatedProvider.Url
-	fpProvider["scope"] = federatedProvider.Scope
+	fpProvider["scope"] = strings.Join(federatedProvider.Scope, " ")
 	fpProvider["client_id"] = federatedProvider.ClientId
 	fpProvider["client_secret"] = federatedProvider.ClientSecret
 	fpProvider["token_endpoint_auth_method"] = federatedProvider.TokenEndpointAuthMethod
