@@ -53,6 +53,10 @@ func resourceDid() *schema.Resource {
 					},
 				},
 			},
+			"initial_did_document": &schema.Schema{
+				Type:     schema.TypeMap,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -134,4 +138,5 @@ func processDidData(d *schema.ResourceData, response *DidResponse) {
 	}
 
 	d.Set("keys", keys)
+	d.Set("initial_did_document", response.LocalMetadata.InitialDidDocument)
 }

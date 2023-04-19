@@ -46,9 +46,9 @@ type DidResponse struct {
 }
 
 type LocalMetadata struct {
-	Keys          []KeyMetadata   `json:"keys"`
-	Registered    int64           `json:"registered"`
-	InitialDidDoc json.RawMessage `json:"initialDidDocument"`
+	Keys               []KeyMetadata  `json:"keys"`
+	Registered         int64          `json:"registered"`
+	InitialDidDocument map[string]any `json:"initialDidDocument"`
 }
 
 type KeyMetadata struct {
@@ -126,29 +126,68 @@ type IssuerListResponse struct {
 	NextCursor string           `json:"nextCursor"`
 }
 
+type IssuerInfo struct {
+	Name    string `json:"name"`
+	LogoUrl string `json:"logoUrl,omitempty"`
+	IconUrl string `json:"iconUrl,omitempty"`
+}
+
+type Context string
+
+type ClaimMappings struct {
+	MapFrom      string `json:"mapFrom"`
+	Required     bool   `json:"required,omitempty"`
+	DefaultValue string `json:"defaultValue,omitempty"`
+}
+
+type ExpiresIn struct {
+	Years   int `json:"years,omitempty"`
+	Months  int `json:"months,omitempty"`
+	Weeks   int `json:"weeks,omitempty"`
+	Days    int `json:"days,omitempty"`
+	Hours   int `json:"hours,omitempty"`
+	Minutes int `json:"minutes,omitempty"`
+	Seconds int `json:"seconds,omitempty"`
+}
+
+type CredentialSpec struct {
+	Name               string                   `json:"name"`
+	Description        string                   `json:"description,omitempty"`
+	Type               string                   `json:"type"`
+	AdditionalTypes    []string                 `json:"additionalTypes,omitempty"`
+	Contexts           []interface{}            `json:"contexts,omitempty"`
+	Issuer             IssuerInfo               `json:"issuer"`
+	CredentialBranding *CredentialBranding      `json:"credentialBranding,omitempty"`
+	ClaimMappings      map[string]ClaimMappings `json:"claimMappings,omitempty"`
+	Persist            bool                     `json:"persist,omitempty"`
+	Revocable          bool                     `json:"revocable,omitempty"`
+	ClaimSourceId      string                   `json:"claimSourceId,omitempty"`
+	ExpiresIn          ExpiresIn                `json:"expiresIn,omitempty"`
+}
+
 type WellKnownResponse struct {
 }
 
 type IssuerClientRequest struct {
-	Name                     string `json:"string"`
-	RedirectUris             []string
-	ResponseTypes            []string
-	GrantTypes               []string
-	TokenEndpointAuthMethod  string `json:"tokenEndpointAuthMethod"`
-	IdTokenSignedResponseAlg string `json:"idTokenSignedResponseAlg"`
-	ApplicationType          string `json:"applicationType"`
+	Name                     string   `json:"string"`
+	RedirectUris             []string `json:"redirectUris"`
+	ResponseTypes            []string `json:"responseTypes"`
+	GrantTypes               []string `json:"grantTypes"`
+	TokenEndpointAuthMethod  string   `json:"tokenEndpointAuthMethod"`
+	IdTokenSignedResponseAlg string   `json:"idTokenSignedResponseAlg"`
+	ApplicationType          string   `json:"applicationType"`
 }
 
 type IssuerClientResponse struct {
-	Id                       string `json:"id"`
-	Secret                   string `json:"secret"`
-	Name                     string `json:"string"`
-	RedirectUris             []string
-	ResponseTypes            []string
-	GrantTypes               []string
-	TokenEndpointAuthMethod  string `json:"tokenEndpointAuthMethod"`
-	IdTokenSignedResponseAlg string `json:"idTokenSignedResponseAlg"`
-	ApplicationType          string `json:"applicationType"`
+	Id                       string   `json:"id"`
+	Secret                   string   `json:"secret"`
+	Name                     string   `json:"string"`
+	RedirectUris             []string `json:"redirectUris"`
+	ResponseTypes            []string `json:"responseTypes"`
+	GrantTypes               []string `json:"grantTypes"`
+	TokenEndpointAuthMethod  string   `json:"tokenEndpointAuthMethod"`
+	IdTokenSignedResponseAlg string   `json:"idTokenSignedResponseAlg"`
+	ApplicationType          string   `json:"applicationType"`
 }
 
 type IssuerClientListResponse struct {
@@ -245,24 +284,24 @@ func (a *Api) DeleteIssuer(id string) error {
 }
 
 // Issuer Clients
-func (a *Api) PostIssuerClient() (*IssuerClientResponse, error) {
-	return nil, fmt.Errorf("Not quite implemented yet")
+func (a *Api) PostIssuerClient(issuerId string, request *IssuerClientRequest) (*IssuerClientResponse, error) {
+	return Post[IssuerClientResponse](a, fmt.Sprintf("/ext/oidc/v1/issuers/%s/clients", issuerId), request)
 }
 
-func (a *Api) GetIssuerClients() (*IssuerClientListResponse, error) {
-	return nil, fmt.Errorf("Not quite implemented yet")
+func (a *Api) GetIssuerClients(issuerId string) (*IssuerClientListResponse, error) {
+	return Get[IssuerClientListResponse](a, fmt.Sprintf("/ext/oidc/v1/issuers/%s/clients", issuerId))
 }
 
-func (a *Api) GetIssuerClient() (*IssuerClientResponse, error) {
-	return nil, fmt.Errorf("Not quite implemented yet")
+func (a *Api) GetIssuerClient(issuerId string, issuerClientId string) (*IssuerClientResponse, error) {
+	return Get[IssuerClientResponse](a, fmt.Sprintf("/ext/oidc/v1/issuers/%s/clients/%s", issuerId, issuerClientId))
 }
 
-func (a *Api) PutIssuerClient() (*IssuerClientResponse, error) {
-	return nil, fmt.Errorf("Not quite implemented yet")
+func (a *Api) PutIssuerClient(issuerId string, clientId string, request *IssuerClientRequest) (*IssuerClientResponse, error) {
+	return Post[IssuerClientResponse](a, fmt.Sprintf("/ext/oidc/v1/issuers/%s/clients/%s", issuerId, clientId), request)
 }
 
-func (a *Api) DeleteIssuerClient() error {
-	return fmt.Errorf("Not quite implemented yet")
+func (a *Api) DeleteIssuerClient(issuerId string, clientId string) error {
+	return Delete(a, fmt.Sprintf("/ext/oidc/v1/issuers/%s/clients/%s", issuerId, clientId))
 }
 
 // Verifiers
