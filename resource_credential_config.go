@@ -155,3 +155,9 @@ func resourceCredentialConfigUpdate(d *schema.ResourceData, m interface{}) error
 func resourceCredentialConfigDelete(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
+
+func processCredentialConfigData(config *CredentialConfig, d *schema.ResourceData) {
+}
+
+func fromTerraformCredentialConfig() CredentialConfig {
+}
