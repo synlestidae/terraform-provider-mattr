@@ -20,19 +20,21 @@ func resourceCredentialConfig() *schema.Resource {
 			},
 			"description": &schema.Schema{
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
 			},
 			"type": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
 			},
 			"additional_types": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem:     schema.TypeString,
 			},
 			"contexts": &schema.Schema{
-				Type:     schema.TypeString,
+				Type:     schema.TypeList,
 				Required: true,
+				Elem:     schema.TypeString,
 			},
 			"issuer": &schema.Schema{
 				Type:     schema.TypeMap,
@@ -70,8 +72,9 @@ func resourceCredentialConfig() *schema.Resource {
 					},
 				},
 			},
-			"claim_mapping": &schema.Schema{
-				Type: schema.TypeMap,
+			"claim_mappings": &schema.Schema{ //TODO this needs to be changed
+				Type:     schema.TypeMap,
+				Required: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"map_from": &schema.Schema{
@@ -88,24 +91,23 @@ func resourceCredentialConfig() *schema.Resource {
 						},
 					},
 				},
-				Optional: true,
 			},
 			"persist": &schema.Schema{
 				Type:     schema.TypeBool,
-				Required: false,
+				Optional: true,
 			},
 			"revocable": &schema.Schema{
 				Type:     schema.TypeBool,
-				Required: false,
+				Optional: true,
 			},
 			"claim_source_id": &schema.Schema{
 				Type:     schema.TypeString,
-				Required: false,
+				Optional: true,
 			},
 			"expires_in": &schema.Schema{
 				Type:     schema.TypeMap,
 				Optional: true,
-				Elem: schema.Resource{
+				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"years": &schema.Schema{
 							Type:     schema.TypeInt,
@@ -229,7 +231,7 @@ func processCredentialConfigData(config *CredentialConfig, d *schema.ResourceDat
 
 	d.Set("issuer", issuerMap)
 	d.Set("credential_branding", brandingMap)
-	d.Set("claim_mapping", claimMap)
+	d.Set("claim_mappings", claimMap)
 	d.Set("expires_in", expiresIn)
 
 	d.Set("persist", config.Persist)
@@ -240,7 +242,7 @@ func processCredentialConfigData(config *CredentialConfig, d *schema.ResourceDat
 func fromTerraformCredentialConfig(d *schema.ResourceData) CredentialConfig {
 	configIssuerMap := d.Get("issuer").(map[string]string)
 	configBrandingMap := d.Get("credential_branding").(map[string]string)
-	claimMappingsMap := d.Get("claim_mappings").(map[string]map[string]any)
+	claimMappingsMap := d.Get("claim_mappingss").(map[string]map[string]any)
 	configExpiresInMap := d.Get("expires_in").(map[string]int)
 
 	configIssuer := IssuerInfo{

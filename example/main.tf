@@ -46,3 +46,55 @@ resource "mattr_issuer" "antunovic_issuer" {
   }
 }
 
+resource "mattr_credential" "antunovic_credential" {
+  name = "Course credential"
+  description = "This credential shows that the person has attended a course."
+  type = "CourseCredential"
+  additional_types = [
+    "AlumniCredential",
+    "EducationCredential"
+  ]
+  contexts = [
+    "https://json-ld.org/contexts/person.jsonld"
+  ]
+  issuer = {
+    "name": "ABC University",
+    "logo_url": "https://example.edu/img/logo.png",
+    "icon_url": "https://example.edu/img/icon.png"
+  }
+  credential_branding = {
+    "background_color": "#B00AA0",
+    "watermark_image_url": "https://example.edu/img/watermark.png"
+  }
+  claim_mappings = {
+    first_name = {
+      map_from = "claims.given_name"
+      required = true
+    }
+    address = {
+      map_from = "claims.address.formatted"
+    }
+    picture = {
+      map_from = "claims.picture"
+      default_value = "http://example.edu/img/placeholder.png"
+    }
+    badge = {
+      default_value = "http://example.edu/img/badge.png"
+    }
+    provider_subject_id = {
+      map_from = "authenticationProvider.subjectId"
+    }
+  }
+  persist = false
+  revocable = true
+  claim_source_id = "78e1b90c-401d-45bb-89c0-938da4d44c60"
+  expires_in = {
+    years = 0
+    months = 3
+    weeks = 0
+    days = 0
+    hours = 0
+    minutes = 0
+    seconds = 0
+  }
+}
