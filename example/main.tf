@@ -66,25 +66,34 @@ resource "mattr_credential" "antunovic_credential" {
     "background_color": "#B00AA0",
     "watermark_image_url": "https://example.edu/img/watermark.png"
   }
-  claim_mappings = {
-    first_name = {
+
+  claim_mapping {
+      name = "first_name"
       map_from = "claims.given_name"
       required = true
-    }
-    address = {
-      map_from = "claims.address.formatted"
-    }
-    picture = {
-      map_from = "claims.picture"
-      default_value = "http://example.edu/img/placeholder.png"
-    }
-    badge = {
-      default_value = "http://example.edu/img/badge.png"
-    }
-    provider_subject_id = {
-      map_from = "authenticationProvider.subjectId"
-    }
   }
+
+  claim_mapping {
+    name = "address"
+    map_from = "claims.address.formatted"
+  }
+
+  claim_mapping {
+    name = "picture"
+    map_from = "claims.picture"
+    default_value = "http://example.edu/img/placeholder.png"
+  }
+
+  claim_mapping {
+    name = "badge"
+    map_from = "http://example.edu/img/badge.png"
+  }
+
+  claim_mapping {
+    name = "provider_subject_id" 
+    map_from = "authenticationProvider.subjectId"
+  }
+
   persist = false
   revocable = true
   claim_source_id = "78e1b90c-401d-45bb-89c0-938da4d44c60"

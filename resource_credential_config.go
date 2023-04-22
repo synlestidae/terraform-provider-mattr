@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"sort"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
@@ -72,11 +73,15 @@ func resourceCredentialConfig() *schema.Resource {
 					},
 				},
 			},
-			"claim_mappings": &schema.Schema{ //TODO this needs to be changed
-				Type:     schema.TypeMap,
+			"claim_mapping": &schema.Schema{ //TODO this needs to be changed
+				Type:     schema.TypeList,
 				Required: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"name": &schema.Schema{
+							Type:     schema.TypeString,
+							Required: true,
+						},
 						"map_from": &schema.Schema{
 							Type:     schema.TypeString,
 							Required: true,
@@ -205,13 +210,19 @@ func processCredentialConfigData(config *CredentialConfig, d *schema.ResourceDat
 	brandingMap["watermark_image_url"] = config.CredentialBranding.WatermarkImageUrl
 
 	// claimMap
-	claimMap := make(map[string]map[string]any)
+	i := 0
+	claimList := make([]map[string]any, len(config.ClaimMappings))
 	for k, claim := range config.ClaimMappings {
-		claimMap[k] = make(map[string]any)
-		claimMap[k]["map_from"] = claim.MapFrom
-		claimMap[k]["required"] = claim.Required
-		claimMap[k]["default_value"] = claim.DefaultValue
+		claimList[i] = make(map[string]any)
+		claimList[i]["name"] = k
+		claimList[i]["map_from"] = claim.MapFrom
+		claimList[i]["required"] = claim.Required
+		claimList[i]["default_value"] = claim.DefaultValue
+		i++
 	}
+	sort.Slice(claimList, func(i int, j int) bool {
+		return claimList[i]["name"].(string) < claimList[j]["name"].(string)
+	})
 
 	// expiresInMap
 	expiresIn := make(map[string]int)
@@ -231,7 +242,7 @@ func processCredentialConfigData(config *CredentialConfig, d *schema.ResourceDat
 
 	d.Set("issuer", issuerMap)
 	d.Set("credential_branding", brandingMap)
-	d.Set("claim_mappings", claimMap)
+	d.Set("claim_mapping", claimList)
 	d.Set("expires_in", expiresIn)
 
 	d.Set("persist", config.Persist)
@@ -242,7 +253,7 @@ func processCredentialConfigData(config *CredentialConfig, d *schema.ResourceDat
 func fromTerraformCredentialConfig(d *schema.ResourceData) CredentialConfig {
 	configIssuerMap := d.Get("issuer").(map[string]string)
 	configBrandingMap := d.Get("credential_branding").(map[string]string)
-	claimMappingsMap := d.Get("claim_mappingss").(map[string]map[string]any)
+	claimMappingsList := d.Get("claim_mappings").([]map[string]any)
 	configExpiresInMap := d.Get("expires_in").(map[string]int)
 
 	configIssuer := IssuerInfo{
@@ -256,9 +267,9 @@ func fromTerraformCredentialConfig(d *schema.ResourceData) CredentialConfig {
 		WatermarkImageUrl: configBrandingMap["watermark_image_url"],
 	}
 
-	claimMappings := make(map[string]ClaimMappingConfig, len(claimMappingsMap))
-	for k, claim := range claimMappingsMap {
-		claimMappings[k] = ClaimMappingConfig{
+	claimMappings := make(map[string]ClaimMappingConfig, len(claimMappingsList))
+	for _, claim := range claimMappingsList {
+		claimMappings[claim["name"].(string)] = ClaimMappingConfig{
 			MapFrom:      claim["map_from"].(string),
 			Required:     claim["required"].(bool),
 			DefaultValue: claim["default_value"].(string),
