@@ -151,6 +151,7 @@ type ExpiresIn struct {
 }
 
 type CredentialConfig struct {
+	Id                 string                        `json:"string,omitempty"`
 	Name               string                        `json:"name"`
 	Description        string                        `json:"description,omitempty"`
 	Type               string                        `json:"type"`
@@ -277,6 +278,22 @@ func (a *Api) GetIssuers() (*IssuerListResponse, error) {
 
 func (a *Api) PutIssuer(id string, issuer *IssuerRequest) (*IssuerResponse, error) {
 	return Put[IssuerResponse](a, fmt.Sprintf("/ext/oidc/v1/issuers/%s", id), issuer)
+}
+
+func (a *Api) PostCredentialConfig(config *CredentialConfig) (*CredentialConfig, error) {
+	return Post[CredentialConfig](a, "/v2/credentials/web-semantic/configurations", config)
+}
+
+func (a *Api) GetCredentialConfig(id string) (*CredentialConfig, error) {
+	return Get[CredentialConfig](a, fmt.Sprintf("/v2/credentials/web-semantic/configurations/%s", id))
+}
+
+func (a *Api) PutCredentialConfig(id string, config *CredentialConfig) (*CredentialConfig, error) {
+	return Put[CredentialConfig](a, fmt.Sprintf("/v2/credentials/web-semantic/configurations/%s", id), config)
+}
+
+func (a *Api) DeleteCredentialConfig(id string) error {
+	return Delete(a, fmt.Sprintf("/v2/credentials/web-semantic/configurations/%s", id))
 }
 
 func (a *Api) DeleteIssuer(id string) error {

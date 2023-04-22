@@ -1,6 +1,8 @@
 package main
 
 import (
+	"log"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
@@ -141,18 +143,50 @@ func resourceCredentialConfig() *schema.Resource {
 }
 
 func resourceCredentialConfigCreate(d *schema.ResourceData, m interface{}) error {
+	log.Println("Creating credential config")
+	api := m.(ProviderConfig).Api
+	config_request := fromTerraformCredentialConfig(d)
+	config_response, err := api.PostCredentialConfig(&config_request)
+	if err != nil {
+		return err
+	}
+	processCredentialConfigData(config_response, d)
+	d.SetId(config_response.Id)
 	return nil
 }
 
 func resourceCredentialConfigRead(d *schema.ResourceData, m interface{}) error {
+	log.Println("Reading credential config")
+	id := d.Id()
+	api := m.(ProviderConfig).Api
+	config_response, err := api.GetCredentialConfig(id)
+	if err != nil {
+		return err
+	}
+	processCredentialConfigData(config_response, d)
 	return nil
 }
 
 func resourceCredentialConfigUpdate(d *schema.ResourceData, m interface{}) error {
+	log.Println("Updating credential config")
+	api := m.(ProviderConfig).Api
+	id := d.Id()
+	config_request := fromTerraformCredentialConfig(d)
+	config_response, err := api.PutCredentialConfig(id, &config_request)
+	if err != nil {
+		return err
+	}
+	processCredentialConfigData(config_response, d)
 	return nil
 }
 
 func resourceCredentialConfigDelete(d *schema.ResourceData, m interface{}) error {
+	api := m.(ProviderConfig).Api
+	err := api.DeleteCredentialConfig(d.Id())
+	if err != nil {
+		return err
+	}
+	d.SetId("")
 	return nil
 }
 
