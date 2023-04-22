@@ -30,12 +30,12 @@ func resourceCredentialConfig() *schema.Resource {
 			"additional_types": &schema.Schema{
 				Type:     schema.TypeList,
 				Optional: true,
-				Elem:     schema.TypeString,
+				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 			"contexts": &schema.Schema{
 				Type:     schema.TypeList,
 				Required: true,
-				Elem:     schema.TypeString,
+				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 			"issuer": &schema.Schema{
 				Type:     schema.TypeMap,
@@ -188,6 +188,7 @@ func resourceCredentialConfigUpdate(d *schema.ResourceData, m interface{}) error
 }
 
 func resourceCredentialConfigDelete(d *schema.ResourceData, m interface{}) error {
+	log.Println("Deleting credential config")
 	api := m.(ProviderConfig).Api
 	err := api.DeleteCredentialConfig(d.Id())
 	if err != nil {
@@ -198,6 +199,7 @@ func resourceCredentialConfigDelete(d *schema.ResourceData, m interface{}) error
 }
 
 func processCredentialConfigData(config *CredentialConfig, d *schema.ResourceData) {
+	log.Println("Processing credential config data")
 	// issuerMap
 	issuerMap := make(map[string]string, 3)
 	issuerMap["name"] = config.Issuer.Name
@@ -251,39 +253,41 @@ func processCredentialConfigData(config *CredentialConfig, d *schema.ResourceDat
 }
 
 func fromTerraformCredentialConfig(d *schema.ResourceData) CredentialConfig {
-	configIssuerMap := d.Get("issuer").(map[string]string)
-	configBrandingMap := d.Get("credential_branding").(map[string]string)
-	claimMappingsList := d.Get("claim_mappings").([]map[string]any)
-	configExpiresInMap := d.Get("expires_in").(map[string]int)
+	log.Println("Converting from resource data")
+	configIssuerMap := d.Get("issuer").(map[string]interface{})
+	configBrandingMap := d.Get("credential_branding").(map[string]interface{})
+	claimMappingsList := d.Get("claim_mapping").([]interface{})
+	configExpiresInMap := d.Get("expires_in").(map[string]interface{})
 
 	configIssuer := IssuerInfo{
-		Name:    configIssuerMap["name"],
-		LogoUrl: configIssuerMap["logo_url"],
-		IconUrl: configIssuerMap["name"],
+		Name:    configIssuerMap["name"].(string),
+		LogoUrl: configIssuerMap["logo_url"].(string),
+		IconUrl: configIssuerMap["name"].(string),
 	}
 
 	configBranding := CredentialBranding{
-		BackgroundColor:   configBrandingMap["background_color"],
-		WatermarkImageUrl: configBrandingMap["watermark_image_url"],
+		BackgroundColor:   configBrandingMap["background_color"].(string),
+		WatermarkImageUrl: configBrandingMap["watermark_image_url"].(string),
 	}
 
 	claimMappings := make(map[string]ClaimMappingConfig, len(claimMappingsList))
 	for _, claim := range claimMappingsList {
-		claimMappings[claim["name"].(string)] = ClaimMappingConfig{
-			MapFrom:      claim["map_from"].(string),
-			Required:     claim["required"].(bool),
-			DefaultValue: claim["default_value"].(string),
+		claimObj := claim.(map[string]any)
+		claimMappings[claimObj["name"].(string)] = ClaimMappingConfig{
+			MapFrom:      claimObj["map_from"].(string),
+			Required:     claimObj["required"].(bool),
+			DefaultValue: claimObj["default_value"].(string),
 		}
 	}
 
 	configExpiresIn := ExpiresIn{
-		Years:   configExpiresInMap["years"],
-		Months:  configExpiresInMap["months"],
-		Weeks:   configExpiresInMap["weeks"],
-		Days:    configExpiresInMap["days"],
-		Hours:   configExpiresInMap["hours"],
-		Minutes: configExpiresInMap["minutes"],
-		Seconds: configExpiresInMap["seconds"],
+		Years:   configExpiresInMap["years"].(int),
+		Months:  configExpiresInMap["months"].(int),
+		Weeks:   configExpiresInMap["weeks"].(int),
+		Days:    configExpiresInMap["days"].(int),
+		Hours:   configExpiresInMap["hours"].(int),
+		Minutes: configExpiresInMap["minutes"].(int),
+		Seconds: configExpiresInMap["seconds"].(int),
 	}
 
 	return CredentialConfig{
@@ -300,6 +304,4 @@ func fromTerraformCredentialConfig(d *schema.ResourceData) CredentialConfig {
 		ClaimSourceId:      d.Get("claim_source_id").(string),
 		ExpiresIn:          configExpiresIn,
 	}
-
-	panic("Not implemented")
 }

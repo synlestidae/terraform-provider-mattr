@@ -535,6 +535,7 @@ func processResponse[T any](resp *http.Response) (*T, error) {
 
 	// read raw json body
 	response_body, err := ioutil.ReadAll(resp.Body)
+	log.Println("Response body: ", string(response_body))
 	if err != nil {
 		return nil, err
 	}

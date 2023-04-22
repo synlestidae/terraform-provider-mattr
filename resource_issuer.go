@@ -170,6 +170,7 @@ func resourceIssuerDelete(d *schema.ResourceData, m interface{}) error {
 }
 
 func processIssuerData(issuerResponse *IssuerResponse, d *schema.ResourceData) error {
+	log.Println("Processing issuer data")
 	d.SetId(issuerResponse.Id)
 	if err := d.Set("issuer_did", issuerResponse.Credential.IssuerDid); err != nil {
 		return fmt.Errorf("error setting 'issuer_did' field: %s", err)
