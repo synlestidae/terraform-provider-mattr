@@ -134,7 +134,7 @@ type IssuerInfo struct {
 
 type Context string
 
-type ClaimMappings struct {
+type ClaimMappingConfig struct {
 	MapFrom      string `json:"mapFrom"`
 	Required     bool   `json:"required,omitempty"`
 	DefaultValue string `json:"defaultValue,omitempty"`
@@ -150,19 +150,19 @@ type ExpiresIn struct {
 	Seconds int `json:"seconds,omitempty"`
 }
 
-type CredentialSpec struct {
-	Name               string                   `json:"name"`
-	Description        string                   `json:"description,omitempty"`
-	Type               string                   `json:"type"`
-	AdditionalTypes    []string                 `json:"additionalTypes,omitempty"`
-	Contexts           []interface{}            `json:"contexts,omitempty"`
-	Issuer             IssuerInfo               `json:"issuer"`
-	CredentialBranding *CredentialBranding      `json:"credentialBranding,omitempty"`
-	ClaimMappings      map[string]ClaimMappings `json:"claimMappings,omitempty"`
-	Persist            bool                     `json:"persist,omitempty"`
-	Revocable          bool                     `json:"revocable,omitempty"`
-	ClaimSourceId      string                   `json:"claimSourceId,omitempty"`
-	ExpiresIn          ExpiresIn                `json:"expiresIn,omitempty"`
+type CredentialConfig struct {
+	Name               string                        `json:"name"`
+	Description        string                        `json:"description,omitempty"`
+	Type               string                        `json:"type"`
+	AdditionalTypes    []string                      `json:"additionalTypes,omitempty"`
+	Contexts           []string                      `json:"contexts,omitempty"`
+	Issuer             IssuerInfo                    `json:"issuer"`
+	CredentialBranding CredentialBranding            `json:"credentialBranding,omitempty"`
+	ClaimMappings      map[string]ClaimMappingConfig `json:"claimMappings,omitempty"`
+	Persist            bool                          `json:"persist,omitempty"`
+	Revocable          bool                          `json:"revocable,omitempty"`
+	ClaimSourceId      string                        `json:"claimSourceId,omitempty"`
+	ExpiresIn          ExpiresIn                     `json:"expiresIn,omitempty"`
 }
 
 type WellKnownResponse struct {
