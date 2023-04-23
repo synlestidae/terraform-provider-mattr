@@ -225,20 +225,23 @@ type VerifierClientListResponse struct {
 	Data       []VerifierResponse `json:"data"`
 }
 
+type ClaimSourceAuthorization struct {
+	Type  string `json:"type"`
+	Value string `json:"value"`
+}
+
+type ClaimSourceRequestParameter struct {
+	MapFrom      string `json:"mapFrom"`
+	DefaultValue string `json:"defaultValue"`
+}
+
 type ClaimSource struct {
 	Id   string `json:"id"`
 	Name string `json:"name"`
 	Url  string `json:"url"`
 
-	Authorization struct {
-		Type  string `json:"type"`
-		Value string `json:"value"`
-	} `json:"authorization"`
-
-	RequestParameters map[string]struct {
-		MapFrom      string `json:"mapFrom"`
-		DefaultValue string `json:"defaultValue"`
-	}
+	Authorization     ClaimSourceAuthorization               `json:"authorization"`
+	RequestParameters map[string]ClaimSourceRequestParameter `json:"requestParameters"`
 }
 
 func (a *Api) PostDid(did DidRequest) (*DidResponse, error) {
