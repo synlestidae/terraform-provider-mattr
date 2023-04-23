@@ -122,11 +122,12 @@ func processClaimSourceData(claimSource *ClaimSource, d *schema.ResourceData) {
 	d.Set("url", claimSource.Url)
 	d.Set("authorization", authorization)
 	d.Set("request_parameter", requestParameters)
+	d.SetId(claimSource.Id)
 }
 
 func fromTerraformClaimSource(d *schema.ResourceData) ClaimSource {
 	authorizationMap := d.Get("authorization").(map[string]interface{})
-	requestParametersList := d.Get("request_parameter").([]map[string]interface{})
+	requestParametersList := d.Get("request_parameter").([]interface{})
 
 	authorization := ClaimSourceAuthorization{
 		Type:  authorizationMap["type"].(string),
@@ -135,9 +136,10 @@ func fromTerraformClaimSource(d *schema.ResourceData) ClaimSource {
 
 	requestParametersMap := make(map[string]ClaimSourceRequestParameter, len(requestParametersList))
 	for _, param := range requestParametersList {
-		requestParametersMap[param["property"].(string)] = ClaimSourceRequestParameter{
-			MapFrom:      param["map_from"].(string),
-			DefaultValue: param["default_value"].(string),
+		paramMap := param.(map[string]interface{})
+		requestParametersMap[paramMap["property"].(string)] = ClaimSourceRequestParameter{
+			MapFrom:      paramMap["map_from"].(string),
+			DefaultValue: paramMap["default_value"].(string),
 		}
 	}
 
