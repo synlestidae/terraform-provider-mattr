@@ -159,7 +159,6 @@ func resourceCredentialConfigCreate(d *schema.ResourceData, m interface{}) error
 		return err
 	}
 	processCredentialConfigData(config_response, d)
-	d.SetId(config_response.Id)
 	log.Println("Created credential config")
 	return nil
 }
