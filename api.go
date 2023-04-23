@@ -225,6 +225,22 @@ type VerifierClientListResponse struct {
 	Data       []VerifierResponse `json:"data"`
 }
 
+type ClaimSource struct {
+	Id   string `json:"id"`
+	Name string `json:"name"`
+	Url  string `json:"url"`
+
+	Authorization struct {
+		Type  string `json:"type"`
+		Value string `json:"value"`
+	} `json:"authorization"`
+
+	RequestParameters map[string]struct {
+		MapFrom      string `json:"mapFrom"`
+		DefaultValue string `json:"defaultValue"`
+	}
+}
+
 func (a *Api) PostDid(did DidRequest) (*DidResponse, error) {
 	return Post[DidResponse](a, "/core/v1/dids", did)
 }
@@ -280,6 +296,12 @@ func (a *Api) PutIssuer(id string, issuer *IssuerRequest) (*IssuerResponse, erro
 	return Put[IssuerResponse](a, fmt.Sprintf("/ext/oidc/v1/issuers/%s", id), issuer)
 }
 
+func (a *Api) DeleteIssuer(id string) error {
+	return Delete(a, fmt.Sprintf("/ext/oidc/v1/issuers/%s", id))
+}
+
+// Credential config
+
 func (a *Api) PostCredentialConfig(config *CredentialConfig) (*CredentialConfig, error) {
 	return Post[CredentialConfig](a, "/v2/credentials/web-semantic/configurations", config)
 }
@@ -296,9 +318,25 @@ func (a *Api) DeleteCredentialConfig(id string) error {
 	return Delete(a, fmt.Sprintf("/v2/credentials/web-semantic/configurations/%s", id))
 }
 
-func (a *Api) DeleteIssuer(id string) error {
-	return Delete(a, fmt.Sprintf("/ext/oidc/v1/issuers/%s", id))
+// Claim source
+
+func (a *Api) PostClaimSource(claimSource *ClaimSource) (*ClaimSource, error) {
+	return Post[ClaimSource](a, "/v1/claimsources", claimSource)
 }
+
+func (a *Api) GetClaimSource(id string) (*ClaimSource, error) {
+	return Get[ClaimSource](a, fmt.Sprintf("/v1/claimsources/%s", id))
+}
+
+func (a *Api) PutClaimSource(id string, claimSource *ClaimSource) (*ClaimSource, error) {
+	return Put[ClaimSource](a, fmt.Sprintf("/v1/claimsources/%s", id), claimSource)
+}
+
+func (a *Api) DeleteClaimSource(id string) error {
+	return Delete(a, fmt.Sprintf("/v1/claimsources/%s", id))
+}
+
+// End claim source
 
 // Issuer Clients
 func (a *Api) PostIssuerClient(issuerId string, request *IssuerClientRequest) (*IssuerClientResponse, error) {
