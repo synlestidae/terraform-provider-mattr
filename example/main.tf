@@ -81,12 +81,12 @@ resource "mattr_credential" "antunovic_credential" {
   claim_mapping {
     name = "picture"
     map_from = "claims.picture"
-    default_value = "http://example.edu/img/placeholder.png"
+    default_value = "https://example.edu/img/placeholder.png"
   }
 
   claim_mapping {
     name = "badge"
-    map_from = "http://example.edu/img/badge.png"
+    map_from = "https://example.edu/img/badge.png"
   }
 
   claim_mapping {

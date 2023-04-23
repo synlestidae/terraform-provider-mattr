@@ -151,7 +151,7 @@ type ExpiresIn struct {
 }
 
 type CredentialConfig struct {
-	Id                 string                        `json:"string,omitempty"`
+	Id                 string                        `json:"id,omitempty"`
 	Name               string                        `json:"name"`
 	Description        string                        `json:"description,omitempty"`
 	Type               string                        `json:"type"`

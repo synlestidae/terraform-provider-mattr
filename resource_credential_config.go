@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"sort"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
@@ -46,11 +47,11 @@ func resourceCredentialConfig() *schema.Resource {
 							Type:     schema.TypeString,
 							Required: true,
 						},
-						"icon_url": &schema.Schema{
+						"logo_url": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
 						},
-						"iconUrl": &schema.Schema{
+						"icon_url": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
 						},
@@ -159,6 +160,7 @@ func resourceCredentialConfigCreate(d *schema.ResourceData, m interface{}) error
 	}
 	processCredentialConfigData(config_response, d)
 	d.SetId(config_response.Id)
+	log.Println("Created credential config")
 	return nil
 }
 
@@ -171,6 +173,7 @@ func resourceCredentialConfigRead(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 	processCredentialConfigData(config_response, d)
+	log.Println("Read credential config")
 	return nil
 }
 
@@ -184,6 +187,7 @@ func resourceCredentialConfigUpdate(d *schema.ResourceData, m interface{}) error
 		return err
 	}
 	processCredentialConfigData(config_response, d)
+	log.Println("Updated credential config")
 	return nil
 }
 
@@ -194,7 +198,7 @@ func resourceCredentialConfigDelete(d *schema.ResourceData, m interface{}) error
 	if err != nil {
 		return err
 	}
-	d.SetId("")
+	log.Println("Deleted credential config")
 	return nil
 }
 
@@ -250,6 +254,9 @@ func processCredentialConfigData(config *CredentialConfig, d *schema.ResourceDat
 	d.Set("persist", config.Persist)
 	d.Set("revocable", config.Revocable)
 	d.Set("claim_source_id", config.ClaimSourceId)
+
+	d.SetId(config.Id)
+	log.Println("Processed credential config")
 }
 
 func fromTerraformCredentialConfig(d *schema.ResourceData) CredentialConfig {
@@ -262,7 +269,7 @@ func fromTerraformCredentialConfig(d *schema.ResourceData) CredentialConfig {
 	configIssuer := IssuerInfo{
 		Name:    configIssuerMap["name"].(string),
 		LogoUrl: configIssuerMap["logo_url"].(string),
-		IconUrl: configIssuerMap["name"].(string),
+		IconUrl: configIssuerMap["icon_url"].(string),
 	}
 
 	configBranding := CredentialBranding{
@@ -280,22 +287,61 @@ func fromTerraformCredentialConfig(d *schema.ResourceData) CredentialConfig {
 		}
 	}
 
-	configExpiresIn := ExpiresIn{
-		Years:   configExpiresInMap["years"].(int),
-		Months:  configExpiresInMap["months"].(int),
-		Weeks:   configExpiresInMap["weeks"].(int),
-		Days:    configExpiresInMap["days"].(int),
-		Hours:   configExpiresInMap["hours"].(int),
-		Minutes: configExpiresInMap["minutes"].(int),
-		Seconds: configExpiresInMap["seconds"].(int),
+	var yearStr, monthStr, weekStr, dayStr, hourStr, minuteStr, secondStr = configExpiresInMap["years"].(string),
+		configExpiresInMap["months"].(string),
+		configExpiresInMap["weeks"].(string),
+		configExpiresInMap["days"].(string),
+		configExpiresInMap["hours"].(string),
+		configExpiresInMap["minutes"].(string),
+		configExpiresInMap["seconds"].(string)
+
+	years, err := strconv.Atoi(yearStr)
+	if err != nil {
+		panic("Failed to convert years") // TODO error handling
 	}
+	months, err := strconv.Atoi(monthStr)
+	if err != nil {
+		panic("Failed to convert months") // TODO error handling
+	}
+	weeks, err := strconv.Atoi(weekStr)
+	if err != nil {
+		panic("Failed to convert weeks") // TODO error handling
+	}
+	days, err := strconv.Atoi(dayStr)
+	if err != nil {
+		panic("Failed to convert days") // TODO error handling
+	}
+	hours, err := strconv.Atoi(hourStr)
+	if err != nil {
+		panic("Failed to convert hours") // TODO error handling
+	}
+	minutes, err := strconv.Atoi(minuteStr)
+	if err != nil {
+		panic("Failed to convert minutes") // TODO error handling
+	}
+	seconds, err := strconv.Atoi(secondStr)
+	if err != nil {
+		panic("Failed to convert seconds") // TODO error handling
+	}
+
+	configExpiresIn := ExpiresIn{
+		Years:   years,
+		Months:  months,
+		Weeks:   weeks,
+		Days:    days,
+		Hours:   hours,
+		Minutes: minutes,
+		Seconds: seconds,
+	}
+
+	log.Println("Converted from resource data")
 
 	return CredentialConfig{
 		Name:               d.Get("name").(string),
 		Description:        d.Get("description").(string),
 		Type:               d.Get("type").(string),
-		AdditionalTypes:    d.Get("additional_types").([]string),
-		Contexts:           d.Get("contexts").([]string),
+		AdditionalTypes:    castToStringSlice(d.Get("additional_types").([]interface{})),
+		Contexts:           castToStringSlice(d.Get("contexts").([]interface{})),
 		Issuer:             configIssuer,
 		CredentialBranding: configBranding,
 		ClaimMappings:      claimMappings,
