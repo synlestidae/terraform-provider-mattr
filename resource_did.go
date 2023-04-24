@@ -56,6 +56,9 @@ func resourceDid() *schema.Resource {
 			"initial_did_document": &schema.Schema{
 				Type:     schema.TypeMap,
 				Computed: true,
+				Elem: &schema.Resource{
+					Schema: didDocumentSchema(),
+				},
 			},
 		},
 	}
@@ -162,14 +165,17 @@ func processDidDocument(d *schema.ResourceData, didDocument *DidDocument) {
 		keyAgreement[i]["public_key_base58"] = key.PublicKeyBase58
 	}
 
-	d.Set("id", didDocument.Id)
-	d.Set("@context", didDocument.Context)
-	d.Set("public_key", publicKey)
-	d.Set("key_agreement", keyAgreement)
-	d.Set("authentication", didDocument.Authentication)
-	d.Set("assertion_method", didDocument.AssertionMethod)
-	d.Set("capability_delegation", didDocument.CapabilityDelegation)
-	d.Set("capability_invocation", didDocument.CapabilityInvocation)
+	didDocumentMap := make(map[string]interface{}, 8)
+	didDocumentMap["id"] = didDocument.Id
+	didDocumentMap["@context"] = didDocument.Context
+	didDocumentMap["public_key"] = publicKey
+	didDocumentMap["key_agreement"] = keyAgreement
+	didDocumentMap["authentication"] = didDocument.Authentication
+	didDocumentMap["assertion_method"] = didDocument.AssertionMethod
+	didDocumentMap["capability_delegation"] = didDocument.CapabilityDelegation
+	didDocumentMap["capability_invocation"] = didDocument.CapabilityInvocation
+
+	d.Set("initial_did_document", didDocumentMap)
 }
 
 func didDocumentSchema() map[string]*schema.Schema {
