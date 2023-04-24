@@ -146,36 +146,49 @@ func processDidData(d *schema.ResourceData, response *DidResponse) {
 }
 
 func processDidDocument(d *schema.ResourceData, didDocument *DidDocument) {
-	publicKey := make([]map[string]string, len(didDocument.PublicKey))
-	keyAgreement := make([]map[string]string, len(didDocument.KeyAgreement))
+	publicKey := make([]map[string]interface{}, len(didDocument.PublicKey))
+	keyAgreement := make([]map[string]interface{}, len(didDocument.KeyAgreement))
 
-	for i, pubKey := range didDocument.KeyAgreement {
-		publicKey[i] = make(map[string]string, 4)
+	for i, pubKey := range didDocument.PublicKey {
+		publicKey[i] = make(map[string]interface{}, 4)
 		publicKey[i]["id"] = pubKey.Id
 		publicKey[i]["type"] = pubKey.Type
 		publicKey[i]["controller"] = pubKey.Controller
 		publicKey[i]["public_key_base58"] = pubKey.PublicKeyBase58
 	}
 
-	for i, key := range didDocument.KeyAgreement {
-		keyAgreement[i] = make(map[string]string, 5)
-		keyAgreement[i]["id"] = key.Id
-		keyAgreement[i]["type"] = key.Type
-		keyAgreement[i]["controller"] = key.Controller
-		keyAgreement[i]["public_key_base58"] = key.PublicKeyBase58
+	for i, ka := range didDocument.KeyAgreement {
+		keyAgreement[i] = make(map[string]interface{}, 4)
+		keyAgreement[i]["id"] = ka.Id
+		keyAgreement[i]["type"] = ka.Type
+		keyAgreement[i]["controller"] = ka.Controller
+		keyAgreement[i]["public_key_base58"] = ka.PublicKeyBase58
 	}
 
-	didDocumentMap := make(map[string]interface{}, 8)
-	didDocumentMap["id"] = didDocument.Id
-	didDocumentMap["@context"] = didDocument.Context
-	didDocumentMap["public_key"] = publicKey
-	didDocumentMap["key_agreement"] = keyAgreement
-	didDocumentMap["authentication"] = didDocument.Authentication
-	didDocumentMap["assertion_method"] = didDocument.AssertionMethod
-	didDocumentMap["capability_delegation"] = didDocument.CapabilityDelegation
-	didDocumentMap["capability_invocation"] = didDocument.CapabilityInvocation
+	auth := make([]string, len(didDocument.Authentication))
+	copy(auth, didDocument.Authentication)
 
-	d.Set("initial_did_document", didDocumentMap)
+	assertion := make([]string, len(didDocument.AssertionMethod))
+	copy(assertion, didDocument.AssertionMethod)
+
+	delegation := make([]string, len(didDocument.CapabilityDelegation))
+	copy(delegation, didDocument.CapabilityDelegation)
+
+	invocation := make([]string, len(didDocument.CapabilityInvocation))
+	copy(invocation, didDocument.CapabilityInvocation)
+
+	didDoc := map[string]interface{}{
+		"id":                    didDocument.Id,
+		"@context":              didDocument.Context,
+		"public_key":            publicKey,
+		"key_agreement":         keyAgreement,
+		"authentication":        auth,
+		"assertion_method":      assertion,
+		"capability_delegation": delegation,
+		"capability_invocation": invocation,
+	}
+
+	d.Set("initial_did_document", didDoc)
 }
 
 func didDocumentSchema() map[string]*schema.Schema {

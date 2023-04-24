@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"sort"
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -225,9 +224,6 @@ func processCredentialConfigData(config *CredentialConfig, d *schema.ResourceDat
 		claimList[i]["default_value"] = claim.DefaultValue
 		i++
 	}
-	sort.Slice(claimList, func(i int, j int) bool {
-		return claimList[i]["name"].(string) < claimList[j]["name"].(string)
-	})
 
 	// expiresInMap
 	expiresIn := make(map[string]int)
