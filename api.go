@@ -45,10 +45,35 @@ type DidResponse struct {
 	LocalMetadata      LocalMetadata `json:"localMetadata"`
 }
 
+type PublicKey struct {
+	Id              string `json:"id"`
+	Type            string `json:"type"`
+	Controller      string `json:"controller"`
+	PublicKeyBase58 string `json:"publicKeyBase58"`
+}
+
+type KeyAgreement struct {
+	Id              string `json:"id"`
+	Type            string `json:"type"`
+	Controller      string `json:"controller"`
+	PublicKeyBase58 string `json:"publicKeyBase58"`
+}
+
+type DidDocument struct {
+	Id                   string         `json:"id"`
+	Context              string         `json:"@context"`
+	PublicKey            []PublicKey    `json:"publicKey"`
+	KeyAgreement         []KeyAgreement `json:"keyAgreement"`
+	Authentication       []string       `json:"authentication"`
+	AssertionMethod      []string       `json:"assertionMethod"`
+	CapabilityDelegation []string       `json:"capabilityDelegation"`
+	CapabilityInvocation []string       `json:"capabilityInvocation"`
+}
+
 type LocalMetadata struct {
-	Keys               []KeyMetadata  `json:"keys"`
-	Registered         int64          `json:"registered"`
-	InitialDidDocument map[string]any `json:"initialDidDocument"`
+	Keys               []KeyMetadata `json:"keys"`
+	Registered         int64         `json:"registered"`
+	InitialDidDocument DidDocument   `json:"initialDidDocument"`
 }
 
 type KeyMetadata struct {

@@ -89,6 +89,7 @@ func resourceDidCreate(d *schema.ResourceData, m interface{}) error {
 	d.SetId(did_response.Did)
 	return nil
 }
+
 func resourceDidRead(d *schema.ResourceData, m interface{}) error {
 	log.Println("Reading did")
 
@@ -138,5 +139,128 @@ func processDidData(d *schema.ResourceData, response *DidResponse) {
 	}
 
 	d.Set("keys", keys)
-	d.Set("initial_did_document", response.LocalMetadata.InitialDidDocument)
+	processDidDocument(d, &response.LocalMetadata.InitialDidDocument)
+}
+
+func processDidDocument(d *schema.ResourceData, didDocument *DidDocument) {
+	publicKey := make([]map[string]string, len(didDocument.PublicKey))
+	keyAgreement := make([]map[string]string, len(didDocument.KeyAgreement))
+
+	for i, pubKey := range didDocument.KeyAgreement {
+		publicKey[i] = make(map[string]string, 4)
+		publicKey[i]["id"] = pubKey.Id
+		publicKey[i]["type"] = pubKey.Type
+		publicKey[i]["controller"] = pubKey.Controller
+		publicKey[i]["public_key_base58"] = pubKey.PublicKeyBase58
+	}
+
+	for i, key := range didDocument.KeyAgreement {
+		keyAgreement[i] = make(map[string]string, 5)
+		keyAgreement[i]["id"] = key.Id
+		keyAgreement[i]["type"] = key.Type
+		keyAgreement[i]["controller"] = key.Controller
+		keyAgreement[i]["public_key_base58"] = key.PublicKeyBase58
+	}
+
+	d.Set("id", didDocument.Id)
+	d.Set("@context", didDocument.Context)
+	d.Set("public_key", publicKey)
+	d.Set("key_agreement", keyAgreement)
+	d.Set("authentication", didDocument.Authentication)
+	d.Set("assertion_method", didDocument.AssertionMethod)
+	d.Set("capability_delegation", didDocument.CapabilityDelegation)
+	d.Set("capability_invocation", didDocument.CapabilityInvocation)
+}
+
+func didDocumentSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"id": &schema.Schema{
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"@context": &schema.Schema{
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"public_key": &schema.Schema{
+			Type:     schema.TypeList,
+			Computed: true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": &schema.Schema{
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"type": &schema.Schema{
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"controller": &schema.Schema{
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"public_key_base58": &schema.Schema{
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+				},
+			},
+		},
+		"key_agreement": &schema.Schema{
+			Type:     schema.TypeList,
+			Computed: true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": &schema.Schema{
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"type": &schema.Schema{
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"controller": &schema.Schema{
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"public_key_base58": &schema.Schema{
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"private_key_base58": &schema.Schema{
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+				},
+			},
+		},
+		"authentication": &schema.Schema{
+			Type:     schema.TypeList,
+			Computed: true,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		},
+		"assertion_method": &schema.Schema{
+			Type:     schema.TypeList,
+			Computed: true,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		},
+		"capability_delegation": &schema.Schema{
+			Type:     schema.TypeList,
+			Computed: true,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		},
+		"capability_invocation": &schema.Schema{
+			Type:     schema.TypeList,
+			Computed: true,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		},
+	}
 }
