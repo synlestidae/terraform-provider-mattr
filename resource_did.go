@@ -165,27 +165,19 @@ func processDidDocument(d *schema.ResourceData, didDocument *DidDocument) {
 		keyAgreement[i]["public_key_base58"] = ka.PublicKeyBase58
 	}
 
-	auth := make([]string, len(didDocument.Authentication))
-	copy(auth, didDocument.Authentication)
-
-	assertion := make([]string, len(didDocument.AssertionMethod))
-	copy(assertion, didDocument.AssertionMethod)
-
-	delegation := make([]string, len(didDocument.CapabilityDelegation))
-	copy(delegation, didDocument.CapabilityDelegation)
-
-	invocation := make([]string, len(didDocument.CapabilityInvocation))
-	copy(invocation, didDocument.CapabilityInvocation)
+	//auth := make([]interface{}, len(didDocument.Authentication))
 
 	didDoc := map[string]interface{}{
-		"id":                    didDocument.Id,
-		"@context":              didDocument.Context,
-		"public_key":            publicKey,
-		"key_agreement":         keyAgreement,
-		"authentication":        auth,
-		"assertion_method":      assertion,
-		"capability_delegation": delegation,
-		"capability_invocation": invocation,
+		"id":      didDocument.Id,
+		"context": didDocument.Context,
+		// TODO been having some problems getting the
+		// TODO next fields to show :/
+		//"public_key":            publicKey,
+		//"key_agreement":         keyAgreement,
+		//"authentication": auth,
+		//"assertion_method":      assertion,
+		//"capability_delegation": delegation,
+		//"capability_invocation": invocation,
 	}
 
 	d.Set("initial_did_document", didDoc)
@@ -197,7 +189,7 @@ func didDocumentSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"@context": &schema.Schema{
+		"context": &schema.Schema{
 			Type:     schema.TypeString,
 			Computed: true,
 		},
