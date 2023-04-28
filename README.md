@@ -1,6 +1,6 @@
 | Feature                   | Description                                             | Implementation   | Unit tests    | Integration tests |
 | ------------------------- | --------------------------------------------------------| ---------------- | ------------- | ----------------- |
-| DID resource              | Creating DIDs for issuing                               | `██████░░ 75 %`  | `░░░░░░░░ 0%` | `░░░░░░░░ 0%`     |
+| DID resource              | Creating DIDs for issuing                               | `████████ 100 %` | `░░░░░░░░ 0%` | `░░░░░░░░ 0%`     |
 | Webhook resource          | Webhooks to receive events                              | `████████ 100 %` | `░░░░░░░░ 0%` | `░░░░░░░░ 0%`     |
 | Credential config resource| Specifies a credential to issue                         | `██████░░ 75 %`  | `░░░░░░░░ 0%` | `░░░░░░░░ 0%`     |
 | Claim source config       | Used by credential config to retrieve claims            | `█░░░░░░░ 12.5 %`| `░░░░░░░░ 0%` | `░░░░░░░░ 0%`     |
