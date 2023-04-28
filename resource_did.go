@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -53,11 +54,84 @@ func resourceDid() *schema.Resource {
 					},
 				},
 			},
-			"initial_did_document": &schema.Schema{
-				Type:     schema.TypeMap,
+			"context": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"public_key": &schema.Schema{
+				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
-					Schema: didDocumentSchema(),
+					Schema: map[string]*schema.Schema{
+						"id": &schema.Schema{
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"type": &schema.Schema{
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"controller": &schema.Schema{
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"public_key_base58": &schema.Schema{
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
+			"key_agreement": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": &schema.Schema{
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"type": &schema.Schema{
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"controller": &schema.Schema{
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"public_key_base58": &schema.Schema{
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
+			"authentication": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"assertion_method": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"capability_delegation": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"capability_invocation": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
 				},
 			},
 		},
@@ -88,7 +162,10 @@ func resourceDidCreate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	// success, process did
-	processDidData(d, did_response)
+	err = processDidData(d, did_response)
+	if err != nil {
+		return err
+	}
 	d.SetId(did_response.Did)
 	return nil
 }
@@ -104,7 +181,10 @@ func resourceDidRead(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	processDidData(d, did_response)
+	err = processDidData(d, did_response)
+	if err != nil {
+		return err
+	}
 	d.SetId(did)
 
 	return nil
@@ -127,7 +207,7 @@ func resourceDidDelete(d *schema.ResourceData, m interface{}) error {
 
 }
 
-func processDidData(d *schema.ResourceData, response *DidResponse) {
+func processDidData(d *schema.ResourceData, response *DidResponse) error {
 	d.Set("registration_status", response.RegistrationStatus)
 	d.Set("registered", response.LocalMetadata.Registered)
 
@@ -142,15 +222,15 @@ func processDidData(d *schema.ResourceData, response *DidResponse) {
 	}
 
 	d.Set("keys", keys)
-	processDidDocument(d, &response.LocalMetadata.InitialDidDocument)
+	return processDidDocument(d, &response.LocalMetadata.InitialDidDocument)
 }
 
-func processDidDocument(d *schema.ResourceData, didDocument *DidDocument) {
-	publicKey := make([]map[string]interface{}, len(didDocument.PublicKey))
-	keyAgreement := make([]map[string]interface{}, len(didDocument.KeyAgreement))
+func processDidDocument(d *schema.ResourceData, didDocument *DidDocument) error {
+	publicKey := make([]map[string]string, len(didDocument.PublicKey))
+	keyAgreement := make([]map[string]string, len(didDocument.KeyAgreement))
 
 	for i, pubKey := range didDocument.PublicKey {
-		publicKey[i] = make(map[string]interface{}, 4)
+		publicKey[i] = make(map[string]string, 4)
 		publicKey[i]["id"] = pubKey.Id
 		publicKey[i]["type"] = pubKey.Type
 		publicKey[i]["controller"] = pubKey.Controller
@@ -158,7 +238,7 @@ func processDidDocument(d *schema.ResourceData, didDocument *DidDocument) {
 	}
 
 	for i, ka := range didDocument.KeyAgreement {
-		keyAgreement[i] = make(map[string]interface{}, 4)
+		keyAgreement[i] = make(map[string]string, 4)
 		keyAgreement[i]["id"] = ka.Id
 		keyAgreement[i]["type"] = ka.Type
 		keyAgreement[i]["controller"] = ka.Controller
@@ -167,20 +247,34 @@ func processDidDocument(d *schema.ResourceData, didDocument *DidDocument) {
 
 	//auth := make([]interface{}, len(didDocument.Authentication))
 
-	didDoc := map[string]interface{}{
-		"id":      didDocument.Id,
-		"context": didDocument.Context,
-		// TODO been having some problems getting the
-		// TODO next fields to show :/
-		//"public_key":            publicKey,
-		//"key_agreement":         keyAgreement,
-		//"authentication": auth,
-		//"assertion_method":      assertion,
-		//"capability_delegation": delegation,
-		//"capability_invocation": invocation,
+	var err error
+
+	//if err = d.Set("did", didDocument.Id); err != nil {
+	//	return fmt.Errorf("error setting 'id' field: %s", err)
+	//}
+	if err = d.Set("context", didDocument.Context); err != nil {
+		return fmt.Errorf("error setting 'context' field: %s", err)
+	}
+	if err = d.Set("public_key", publicKey); err != nil {
+		return fmt.Errorf("error setting 'public_key' field: %s", err)
+	}
+	if err = d.Set("key_agreement", keyAgreement); err != nil {
+		return fmt.Errorf("error setting 'key_agreement' field: %s", err)
+	}
+	if err = d.Set("authentication", didDocument.Authentication); err != nil {
+		return fmt.Errorf("error setting 'authentication' field: %s", err)
+	}
+	if err = d.Set("assertion_method", didDocument.AssertionMethod); err != nil {
+		return fmt.Errorf("error setting 'assertion_method' field: %s", err)
+	}
+	if err = d.Set("capability_delegation", didDocument.CapabilityDelegation); err != nil {
+		return fmt.Errorf("error setting 'capability_delegation' field: %s", err)
+	}
+	if err = d.Set("capability_invocation", didDocument.CapabilityInvocation); err != nil {
+		return fmt.Errorf("error setting 'capability_invocation' field: %s", err)
 	}
 
-	d.Set("initial_did_document", didDoc)
+	return nil
 }
 
 func didDocumentSchema() map[string]*schema.Schema {
@@ -235,10 +329,6 @@ func didDocumentSchema() map[string]*schema.Schema {
 						Computed: true,
 					},
 					"public_key_base58": &schema.Schema{
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"private_key_base58": &schema.Schema{
 						Type:     schema.TypeString,
 						Computed: true,
 					},
