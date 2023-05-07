@@ -10,37 +10,33 @@ func Provider() *schema.Provider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"client_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc(ENV_CLIENT_ID, nil),
+				Type:     schema.TypeString,
+				Optional: true,
 			},
 			"client_secret": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc(ENV_CLIENT_SECRET, nil),
+				Type:     schema.TypeString,
+				Optional: true,
 			},
 			"audience": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc(ENV_AUTH_AUDIENCE, nil),
+				Type:     schema.TypeString,
+				Optional: true,
 			},
 			"auth_url": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc(ENV_AUTH_URL, nil),
+				Type:     schema.TypeString,
+				Optional: true,
 			},
 			"api_url": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc(ENV_API_URL, nil),
+				Type:     schema.TypeString,
+				Optional: true,
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"mattr_did":         resourceDid(),
-			"mattr_webhook":     resourceWebhook(),
-			"mattr_issuer":      resourceIssuer(),
-			"mattr_credential":  resourceCredentialConfig(),
-			"mattr_claimsource": resourceClaimSource(),
+			"mattr_did":            resourceDid(),
+			"mattr_webhook":        resourceWebhook(),
+			"mattr_issuer":         resourceIssuer(),
+			"mattr_credential":     resourceCredentialConfig(),
+			"mattr_claimsource":    resourceClaimSource(),
+			"mattr_authentication": resourceAuthentication(),
 		},
 		ConfigureFunc: ProviderConfigure,
 	}

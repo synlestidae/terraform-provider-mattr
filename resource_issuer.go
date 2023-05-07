@@ -268,15 +268,10 @@ func fromTerraformIssuer(d *schema.ResourceData) IssuerRequest {
 	staticRequestParameters := d.Get("static_request_parameters").(map[string]interface{})
 
 	// TODO fix crappy conversion here
-
 	if max_age_string, ok := staticRequestParameters["max_age"].(string); ok {
 		if max_age_int, err := strconv.Atoi(max_age_string); err == nil {
 			staticRequestParameters["max_age"] = max_age_int
-		} else {
-			log.Println("No converty number")
 		}
-	} else {
-		log.Println("No converty string")
 	}
 
 	log.Println("Prepared issuer data")

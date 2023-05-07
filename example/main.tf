@@ -23,7 +23,7 @@ resource "mattr_issuer" "antunovic_issuer" {
   context         = ["https://schema.org"]
   type            = ["AlumniCredential"]
   federated_provider = {
-    url                        = "https://accounts.google.com/"
+    url                        = "https://accounts.google.com"
     scope                      = "openid"
     client_id                  = "UKNVhhnFUK2T0bR05R5IRLSImEw8mLCh"
     client_secret              = "LvBLr8yeVP9i8wCUY25720XNJ63zvBP-MtMSVQFiEhsFqP5uM4ORp51Owp6Vud7_"
@@ -126,4 +126,28 @@ resource "mattr_claimsource" "antunovic_claimsource" {
     map_from      = "claims.accountType"
     default_value = "student"
   }
+}
+
+resource "mattr_authentication" "antunovic_authentication" {
+  url = "https://accounts.google.com/"
+  scope = [
+    "openid",
+    "email"
+  ]
+  client_id = "vJ0SCKchr4XjC0xHNE8DkH6Pmlg2lkCN"
+  client_secret = "QNwfa4Yi4Im9zy1u_15n7SzWKt-9G5cdH0r1bONRpUPfN-UIRaaXv_90z8V6-OjH"
+  token_endpoint_auth_method = "client_secret_post"
+  claims_source = "idToken"
+  static_request_parameters = {
+    "prompt": "login",
+    "max_age": 10000
+  }
+  forwarded_request_parameters = [
+    "login_hint"
+  ]
+  claims_to_sync = [
+    "first_name",
+    "last_name",
+    "email"
+  ]
 }

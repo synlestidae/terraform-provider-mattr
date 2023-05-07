@@ -191,6 +191,20 @@ type CredentialConfig struct {
 	ExpiresIn          ExpiresIn                     `json:"expiresIn,omitempty"`
 }
 
+type AuthenticationProvider struct {
+	Id                         string         `json:"id"`
+	RedirectUrl                string         `json:"redirectUrl"`
+	Url                        string         `json:"url"`
+	Scope                      []string       `json:"scope"`
+	ClientId                   string         `json:"clientId"`
+	ClientSecret               string         `json:"clientSecret"`
+	TokenEndpointAuthMethod    string         `json:"tokenEndpointAuthMethod"`
+	ClaimsSource               string         `json:"claimsSource"`
+	StaticRequestParameters    map[string]any `json:"staticRequestParameters"`
+	ForwardedRequestParameters []string       `json:"forwardedRequestParameters"`
+	ClaimsToSync               []string       `json:"claimsToSync"`
+}
+
 type WellKnownResponse struct {
 }
 
@@ -404,8 +418,21 @@ func (a *Api) PutVerifier(id string, verifier *VerifierRequest) (*VerifierRespon
 	return nil, fmt.Errorf("Not quite implemented yet")
 }
 
-func (a *Api) DeleteVerifier(id string) error {
-	return fmt.Errorf("Not quite implemented yet")
+// Authentication Providers
+func (a *Api) PostAuthenticationProvider(authenticationProvider *AuthenticationProvider) (*AuthenticationProvider, error) {
+	return Post[AuthenticationProvider](a, "/core/v1/users/authenticationproviders/", authenticationProvider)
+}
+
+func (a *Api) GetAuthenticationProvider(id string) (*AuthenticationProvider, error) {
+	return Get[AuthenticationProvider](a, fmt.Sprintf("/core/v1/users/authenticationproviders/%s", id))
+}
+
+func (a *Api) PutAuthenticationProvider(authenticationProvider *AuthenticationProvider) (*AuthenticationProvider, error) {
+	return Put[AuthenticationProvider](a, fmt.Sprintf("/core/v1/users/authenticationproviders/%s", authenticationProvider.Id), authenticationProvider)
+}
+
+func (a *Api) DeleteAuthenticationProvider(id string) error {
+	return Delete(a, fmt.Sprintf("/core/v1/users/authenticationproviders/%s", id))
 }
 
 func (a *Api) GetUrl(path string) (string, error) {
