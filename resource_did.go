@@ -15,9 +15,10 @@ func resourceDid() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"method": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Description: "The method (or type) of did: key, web, or ion",
+				Required:    true,
+				ForceNew:    true,
 			},
 			"url": &schema.Schema{
 				Type:        schema.TypeString,
