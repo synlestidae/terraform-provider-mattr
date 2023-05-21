@@ -150,7 +150,7 @@ func resourceIssuerRead(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceIssuerUpdate(d *schema.ResourceData, m interface{}) error {
-	log.Println("Updating issuer %s", d.Id())
+	log.Println("Updating issuer")
 	issuer_id := d.Id()
 	api := m.(ProviderConfig).Api
 	issuer_request := fromTerraformIssuer(d)
@@ -163,7 +163,7 @@ func resourceIssuerUpdate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceIssuerDelete(d *schema.ResourceData, m interface{}) error {
-	log.Println("Deleting issuer %s", d.Id())
+	log.Println("Deleting issuer")
 	issuer_id := d.Id()
 	api := m.(ProviderConfig).Api
 	return api.DeleteIssuer(issuer_id)

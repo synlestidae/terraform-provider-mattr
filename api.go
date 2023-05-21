@@ -506,8 +506,6 @@ func (a *Api) GetAccessToken() (string, error) {
 	a.AccessToken = response.AccessToken
 	a.AccessTokenExpiresAt = time.Now().Unix() + int64(response.ExpiresIn) - timeElapsed
 
-	log.Println("Access token is %s", a.AccessToken)
-
 	return response.AccessToken, nil
 }
 
