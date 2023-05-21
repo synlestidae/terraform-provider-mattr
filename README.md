@@ -1,3 +1,12 @@
+# A third-party Terraform provider for MATTR
+
+[MATTR VII](https://mattr.global/platform/vii/) is a platform for developing applications to use decentralised identity.
+MATTR provides a [REST API](https://learn.mattr.global/api-reference) which lets you manage resources such as DIDs, 
+issuers, document signers, and so on. I made this Terraform plugin to make it easier to manage your MATTR set up, and 
+save time. This provider allows you to declare and manage resources without having to use an HTTP client.
+
+# Feature progress
+
 | Feature                   | Description                                             | Implementation   | Unit tests    | Integration tests |
 | ------------------------- | --------------------------------------------------------| ---------------- | ------------- | ----------------- |
 | DID resource              | Creating DIDs for issuing                               | `████████ 100 %` | `░░░░░░░░ 0%` | `░░░░░░░░ 0%`     |
