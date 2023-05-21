@@ -55,8 +55,11 @@ func resourceDid() *schema.Resource {
 				},
 			},
 			"context": &schema.Schema{
-				Type:     schema.TypeString,
+				Type:     schema.TypeList,
 				Computed: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
 			},
 			"public_key": &schema.Schema{
 				Type:     schema.TypeList,
@@ -249,9 +252,6 @@ func processDidDocument(d *schema.ResourceData, didDocument *DidDocument) error 
 
 	var err error
 
-	//if err = d.Set("did", didDocument.Id); err != nil {
-	//	return fmt.Errorf("error setting 'id' field: %s", err)
-	//}
 	if err = d.Set("context", didDocument.Context); err != nil {
 		return fmt.Errorf("error setting 'context' field: %s", err)
 	}

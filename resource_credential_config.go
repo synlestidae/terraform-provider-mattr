@@ -19,6 +19,10 @@ func resourceCredentialConfig() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
+			"secret": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"description": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
@@ -255,7 +259,7 @@ func processCredentialConfigData(config *CredentialConfig, d *schema.ResourceDat
 }
 
 func fromTerraformCredentialConfig(d *schema.ResourceData) CredentialConfig {
-	log.Println("Converting from resource data")
+	log.Println("Converting credential config from REST")
 	configIssuerMap := d.Get("issuer").(map[string]interface{})
 	configBrandingMap := d.Get("credential_branding").(map[string]interface{})
 	claimMappingsList := d.Get("claim_mapping").([]interface{})

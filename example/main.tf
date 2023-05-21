@@ -1,11 +1,6 @@
 resource "mattr_did" "did" {
-  method = "web"
-  url    = "www.antunovic.nz"
-}
-
-resource "mattr_did" "test_did" {
-  method = "web"
-  url    = "test.com"
+  method = "key"
+  //url    = "www.antunovic.nz"
 }
 
 resource "mattr_webhook" "issue_webhook" {
@@ -23,7 +18,7 @@ resource "mattr_issuer" "antunovic_issuer" {
   context         = ["https://schema.org"]
   type            = ["AlumniCredential"]
   federated_provider = {
-    url                        = "https://accounts.google.com"
+    url                        = "https://accounts.google.com/"
     scope                      = "openid"
     client_id                  = "UKNVhhnFUK2T0bR05R5IRLSImEw8mLCh"
     client_secret              = "LvBLr8yeVP9i8wCUY25720XNJ63zvBP-MtMSVQFiEhsFqP5uM4ORp51Owp6Vud7_"
@@ -44,6 +39,23 @@ resource "mattr_issuer" "antunovic_issuer" {
     json_ld_term = "alumniOf"
     oidc_claim   = "alumni_of"
   }
+}
+
+resource "mattr_issuer_client" "antunovic_issuer_client" {
+  issuer_id = mattr_issuer.antunovic_issuer.id
+  name = "OIDC Client for Wallet"
+  redirect_uris = [
+    "https://example.com/callback"
+  ]
+  response_types = [
+    "code"
+  ]
+  grant_types = [
+    "authorization_code"
+  ]
+  token_endpoint_auth_method   = "client_secret_post"
+  id_token_signed_response_alg = "ES256"
+  application_type             = "web"
 }
 
 resource "mattr_credential" "antunovic_credential" {
@@ -108,9 +120,9 @@ resource "mattr_credential" "antunovic_credential" {
   }
 }
 
-resource "mattr_claimsource" "antunovic_claimsource" {
+resource "mattr_claim_source" "antunovic_claim_source" {
   name = "My claims from example.com"
-  url  = "https://example.com"
+  url  = "https://example.com/"
   authorization = {
     type  = "api-key"
     value = "6hrFDATxrG9w14QY9wwnmVhLE0Wg6LIvwOwUaxz761m1J"
@@ -128,19 +140,19 @@ resource "mattr_claimsource" "antunovic_claimsource" {
   }
 }
 
-resource "mattr_authentication" "antunovic_authentication" {
+/*resource "mattr_authentication_provider" "antunovic_authentication_provider" {
   url = "https://accounts.google.com/"
   scope = [
     "openid",
     "email"
   ]
-  client_id = "vJ0SCKchr4XjC0xHNE8DkH6Pmlg2lkCN"
-  client_secret = "QNwfa4Yi4Im9zy1u_15n7SzWKt-9G5cdH0r1bONRpUPfN-UIRaaXv_90z8V6-OjH"
+  client_id                  = "vJ0SCKchr4XjC0xHNE8DkH6Pmlg2lkCN"
+  client_secret              = "QNwfa4Yi4Im9zy1u_15n7SzWKt-9G5cdH0r1bONRpUPfN-UIRaaXv_90z8V6-OjH"
   token_endpoint_auth_method = "client_secret_post"
-  claims_source = "idToken"
+  claims_source              = "idToken"
   static_request_parameters = {
-    "prompt": "login",
-    "max_age": 10000
+    "prompt" : "login",
+    "max_age" : 10000
   }
   forwarded_request_parameters = [
     "login_hint"
@@ -150,4 +162,4 @@ resource "mattr_authentication" "antunovic_authentication" {
     "last_name",
     "email"
   ]
-}
+}*/

@@ -1,5 +1,3 @@
-// provider.go
-
 package main
 
 import (
@@ -31,12 +29,13 @@ func Provider() *schema.Provider {
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"mattr_did":            resourceDid(),
-			"mattr_webhook":        resourceWebhook(),
-			"mattr_issuer":         resourceIssuer(),
-			"mattr_credential":     resourceCredentialConfig(),
-			"mattr_claimsource":    resourceClaimSource(),
-			"mattr_authentication": resourceAuthentication(),
+			"mattr_did":                     resourceDid(),
+			"mattr_webhook":                 resourceWebhook(),
+			"mattr_issuer":                  resourceIssuer(),
+			"mattr_credential":              resourceCredentialConfig(),
+			"mattr_claim_source":            resourceClaimSource(),
+			"mattr_authentication_provider": resourceAuthentication(),
+			"mattr_issuer_client":           resourceIssuerClient(),
 		},
 		ConfigureFunc: ProviderConfigure,
 	}

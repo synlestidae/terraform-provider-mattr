@@ -61,7 +61,7 @@ type KeyAgreement struct {
 
 type DidDocument struct {
 	Id                   string         `json:"id"`
-	Context              string         `json:"@context"`
+	Context              []string       `json:"@context"`
 	PublicKey            []PublicKey    `json:"publicKey"`
 	KeyAgreement         []KeyAgreement `json:"keyAgreement"`
 	Authentication       []string       `json:"authentication"`
@@ -193,8 +193,8 @@ type CredentialConfig struct {
 
 type AuthenticationProvider struct {
 	Id                         string         `json:"id"`
-	RedirectUrl                string         `json:"redirectUrl"`
 	Url                        string         `json:"url"`
+	RedirectUrl                string         `json:"redirectUrl"`
 	Scope                      []string       `json:"scope"`
 	ClientId                   string         `json:"clientId"`
 	ClientSecret               string         `json:"clientSecret"`
@@ -209,7 +209,7 @@ type WellKnownResponse struct {
 }
 
 type IssuerClientRequest struct {
-	Name                     string   `json:"string"`
+	Name                     string   `json:"name"`
 	RedirectUris             []string `json:"redirectUris"`
 	ResponseTypes            []string `json:"responseTypes"`
 	GrantTypes               []string `json:"grantTypes"`
@@ -394,7 +394,7 @@ func (a *Api) GetIssuerClient(issuerId string, issuerClientId string) (*IssuerCl
 }
 
 func (a *Api) PutIssuerClient(issuerId string, clientId string, request *IssuerClientRequest) (*IssuerClientResponse, error) {
-	return Post[IssuerClientResponse](a, fmt.Sprintf("/ext/oidc/v1/issuers/%s/clients/%s", issuerId, clientId), request)
+	return Put[IssuerClientResponse](a, fmt.Sprintf("/ext/oidc/v1/issuers/%s/clients/%s", issuerId, clientId), request)
 }
 
 func (a *Api) DeleteIssuerClient(issuerId string, clientId string) error {
