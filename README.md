@@ -5,6 +5,9 @@ MATTR provides a [REST API](https://learn.mattr.global/api-reference) which lets
 issuers, document signers, and so on. I made this Terraform plugin to make it easier to manage your MATTR set up, and 
 save time. This provider allows you to declare and manage resources without having to use an HTTP client.
 
+This project is independent, fan-made software intended to be used with [MATTR](https://mattr.global)'s platform. It
+is not officially endorsed or sponsored by MATTR.
+
 # Feature progress
 
 | Feature                   | Description                                             | Implementation   | Unit tests    | Integration tests |
