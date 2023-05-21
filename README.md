@@ -22,3 +22,4 @@ is not officially endorsed or sponsored by MATTR.
 | Verifier resource         | Specify which credentials are valid                     | `░░░░░░░░ 0 %`   | `░░░░░░░░ 0%` | `░░░░░░░░ 0%`     |
 | Verifier client resource  | Configure presentations for valid creds                 | `░░░░░░░░ 0 %`   | `░░░░░░░░ 0%` | `░░░░░░░░ 0%`     |
 | Custom domain resource    | Configure issuer and verifier pages under your domain   | `░░░░░░░░ 0 %`   | `░░░░░░░░ 0%` | `░░░░░░░░ 0%`     |
+
