@@ -36,6 +36,7 @@ func Provider() *schema.Provider {
 			"mattr_claim_source":            resourceClaimSource(),
 			"mattr_authentication_provider": resourceAuthentication(),
 			"mattr_issuer_client":           resourceIssuerClient(),
+			"mattr_verifier":                resourceVerifier(),
 		},
 		ConfigureFunc: ProviderConfigure,
 	}

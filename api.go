@@ -235,15 +235,17 @@ type IssuerClientListResponse struct {
 	Data       []IssuerClientResponse `json:"data"`
 }
 
-type VerifierRequest struct {
-}
-
-type VerifierResponse struct {
+type Verifier struct {
+	Id                     string         `json:"id"`
+	VerifierDid            string         `json:"verifierDid"`
+	PresentationTemplateId string         `json:"presentationTemplateId"`
+	ClaimMappings          []ClaimMapping `json:"claimMappings"`
+	IncludePresentation    bool           `json:"includePresentation"`
 }
 
 type VerifierListResponse struct {
-	NextCursor string             `json:"nextCursor"`
-	Data       []VerifierResponse `json:"data"`
+	NextCursor string     `json:"nextCursor"`
+	Data       []Verifier `json:"data"`
 }
 
 type VerifierClientRequest struct {
@@ -260,8 +262,8 @@ type VerifierClientResponse struct {
 }
 
 type VerifierClientListResponse struct {
-	NextCursor string             `json:"nextCursor"`
-	Data       []VerifierResponse `json:"data"`
+	NextCursor string     `json:"nextCursor"`
+	Data       []Verifier `json:"data"`
 }
 
 type ClaimSourceAuthorization struct {
@@ -402,7 +404,7 @@ func (a *Api) DeleteIssuerClient(issuerId string, clientId string) error {
 }
 
 // Verifiers
-func (a *Api) CreateVerifier(verifier *VerifierRequest) (*VerifierResponse, error) {
+func (a *Api) PostVerifier(verifier *Verifier) (*Verifier, error) {
 	return nil, fmt.Errorf("Not quite implemented yet")
 }
 
@@ -410,12 +412,16 @@ func (a *Api) GetVerifiers(cursor string) (*VerifierListResponse, error) {
 	return nil, fmt.Errorf("Not quite implemented yet")
 }
 
-func (a *Api) GetVerifier(id string) (*VerifierResponse, error) {
+func (a *Api) GetVerifier(id string) (*Verifier, error) {
 	return nil, fmt.Errorf("Not quite implemented yet")
 }
 
-func (a *Api) PutVerifier(id string, verifier *VerifierRequest) (*VerifierResponse, error) {
+func (a *Api) PutVerifier(id string, verifier *Verifier) (*Verifier, error) {
 	return nil, fmt.Errorf("Not quite implemented yet")
+}
+
+func (a *Api) DeleteVerifier(id string) error {
+	return fmt.Errorf("Not quite implemented yet")
 }
 
 // Authentication Providers

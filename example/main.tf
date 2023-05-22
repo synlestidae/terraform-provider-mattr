@@ -1,6 +1,6 @@
 resource "mattr_did" "did" {
   method = "key"
-  //url    = "www.antunovic.nz"
+  key_type = "Bls12381G2"
 }
 
 resource "mattr_webhook" "issue_webhook" {
