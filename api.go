@@ -61,13 +61,50 @@ type KeyAgreement struct {
 
 type DidDocument struct {
 	Id                   string         `json:"id"`
-	Context              []string       `json:"@context"`
+	Context              Context        `json:"@context"`
 	PublicKey            []PublicKey    `json:"publicKey"`
 	KeyAgreement         []KeyAgreement `json:"keyAgreement"`
 	Authentication       []string       `json:"authentication"`
 	AssertionMethod      []string       `json:"assertionMethod"`
 	CapabilityDelegation []string       `json:"capabilityDelegation"`
 	CapabilityInvocation []string       `json:"capabilityInvocation"`
+}
+
+type Context struct {
+	Uris []string `json:"@context"`
+}
+
+func (c *Context) UnmarshalJSON(data []byte) error {
+	var raw json.RawMessage
+	err := json.Unmarshal(data, &raw)
+	if err != nil {
+		return err
+	}
+
+	var value interface{}
+	if err = json.Unmarshal(raw, &value); err != nil {
+		return err
+	}
+
+	// deal with either string or []string
+
+	if context, ok := value.(string); ok {
+		c.Uris = []string{context}
+	} else if contexts, ok := value.([]interface{}); ok {
+		stringSlice := make([]string, len(contexts))
+		for i, s := range contexts {
+			if uri, ok := s.(string); ok {
+				stringSlice[i] = uri
+			} else {
+				return fmt.Errorf("Failed to convert object to URI")
+			}
+		}
+		c.Uris = stringSlice
+	} else {
+		return fmt.Errorf("Failed to unmarshall. Data not string or array of strings")
+	}
+
+	return nil
 }
 
 type LocalMetadata struct {
@@ -156,8 +193,6 @@ type IssuerInfo struct {
 	LogoUrl string `json:"logoUrl,omitempty"`
 	IconUrl string `json:"iconUrl,omitempty"`
 }
-
-type Context string
 
 type ClaimMappingConfig struct {
 	MapFrom      string `json:"mapFrom"`

@@ -253,7 +253,7 @@ func processDidDocument(d *schema.ResourceData, didDocument *DidDocument) error 
 
 	var err error
 
-	if err = d.Set("context", didDocument.Context); err != nil {
+	if err = d.Set("context", didDocument.Context.Uris); err != nil {
 		return fmt.Errorf("error setting 'context' field: %s", err)
 	}
 	if err = d.Set("public_key", publicKey); err != nil {
@@ -276,93 +276,4 @@ func processDidDocument(d *schema.ResourceData, didDocument *DidDocument) error 
 	}
 
 	return nil
-}
-
-func didDocumentSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"id": &schema.Schema{
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"context": &schema.Schema{
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"public_key": &schema.Schema{
-			Type:     schema.TypeList,
-			Computed: true,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"id": &schema.Schema{
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"type": &schema.Schema{
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"controller": &schema.Schema{
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"public_key_base58": &schema.Schema{
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-				},
-			},
-		},
-		"key_agreement": &schema.Schema{
-			Type:     schema.TypeList,
-			Computed: true,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"id": &schema.Schema{
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"type": &schema.Schema{
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"controller": &schema.Schema{
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"public_key_base58": &schema.Schema{
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-				},
-			},
-		},
-		"authentication": &schema.Schema{
-			Type:     schema.TypeList,
-			Computed: true,
-			Elem: &schema.Schema{
-				Type: schema.TypeString,
-			},
-		},
-		"assertion_method": &schema.Schema{
-			Type:     schema.TypeList,
-			Computed: true,
-			Elem: &schema.Schema{
-				Type: schema.TypeString,
-			},
-		},
-		"capability_delegation": &schema.Schema{
-			Type:     schema.TypeList,
-			Computed: true,
-			Elem: &schema.Schema{
-				Type: schema.TypeString,
-			},
-		},
-		"capability_invocation": &schema.Schema{
-			Type:     schema.TypeList,
-			Computed: true,
-			Elem: &schema.Schema{
-				Type: schema.TypeString,
-			},
-		},
-	}
 }
