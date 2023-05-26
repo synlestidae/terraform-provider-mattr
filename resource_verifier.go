@@ -121,10 +121,31 @@ func resourceVerifierDelete(d *schema.ResourceData, m interface{}) error {
 func processVerifierData(verifier *Verifier, d *schema.ResourceData) error {
 	log.Println("Converting verifier from REST")
 
+	if err := d.Set("verifier_did", verifier.VerifierDid); err != nil {
+		return err
+	}
+
+	if err := d.Set("presentation_template_id", verifier.PresentationTemplateId); err != nil {
+		return err
+	}
+
+	if err := d.Set("claim_mappings", verifier.ClaimMappings); err != nil {
+		return err
+	}
+
+	if err := d.Set("include_presentation", verifier.IncludePresentation); err != nil {
+		return err
+	}
+
 	return nil
 }
 
 func fromTerraformVerifier(d *schema.ResourceData) (*Verifier, error) {
-	// TODO
-	return nil, nil
+	return &Verifier{
+		Id:                     d.Id(),
+		VerifierDid:            d.Get("verifier_did").(string),
+		PresentationTemplateId: d.Get("presentation_template_id").(string),
+		ClaimMappings:          d.Get("claim_mapping").([]ClaimMapping),
+		IncludePresentation:    d.Get("include_presentation").(bool),
+	}, nil
 }

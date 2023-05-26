@@ -283,17 +283,11 @@ type VerifierListResponse struct {
 	Data       []Verifier `json:"data"`
 }
 
-type VerifierClientRequest struct {
+type VerifierClient struct {
+	/*Id                     string         `json:"id"`
 	VerifierDid            string         `json:"verifierDid"`
 	PresentationTemplateId string         `json:"presentationTemplateId"`
-	ClaimMappings          []ClaimMapping `json:"claimMappings"`
-}
-
-type VerifierClientResponse struct {
-	Id                     string         `json:"id"`
-	VerifierDid            string         `json:"verifierDid"`
-	PresentationTemplateId string         `json:"presentationTemplateId"`
-	ClaimMappings          []ClaimMapping `json:"claimMappings"`
+	ClaimMappings          []ClaimMapping `json:"claimMappings"`*/
 }
 
 type VerifierClientListResponse struct {
@@ -438,7 +432,7 @@ func (a *Api) DeleteIssuerClient(issuerId string, clientId string) error {
 	return Delete(a, fmt.Sprintf("/ext/oidc/v1/issuers/%s/clients/%s", issuerId, clientId))
 }
 
-// Verifiers
+// Verifier
 func (a *Api) PostVerifier(verifier *Verifier) (*Verifier, error) {
 	return nil, fmt.Errorf("Not quite implemented yet")
 }
@@ -456,6 +450,27 @@ func (a *Api) PutVerifier(id string, verifier *Verifier) (*Verifier, error) {
 }
 
 func (a *Api) DeleteVerifier(id string) error {
+	return fmt.Errorf("Not quite implemented yet")
+}
+
+// Verifier client
+func (a *Api) PostVerifierClient(verifier *VerifierClient) (*VerifierClient, error) {
+	return nil, fmt.Errorf("Not quite implemented yet")
+}
+
+func (a *Api) GetVerifierClients(cursor string) (*VerifierClientListResponse, error) {
+	return nil, fmt.Errorf("Not quite implemented yet")
+}
+
+func (a *Api) GetVerifierClient(id string) (*VerifierClient, error) {
+	return nil, fmt.Errorf("Not quite implemented yet")
+}
+
+func (a *Api) PutVerifierClient(id string, verifier *VerifierClient) (*VerifierClient, error) {
+	return nil, fmt.Errorf("Not quite implemented yet")
+}
+
+func (a *Api) DeleteVerifierClient(id string) error {
 	return fmt.Errorf("Not quite implemented yet")
 }
 

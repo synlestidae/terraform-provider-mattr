@@ -140,6 +140,8 @@ resource "mattr_claim_source" "antunovic_claim_source" {
   }
 }
 
+resource "verifier_client" "antunovic_verifier_client" 
+
 /*resource "mattr_authentication_provider" "antunovic_authentication_provider" {
   url = "https://accounts.google.com/"
   scope = [
