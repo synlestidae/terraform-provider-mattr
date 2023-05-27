@@ -26,7 +26,7 @@ func resourceVerifier() *schema.Resource {
 				Required: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"json_lq_fqn": &schema.Schema{
+						"json_ld_fqn": &schema.Schema{
 							Type:     schema.TypeString,
 							Required: true,
 						},
@@ -129,7 +129,7 @@ func processVerifierData(verifier *Verifier, d *schema.ResourceData) error {
 		return err
 	}
 
-	if err := d.Set("claim_mappings", verifier.ClaimMappings); err != nil {
+	if err := d.Set("claim_mapping", flattenClaimMappings(verifier.ClaimMappings)); err != nil {
 		return err
 	}
 
@@ -141,11 +141,21 @@ func processVerifierData(verifier *Verifier, d *schema.ResourceData) error {
 }
 
 func fromTerraformVerifier(d *schema.ResourceData) (*Verifier, error) {
+	var claimMappings []ClaimMapping
+	for _, c := range d.Get("claim_mapping").([]interface{}) {
+		cm := c.(map[string]interface{})
+
+		claimMappings = append(claimMappings, ClaimMapping{
+			JsonLdTerm: cm["json_ld_fqn"].(string),
+			OidcClaim:  cm["oidc_claim"].(string),
+		})
+	}
+
 	return &Verifier{
 		Id:                     d.Id(),
 		VerifierDid:            d.Get("verifier_did").(string),
 		PresentationTemplateId: d.Get("presentation_template_id").(string),
-		ClaimMappings:          d.Get("claim_mapping").([]ClaimMapping),
+		ClaimMappings:          claimMappings,
 		IncludePresentation:    d.Get("include_presentation").(bool),
 	}, nil
 }

@@ -140,7 +140,7 @@ resource "mattr_claim_source" "antunovic_claim_source" {
   }
 }
 
-resource "verifier_client" "antunovic_verifier_client" 
+//resource "verifier_client" "antunovic_verifier_client" 
 
 /*resource "mattr_authentication_provider" "antunovic_authentication_provider" {
   url = "https://accounts.google.com/"
@@ -165,3 +165,15 @@ resource "verifier_client" "antunovic_verifier_client"
     "email"
   ]
 }*/
+
+resource "mattr_verifier" "antunovic_verifier" {
+  verifier_did = "did:key:z6MkrYVmyqSA93o4B1GwERM8kaQDMAUKAFV2TC3weQKeg9Gq"
+  presentation_template_id = "364b6a1b-3600-4927-a6ac-4d66aa6bbac3"
+  include_presentation = true
+
+  claim_mapping {
+    json_ld_fqn = "https://schema.org/alumniOf"
+    oidc_claim = "alumni_of"
+  }
+}
+

@@ -13,7 +13,12 @@ func resourceVerifierClient() *schema.Resource {
 		Read:   resourceVerifierClientRead,
 		Update: resourceVerifierClientUpdate,
 		Delete: resourceVerifierClientDelete,
-		Schema: map[string]*schema.Schema{},
+		Schema: map[string]*schema.Schema{
+			"verifier_id": &schema.Schema{
+				Type:     schema.TypeString,
+				Required: true,
+			},
+		},
 	}
 }
 

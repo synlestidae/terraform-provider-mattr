@@ -434,7 +434,7 @@ func (a *Api) DeleteIssuerClient(issuerId string, clientId string) error {
 
 // Verifier
 func (a *Api) PostVerifier(verifier *Verifier) (*Verifier, error) {
-	return nil, fmt.Errorf("Not quite implemented yet")
+	return Post[Verifier](a, fmt.Sprintf("/ext/oidc/v1/verifiers"), verifier)
 }
 
 func (a *Api) GetVerifiers(cursor string) (*VerifierListResponse, error) {
@@ -442,15 +442,15 @@ func (a *Api) GetVerifiers(cursor string) (*VerifierListResponse, error) {
 }
 
 func (a *Api) GetVerifier(id string) (*Verifier, error) {
-	return nil, fmt.Errorf("Not quite implemented yet")
+	return Get[Verifier](a, fmt.Sprintf("/ext/oidc/v1/verifiers/%s", id))
 }
 
 func (a *Api) PutVerifier(id string, verifier *Verifier) (*Verifier, error) {
-	return nil, fmt.Errorf("Not quite implemented yet")
+	return Put[Verifier](a, fmt.Sprintf("/ext/oidc/v1/verifiers/%s", id), verifier)
 }
 
 func (a *Api) DeleteVerifier(id string) error {
-	return fmt.Errorf("Not quite implemented yet")
+	return Delete(a, fmt.Sprintf("/ext/oidc/v1/verifiers/%s", id))
 }
 
 // Verifier client
