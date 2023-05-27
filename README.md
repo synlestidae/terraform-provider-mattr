@@ -19,7 +19,7 @@ is not officially endorsed or sponsored by MATTR.
 | Authentication provider   | Just an authorization server for credential config      | `█████░░░ 75 %`  | `░░░░░░░░ 0%` | `░░░░░░░░ 0%`     |
 | Issuer resource           | Specify credentials to issue                            | `██████░░ 75 %`  | `░░░░░░░░ 0%` | `░░░░░░░░ 0%`     |
 | Issuer clients resource   | Configure credentials to issue in wallet                | `██████░░ 75 %`  | `░░░░░░░░ 0%` | `░░░░░░░░ 0%`     |
-| Verifier resource         | Specify which credentials are valid                     | `░░░░░░░░ 0 %`   | `░░░░░░░░ 0%` | `░░░░░░░░ 0%`     |
-| Verifier client resource  | Configure presentations for valid creds                 | `░░░░░░░░ 0 %`   | `░░░░░░░░ 0%` | `░░░░░░░░ 0%`     |
+| Verifier resource         | Specify which credentials are valid                     | `██░░░░░░ 25 %`  | `░░░░░░░░ 0%` | `░░░░░░░░ 0%`     |
+| Verifier client resource  | Configure presentations for valid creds                 | `██░░░░░░ 25 %`  | `░░░░░░░░ 0%` | `░░░░░░░░ 0%`     |
 | Custom domain resource    | Configure issuer and verifier pages under your domain   | `░░░░░░░░ 0 %`   | `░░░░░░░░ 0%` | `░░░░░░░░ 0%`     |
 
