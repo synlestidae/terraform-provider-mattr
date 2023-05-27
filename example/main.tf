@@ -177,3 +177,15 @@ resource "mattr_verifier" "antunovic_verifier" {
   }
 }
 
+resource "mattr_verifier_client" "antunovic_verifier_client" {
+  verifier_id = mattr_verifier.antunovic_verifier.id,
+  name                      = "OIDC Client for the verifier"
+  redirect_uris             = ["https://example.com/callback"]
+  response_types            = ["code"]
+  grant_types               = ["authorization_code"]
+  token_endpoint_auth_method = "client_secret_post"
+  id_token_signed_response_alg = "ES256"
+  application_type          = "web"
+  logo_uri                  = "https://example.com/logo.png"
+}
+

@@ -284,10 +284,15 @@ type VerifierListResponse struct {
 }
 
 type VerifierClient struct {
-	/*Id                     string         `json:"id"`
-	VerifierDid            string         `json:"verifierDid"`
-	PresentationTemplateId string         `json:"presentationTemplateId"`
-	ClaimMappings          []ClaimMapping `json:"claimMappings"`*/
+	Id                       string   `json:"id"`
+	Name                     string   `json:"name"`
+	RedirectUris             []string `json:"redirectUris"`
+	ResponseTypes            []string `json:"responseTypes"`
+	GrantTypes               []string `json:"grantTypes"`
+	TokenEndpointAuthMethod  string   `json:"tokenEndpointAuthMethod"`
+	IdTokenSignedResponseAlg string   `json:"idTokenSignedResponseAlg"`
+	ApplicationType          string   `json:"applicationType"`
+	LogoUri                  string   `json:"logoUri"`
 }
 
 type VerifierClientListResponse struct {
@@ -454,7 +459,7 @@ func (a *Api) DeleteVerifier(id string) error {
 }
 
 // Verifier client
-func (a *Api) PostVerifierClient(verifier *VerifierClient) (*VerifierClient, error) {
+func (a *Api) PostVerifierClient(verifier_id string, verifier *VerifierClient) (*VerifierClient, error) {
 	return nil, fmt.Errorf("Not quite implemented yet")
 }
 
@@ -462,15 +467,15 @@ func (a *Api) GetVerifierClients(cursor string) (*VerifierClientListResponse, er
 	return nil, fmt.Errorf("Not quite implemented yet")
 }
 
-func (a *Api) GetVerifierClient(id string) (*VerifierClient, error) {
+func (a *Api) GetVerifierClient(verifier_id string, id string) (*VerifierClient, error) {
 	return nil, fmt.Errorf("Not quite implemented yet")
 }
 
-func (a *Api) PutVerifierClient(id string, verifier *VerifierClient) (*VerifierClient, error) {
+func (a *Api) PutVerifierClient(verifier_id string, id string, verifier *VerifierClient) (*VerifierClient, error) {
 	return nil, fmt.Errorf("Not quite implemented yet")
 }
 
-func (a *Api) DeleteVerifierClient(id string) error {
+func (a *Api) DeleteVerifierClient(verifier_id string, id string) error {
 	return fmt.Errorf("Not quite implemented yet")
 }
 
