@@ -30,7 +30,7 @@ func resourceVerifierClient() *schema.Resource {
 			},
 			"response_types": &schema.Schema{
 				Type:     schema.TypeList,
-				Required: true,
+				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 			"grant_types": &schema.Schema{
@@ -48,11 +48,11 @@ func resourceVerifierClient() *schema.Resource {
 			},
 			"application_type": &schema.Schema{
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
 			},
 			"logo_url": &schema.Schema{
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
 			},
 		},
 	}

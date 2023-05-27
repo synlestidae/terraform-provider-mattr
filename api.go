@@ -460,23 +460,23 @@ func (a *Api) DeleteVerifier(id string) error {
 
 // Verifier client
 func (a *Api) PostVerifierClient(verifier_id string, verifier *VerifierClient) (*VerifierClient, error) {
-	return nil, fmt.Errorf("Not quite implemented yet")
+	return Post[VerifierClient](a, fmt.Sprintf("/ext/oidc/v1/verifiers/%s/clients", verifier_id), verifier)
 }
 
 func (a *Api) GetVerifierClients(cursor string) (*VerifierClientListResponse, error) {
-	return nil, fmt.Errorf("Not quite implemented yet")
+	return nil, fmt.Errorf("Not quite implemented yet") // TODO
 }
 
 func (a *Api) GetVerifierClient(verifier_id string, id string) (*VerifierClient, error) {
-	return nil, fmt.Errorf("Not quite implemented yet")
+	return Get[VerifierClient](a, fmt.Sprintf("/ext/oidc/v1/verifiers/%s/clients/%s", verifier_id, id))
 }
 
 func (a *Api) PutVerifierClient(verifier_id string, id string, verifier *VerifierClient) (*VerifierClient, error) {
-	return nil, fmt.Errorf("Not quite implemented yet")
+	return Put[VerifierClient](a, fmt.Sprintf("/ext/oidc/v1/verifiers/%s/clients/%s", verifier_id, id), verifier)
 }
 
 func (a *Api) DeleteVerifierClient(verifier_id string, id string) error {
-	return fmt.Errorf("Not quite implemented yet")
+	return Delete(a, fmt.Sprintf("/ext/oidc/v1/verifiers/%s/clients/%s", verifier_id, id))
 }
 
 // Authentication Providers
