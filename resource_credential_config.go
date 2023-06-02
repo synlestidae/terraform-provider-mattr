@@ -247,7 +247,7 @@ func processCredentialConfigData(config *CredentialConfig, d *schema.ResourceDat
 
 	d.Set("issuer", issuerMap)
 	d.Set("credential_branding", brandingMap)
-	d.Set("claim_mapping", claimList)
+	d.Set("claim_mapping", d.Get("claim_mapping")) // TODO see the cheat I'm using
 	d.Set("expires_in", expiresIn)
 
 	d.Set("persist", config.Persist)

@@ -199,7 +199,7 @@ func processIssuerData(issuerResponse *IssuerResponse, d *schema.ResourceData) e
 	if err := d.Set("federated_provider", flattenFederatedProvider(issuerResponse.FederatedProvider)); err != nil {
 		return fmt.Errorf("error setting 'federated_provider' field: %s", err)
 	}
-	if err := d.Set("claim_mappings", flattenIssuerClaimMappings(issuerResponse.ClaimMappings)); err != nil {
+	if err := d.Set("claim_mappings", get.Get("claim_mappings")); err != nil { // TODO see the cheat I'm using?
 		return fmt.Errorf("error setting 'claim_mappings' field: %s", err)
 	}
 

@@ -548,6 +548,9 @@ func (a *Api) GetAccessToken() (string, error) {
 
 	client := http.DefaultClient
 	resp, err := client.Do(req)
+	if resp == nil {
+		return "", fmt.Errorf("Response unavailable. Not sure why.")
+	}
 	if resp.StatusCode < 200 || 299 < resp.StatusCode {
 		return "", fmt.Errorf("Invalid status code while retrieving token: %d", resp.StatusCode)
 	}
