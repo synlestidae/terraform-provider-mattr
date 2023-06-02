@@ -32,6 +32,10 @@ func resourceIssuer() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"issuer_name": &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 			"description": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
@@ -184,6 +188,9 @@ func processIssuerData(issuerResponse *IssuerResponse, d *schema.ResourceData) e
 	if err := d.Set("name", issuerResponse.Credential.Name); err != nil {
 		return fmt.Errorf("error setting 'name' field: %s", err)
 	}
+	if err := d.Set("issuer_name", issuerResponse.Credential.IssuerName); err != nil {
+		return fmt.Errorf("error setting 'issuer_name' field: %s", err)
+	}
 	if err := d.Set("description", issuerResponse.Credential.Description); err != nil {
 		return fmt.Errorf("error setting 'description' field: %s", err)
 	}
@@ -199,7 +206,7 @@ func processIssuerData(issuerResponse *IssuerResponse, d *schema.ResourceData) e
 	if err := d.Set("federated_provider", flattenFederatedProvider(issuerResponse.FederatedProvider)); err != nil {
 		return fmt.Errorf("error setting 'federated_provider' field: %s", err)
 	}
-	if err := d.Set("claim_mappings", get.Get("claim_mappings")); err != nil { // TODO see the cheat I'm using?
+	if err := d.Set("claim_mappings", d.Get("claim_mappings")); err != nil { // TODO see the cheat I'm using?
 		return fmt.Errorf("error setting 'claim_mappings' field: %s", err)
 	}
 
@@ -237,6 +244,7 @@ func fromTerraformIssuer(d *schema.ResourceData) IssuerRequest {
 		IssuerLogoUrl: castToString(d.Get("issuer_logo_url")),
 		IssuerIconUrl: castToString(d.Get("issuer_icon_url")),
 		Name:          castToString(d.Get("name")),
+		IssuerName:    castToString(d.Get("issuer_name")),
 		Description:   castToString(d.Get("description")),
 		Context:       castToStringSlice(d.Get("context")),
 		Type:          castToStringSlice(d.Get("type")),

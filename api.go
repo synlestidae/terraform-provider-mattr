@@ -139,6 +139,7 @@ type IssuerCredential struct {
 	IssuerDid          string              `json:"issuerDid,omitempty"`
 	IssuerLogoUrl      string              `json:"issuerLogoUrl,omitempty"`
 	IssuerIconUrl      string              `json:"issuerIconUrl,omitempty"`
+	IssuerName         string              `json:"issuerName"`
 	Name               string              `json:"name,omitempty"`
 	Description        string              `json:"description,omitempty"`
 	Context            []string            `json:"context,omitempty"`
@@ -256,7 +257,7 @@ type IssuerClientRequest struct {
 type IssuerClientResponse struct {
 	Id                       string   `json:"id"`
 	Secret                   string   `json:"secret"`
-	Name                     string   `json:"string"`
+	Name                     string   `json:"name"`
 	RedirectUris             []string `json:"redirectUris"`
 	ResponseTypes            []string `json:"responseTypes"`
 	GrantTypes               []string `json:"grantTypes"`
