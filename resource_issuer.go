@@ -199,7 +199,7 @@ func processIssuerData(issuerResponse *IssuerResponse, d *schema.ResourceData) e
 	if err := d.Set("federated_provider", flattenFederatedProvider(issuerResponse.FederatedProvider)); err != nil {
 		return fmt.Errorf("error setting 'federated_provider' field: %s", err)
 	}
-	if err := d.Set("claim_mappings", flattenClaimMappings(issuerResponse.ClaimMappings)); err != nil {
+	if err := d.Set("claim_mappings", flattenIssuerClaimMappings(issuerResponse.ClaimMappings)); err != nil {
 		return fmt.Errorf("error setting 'claim_mappings' field: %s", err)
 	}
 
@@ -256,10 +256,10 @@ func fromTerraformIssuer(d *schema.ResourceData) IssuerRequest {
 		ClaimsSource:            castToString(federated_provider_data["claims_source"]),
 	}
 
-	var claimMappings []ClaimMapping
+	var claimMappings []IssuerClaimMapping
 	for _, c := range d.Get("claim_mappings").([]interface{}) {
 		cm := c.(map[string]interface{})
-		claimMappings = append(claimMappings, ClaimMapping{
+		claimMappings = append(claimMappings, IssuerClaimMapping{
 			JsonLdTerm: cm["json_ld_term"].(string),
 			OidcClaim:  cm["oidc_claim"].(string),
 		})
@@ -304,7 +304,7 @@ func flattenFederatedProvider(federatedProvider *FederatedProvider) map[string]i
 	return fpProvider
 }
 
-func flattenClaimMappings(claimMappings []ClaimMapping) []map[string]string {
+func flattenIssuerClaimMappings(claimMappings []IssuerClaimMapping) []map[string]string {
 	mappings := make([]map[string]string, len(claimMappings))
 	for i, mapping := range claimMappings {
 		mappings[i] = map[string]string{

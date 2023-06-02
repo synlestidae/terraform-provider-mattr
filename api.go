@@ -156,7 +156,7 @@ type FederatedProvider struct {
 	ClaimsSource            string   `json:"claimsSource,omitempty"`
 }
 
-type ClaimMapping struct {
+type IssuerClaimMapping struct {
 	JsonLdTerm string `json:"jsonLdTerm"`
 	OidcClaim  string `json:"oidcClaim"`
 }
@@ -167,20 +167,20 @@ type CredentialBranding struct {
 }
 
 type IssuerRequest struct {
-	Credential                 *IssuerCredential  `json:"credential,omitempty"`
-	FederatedProvider          *FederatedProvider `json:"federatedProvider,omitempty"`
-	StaticRequestParameters    map[string]any     `json:"staticRequestParameters,omitempty"`
-	ForwardedRequestParameters []string           `json:"forwardedRequestParameters"`
-	ClaimMappings              []ClaimMapping     `json:"claimMappings"`
+	Credential                 *IssuerCredential    `json:"credential,omitempty"`
+	FederatedProvider          *FederatedProvider   `json:"federatedProvider,omitempty"`
+	StaticRequestParameters    map[string]any       `json:"staticRequestParameters,omitempty"`
+	ForwardedRequestParameters []string             `json:"forwardedRequestParameters"`
+	ClaimMappings              []IssuerClaimMapping `json:"claimMappings"`
 }
 
 type IssuerResponse struct {
-	Id                         string             `json:"id"`
-	Credential                 *IssuerCredential  `json:"credential"`
-	FederatedProvider          *FederatedProvider `json:"federatedProvider"`
-	StaticRequestParameters    map[string]any     `json:"staticRequestParameters"`
-	ForwardedRequestParameters []string           `json:"forwardedRequestParameters"`
-	ClaimMappings              []ClaimMapping     `json:"claimMappings"`
+	Id                         string               `json:"id"`
+	Credential                 *IssuerCredential    `json:"credential"`
+	FederatedProvider          *FederatedProvider   `json:"federatedProvider"`
+	StaticRequestParameters    map[string]any       `json:"staticRequestParameters"`
+	ForwardedRequestParameters []string             `json:"forwardedRequestParameters"`
+	ClaimMappings              []IssuerClaimMapping `json:"claimMappings"`
 }
 
 type IssuerListResponse struct {
@@ -271,11 +271,16 @@ type IssuerClientListResponse struct {
 }
 
 type Verifier struct {
-	Id                     string         `json:"id"`
-	VerifierDid            string         `json:"verifierDid"`
-	PresentationTemplateId string         `json:"presentationTemplateId"`
-	ClaimMappings          []ClaimMapping `json:"claimMappings"`
-	IncludePresentation    bool           `json:"includePresentation"`
+	Id                     string                 `json:"id"`
+	VerifierDid            string                 `json:"verifierDid"`
+	PresentationTemplateId string                 `json:"presentationTemplateId"`
+	ClaimMappings          []VerifierClaimMapping `json:"claimMappings"`
+	IncludePresentation    bool                   `json:"includePresentation"`
+}
+
+type VerifierClaimMapping struct {
+	JsonLdFqn string `json:"jsonLdFqn"`
+	OidcClaim string `json:"oidcClaim"`
 }
 
 type VerifierListResponse struct {

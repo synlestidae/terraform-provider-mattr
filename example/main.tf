@@ -1,6 +1,6 @@
 resource "mattr_did" "did" {
   method = "key"
-  key_type = "Bls12381G2"
+  //key_type = "Bls12381G2"
 }
 
 resource "mattr_webhook" "issue_webhook" {
@@ -167,13 +167,13 @@ resource "mattr_claim_source" "antunovic_claim_source" {
 }*/
 
 resource "mattr_verifier" "antunovic_verifier" {
-  verifier_did = "did:key:z6MkrYVmyqSA93o4B1GwERM8kaQDMAUKAFV2TC3weQKeg9Gq"
+  verifier_did = mattr_did.did.id
   presentation_template_id = "364b6a1b-3600-4927-a6ac-4d66aa6bbac3"
   include_presentation = true
 
   claim_mapping {
-    json_ld_fqn = "https://schema.org/alumniOf"
-    oidc_claim = "alumni_of"
+    json_ld_fqn = "https://schema.org/name"
+    oidc_claim = "name"
   }
 }
 

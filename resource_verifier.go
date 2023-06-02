@@ -121,6 +121,8 @@ func resourceVerifierDelete(d *schema.ResourceData, m interface{}) error {
 func processVerifierData(verifier *Verifier, d *schema.ResourceData) error {
 	log.Println("Converting verifier from REST")
 
+	d.SetId(verifier.Id)
+
 	if err := d.Set("verifier_did", verifier.VerifierDid); err != nil {
 		return err
 	}
@@ -129,7 +131,7 @@ func processVerifierData(verifier *Verifier, d *schema.ResourceData) error {
 		return err
 	}
 
-	if err := d.Set("claim_mapping", flattenClaimMappings(verifier.ClaimMappings)); err != nil {
+	if err := d.Set("claim_mapping", flattenVerifierClaimMappings(verifier.ClaimMappings)); err != nil {
 		return err
 	}
 
@@ -141,13 +143,13 @@ func processVerifierData(verifier *Verifier, d *schema.ResourceData) error {
 }
 
 func fromTerraformVerifier(d *schema.ResourceData) (*Verifier, error) {
-	var claimMappings []ClaimMapping
+	var claimMappings []VerifierClaimMapping
 	for _, c := range d.Get("claim_mapping").([]interface{}) {
 		cm := c.(map[string]interface{})
 
-		claimMappings = append(claimMappings, ClaimMapping{
-			JsonLdTerm: cm["json_ld_fqn"].(string),
-			OidcClaim:  cm["oidc_claim"].(string),
+		claimMappings = append(claimMappings, VerifierClaimMapping{
+			JsonLdFqn: cm["json_ld_fqn"].(string),
+			OidcClaim: cm["oidc_claim"].(string),
 		})
 	}
 
@@ -158,4 +160,15 @@ func fromTerraformVerifier(d *schema.ResourceData) (*Verifier, error) {
 		ClaimMappings:          claimMappings,
 		IncludePresentation:    d.Get("include_presentation").(bool),
 	}, nil
+}
+
+func flattenVerifierClaimMappings(claimMappings []VerifierClaimMapping) []map[string]string {
+	mappings := make([]map[string]string, len(claimMappings))
+	for i, mapping := range claimMappings {
+		mappings[i] = map[string]string{
+			"json_ld_fqn": mapping.JsonLdFqn,
+			"oidc_claim":  mapping.OidcClaim,
+		}
+	}
+	return mappings
 }
