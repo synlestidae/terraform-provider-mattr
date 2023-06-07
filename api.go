@@ -338,7 +338,7 @@ type CustomDomainResponse struct {
 	Domain            string `json:"domain"`
 	Homepage          string `json:"homepage"`
 	VerificationToken string `json:"verificationToken"`
-	IsVerified        string `json:"isVerified"`
+	IsVerified        bool   `json:"isVerified"`
 	VerifiedAt        string `json:"verifiedAt"`
 }
 

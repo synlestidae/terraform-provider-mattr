@@ -24,6 +24,7 @@ func resourceCustomDomain() *schema.Resource {
 			"domain": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 			"homepage": &schema.Schema{
 				Type:     schema.TypeString,
@@ -31,8 +32,7 @@ func resourceCustomDomain() *schema.Resource {
 			},
 			"verification_token": &schema.Schema{
 				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Computed: true,
 			},
 			"is_verified": &schema.Schema{
 				Type:     schema.TypeBool,

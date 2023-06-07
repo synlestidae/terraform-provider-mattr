@@ -22,7 +22,7 @@ is not officially endorsed or sponsored by MATTR.
 | Issuer clients            | Configure credentials to issue in wallet                | `██████░░ 75 %`  | `░░░░░░░░ 0%` | `░░░░░░░░ 0%`     |
 | Verifier resource         | Specify which credentials are valid                     | `███░░░░░ 37.5 %`| `░░░░░░░░ 0%` | `░░░░░░░░ 0%`     |
 | Verifier client           | Configure presentations for valid creds                 | `███░░░░░ 37.5 %`| `░░░░░░░░ 0%` | `░░░░░░░░ 0%`     |
-| Custom domain resource    | Configure issuer and verifier pages under your domain   | `░░░░░░░░ 0 %`   | `░░░░░░░░ 0%` | `░░░░░░░░ 0%`     |
+| Custom domain resource    | Configure issuer and verifier pages under your domain   | `█░░░░░░░ 12.5 %`| `░░░░░░░░ 0%` | `░░░░░░░░ 0%`     |
 | PDF template              | PDF template based on a .zip file                       | `░░░░░░░░ 0 %`   | `░░░░░░░░ 0 %`| `░░░░░░░░ 0%`     |
 | Digital pass template     | Template for Apple Pass                                 | `░░░░░░░░ 0 %`   | `░░░░░░░░ 0 %`| `░░░░░░░░ 0%`     |
 | Apple Pass template       | Template for Apple Pass                                 | `░░░░░░░░ 0 %`   | `░░░░░░░░ 0 %`| `░░░░░░░░ 0%`     |

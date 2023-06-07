@@ -187,3 +187,9 @@ resource "mattr_verifier_client" "antunovic_verifier_client" {
   logo_url                  = "https://example.com/logo.png"
 }
 
+resource "mattr_custom_domain" "antunovic_custom_domain" {
+  name = "My website domain"
+  logo_url = "https://antunovic.nz/logo.png"
+  domain = "antunovic.nz"
+  homepage = "https://blog.antunovic.nz"
+}
