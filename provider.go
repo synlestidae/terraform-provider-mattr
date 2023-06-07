@@ -38,6 +38,7 @@ func Provider() *schema.Provider {
 			"mattr_issuer_client":           resourceIssuerClient(),
 			"mattr_verifier":                resourceVerifier(),
 			"mattr_verifier_client":         resourceVerifierClient(),
+			"mattr_custom_domain":           resourceCustomDomain(),
 		},
 		ConfigureFunc: ProviderConfigure,
 	}

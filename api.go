@@ -325,6 +325,23 @@ type ClaimSource struct {
 	RequestParameters map[string]ClaimSourceRequestParameter `json:"requestParameters"`
 }
 
+type CustomDomainRequest struct {
+	Name     string `json:"name"`
+	LogoUrl  string `json:"logoUrl"`
+	Domain   string `json:"domain"`
+	Homepage string `json:"homepage"`
+}
+
+type CustomDomainResponse struct {
+	Name              string `json:"name"`
+	LogoUrl           string `json:"logoUrl"`
+	Domain            string `json:"domain"`
+	Homepage          string `json:"homepage"`
+	VerificationToken string `json:"verificationToken"`
+	IsVerified        string `json:"isVerified"`
+	VerifiedAt        string `json:"verifiedAt"`
+}
+
 func (a *Api) PostDid(did DidRequest) (*DidResponse, error) {
 	return Post[DidResponse](a, "/core/v1/dids", did)
 }
@@ -443,6 +460,8 @@ func (a *Api) DeleteIssuerClient(issuerId string, clientId string) error {
 	return Delete(a, fmt.Sprintf("/ext/oidc/v1/issuers/%s/clients/%s", issuerId, clientId))
 }
 
+// End issuer clients
+
 // Verifier
 func (a *Api) PostVerifier(verifier *Verifier) (*Verifier, error) {
 	return Post[Verifier](a, fmt.Sprintf("/ext/oidc/v1/verifiers"), verifier)
@@ -501,6 +520,28 @@ func (a *Api) PutAuthenticationProvider(authenticationProvider *AuthenticationPr
 func (a *Api) DeleteAuthenticationProvider(id string) error {
 	return Delete(a, fmt.Sprintf("/core/v1/users/authenticationproviders/%s", id))
 }
+
+// End authentication provider
+
+func (a *Api) PostCustomDomain(customDomain *CustomDomainRequest) (*CustomDomainResponse, error) {
+	return Post[CustomDomainResponse](a, "/core/v1/config/domain", customDomain)
+}
+
+func (a *Api) GetCustomDomain() (*CustomDomainResponse, error) {
+	return Get[CustomDomainResponse](a, "/core/v1/config/domain")
+}
+
+func (a *Api) PutCustomDomain(id string, customDomain *CustomDomainRequest) (*CustomDomainResponse, error) {
+	return Put[CustomDomainResponse](a, "/core/v1/config/domain", customDomain)
+}
+
+func (a *Api) DeleteCustomDomain() error {
+	return Delete(a, "/core/v1/config")
+}
+
+// Custom domain
+
+// End custom domain
 
 func (a *Api) GetUrl(path string) (string, error) {
 	return fmt.Sprintf("%s%s", a.ApiUrl, path), nil
