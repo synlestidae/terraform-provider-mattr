@@ -1,6 +1,6 @@
 resource "mattr_did" "did" {
   method = "key"
-  //url    = "www.antunovic.nz"
+  //key_type = "Bls12381G2"
 }
 
 resource "mattr_webhook" "issue_webhook" {
@@ -163,3 +163,33 @@ resource "mattr_claim_source" "antunovic_claim_source" {
     "email"
   ]
 }*/
+
+resource "mattr_verifier" "antunovic_verifier" {
+  verifier_did = mattr_did.did.id
+  presentation_template_id = "364b6a1b-3600-4927-a6ac-4d66aa6bbac3"
+  include_presentation = true
+
+  claim_mapping {
+    json_ld_fqn = "https://schema.org/name"
+    oidc_claim = "name"
+  }
+}
+
+resource "mattr_verifier_client" "antunovic_verifier_client" {
+  verifier_id = mattr_verifier.antunovic_verifier.id
+  name                      = "OIDC Client for the verifier"
+  redirect_uris             = ["https://example.com/callback"]
+  response_types            = ["code"]
+  grant_types               = ["authorization_code"]
+  token_endpoint_auth_method = "client_secret_post"
+  id_token_signed_response_alg = "ES256"
+  application_type          = "web"
+  logo_url                  = "https://example.com/logo.png"
+}
+
+resource "mattr_custom_domain" "antunovic_custom_domain" {
+  name = "My website domain"
+  logo_url = "https://antunovic.nz/logo.png"
+  domain = "antunovic.nz"
+  homepage = "https://blog.antunovic.nz"
+}

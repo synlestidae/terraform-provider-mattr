@@ -61,13 +61,50 @@ type KeyAgreement struct {
 
 type DidDocument struct {
 	Id                   string         `json:"id"`
-	Context              []string       `json:"@context"`
+	Context              Context        `json:"@context"`
 	PublicKey            []PublicKey    `json:"publicKey"`
 	KeyAgreement         []KeyAgreement `json:"keyAgreement"`
 	Authentication       []string       `json:"authentication"`
 	AssertionMethod      []string       `json:"assertionMethod"`
 	CapabilityDelegation []string       `json:"capabilityDelegation"`
 	CapabilityInvocation []string       `json:"capabilityInvocation"`
+}
+
+type Context struct {
+	Uris []string `json:"@context"`
+}
+
+func (c *Context) UnmarshalJSON(data []byte) error {
+	var raw json.RawMessage
+	err := json.Unmarshal(data, &raw)
+	if err != nil {
+		return err
+	}
+
+	var value interface{}
+	if err = json.Unmarshal(raw, &value); err != nil {
+		return err
+	}
+
+	// deal with either string or []string
+
+	if context, ok := value.(string); ok {
+		c.Uris = []string{context}
+	} else if contexts, ok := value.([]interface{}); ok {
+		stringSlice := make([]string, len(contexts))
+		for i, s := range contexts {
+			if uri, ok := s.(string); ok {
+				stringSlice[i] = uri
+			} else {
+				return fmt.Errorf("Failed to convert object to URI")
+			}
+		}
+		c.Uris = stringSlice
+	} else {
+		return fmt.Errorf("Failed to unmarshall. Data not string or array of strings")
+	}
+
+	return nil
 }
 
 type LocalMetadata struct {
@@ -102,6 +139,7 @@ type IssuerCredential struct {
 	IssuerDid          string              `json:"issuerDid,omitempty"`
 	IssuerLogoUrl      string              `json:"issuerLogoUrl,omitempty"`
 	IssuerIconUrl      string              `json:"issuerIconUrl,omitempty"`
+	IssuerName         string              `json:"issuerName"`
 	Name               string              `json:"name,omitempty"`
 	Description        string              `json:"description,omitempty"`
 	Context            []string            `json:"context,omitempty"`
@@ -119,7 +157,7 @@ type FederatedProvider struct {
 	ClaimsSource            string   `json:"claimsSource,omitempty"`
 }
 
-type ClaimMapping struct {
+type IssuerClaimMapping struct {
 	JsonLdTerm string `json:"jsonLdTerm"`
 	OidcClaim  string `json:"oidcClaim"`
 }
@@ -130,20 +168,20 @@ type CredentialBranding struct {
 }
 
 type IssuerRequest struct {
-	Credential                 *IssuerCredential  `json:"credential,omitempty"`
-	FederatedProvider          *FederatedProvider `json:"federatedProvider,omitempty"`
-	StaticRequestParameters    map[string]any     `json:"staticRequestParameters,omitempty"`
-	ForwardedRequestParameters []string           `json:"forwardedRequestParameters"`
-	ClaimMappings              []ClaimMapping     `json:"claimMappings"`
+	Credential                 *IssuerCredential    `json:"credential,omitempty"`
+	FederatedProvider          *FederatedProvider   `json:"federatedProvider,omitempty"`
+	StaticRequestParameters    map[string]any       `json:"staticRequestParameters,omitempty"`
+	ForwardedRequestParameters []string             `json:"forwardedRequestParameters"`
+	ClaimMappings              []IssuerClaimMapping `json:"claimMappings"`
 }
 
 type IssuerResponse struct {
-	Id                         string             `json:"id"`
-	Credential                 *IssuerCredential  `json:"credential"`
-	FederatedProvider          *FederatedProvider `json:"federatedProvider"`
-	StaticRequestParameters    map[string]any     `json:"staticRequestParameters"`
-	ForwardedRequestParameters []string           `json:"forwardedRequestParameters"`
-	ClaimMappings              []ClaimMapping     `json:"claimMappings"`
+	Id                         string               `json:"id"`
+	Credential                 *IssuerCredential    `json:"credential"`
+	FederatedProvider          *FederatedProvider   `json:"federatedProvider"`
+	StaticRequestParameters    map[string]any       `json:"staticRequestParameters"`
+	ForwardedRequestParameters []string             `json:"forwardedRequestParameters"`
+	ClaimMappings              []IssuerClaimMapping `json:"claimMappings"`
 }
 
 type IssuerListResponse struct {
@@ -156,8 +194,6 @@ type IssuerInfo struct {
 	LogoUrl string `json:"logoUrl,omitempty"`
 	IconUrl string `json:"iconUrl,omitempty"`
 }
-
-type Context string
 
 type ClaimMappingConfig struct {
 	MapFrom      string `json:"mapFrom"`
@@ -221,7 +257,7 @@ type IssuerClientRequest struct {
 type IssuerClientResponse struct {
 	Id                       string   `json:"id"`
 	Secret                   string   `json:"secret"`
-	Name                     string   `json:"string"`
+	Name                     string   `json:"name"`
 	RedirectUris             []string `json:"redirectUris"`
 	ResponseTypes            []string `json:"responseTypes"`
 	GrantTypes               []string `json:"grantTypes"`
@@ -235,33 +271,39 @@ type IssuerClientListResponse struct {
 	Data       []IssuerClientResponse `json:"data"`
 }
 
-type VerifierRequest struct {
+type Verifier struct {
+	Id                     string                 `json:"id"`
+	VerifierDid            string                 `json:"verifierDid"`
+	PresentationTemplateId string                 `json:"presentationTemplateId"`
+	ClaimMappings          []VerifierClaimMapping `json:"claimMappings"`
+	IncludePresentation    bool                   `json:"includePresentation"`
 }
 
-type VerifierResponse struct {
+type VerifierClaimMapping struct {
+	JsonLdFqn string `json:"jsonLdFqn"`
+	OidcClaim string `json:"oidcClaim"`
 }
 
 type VerifierListResponse struct {
-	NextCursor string             `json:"nextCursor"`
-	Data       []VerifierResponse `json:"data"`
+	NextCursor string     `json:"nextCursor"`
+	Data       []Verifier `json:"data"`
 }
 
-type VerifierClientRequest struct {
-	VerifierDid            string         `json:"verifierDid"`
-	PresentationTemplateId string         `json:"presentationTemplateId"`
-	ClaimMappings          []ClaimMapping `json:"claimMappings"`
-}
-
-type VerifierClientResponse struct {
-	Id                     string         `json:"id"`
-	VerifierDid            string         `json:"verifierDid"`
-	PresentationTemplateId string         `json:"presentationTemplateId"`
-	ClaimMappings          []ClaimMapping `json:"claimMappings"`
+type VerifierClient struct {
+	Id                       string   `json:"id"`
+	Name                     string   `json:"name"`
+	RedirectUris             []string `json:"redirectUris"`
+	ResponseTypes            []string `json:"responseTypes"`
+	GrantTypes               []string `json:"grantTypes"`
+	TokenEndpointAuthMethod  string   `json:"tokenEndpointAuthMethod"`
+	IdTokenSignedResponseAlg string   `json:"idTokenSignedResponseAlg"`
+	ApplicationType          string   `json:"applicationType"`
+	LogoUri                  string   `json:"logoUri"`
 }
 
 type VerifierClientListResponse struct {
-	NextCursor string             `json:"nextCursor"`
-	Data       []VerifierResponse `json:"data"`
+	NextCursor string     `json:"nextCursor"`
+	Data       []Verifier `json:"data"`
 }
 
 type ClaimSourceAuthorization struct {
@@ -281,6 +323,23 @@ type ClaimSource struct {
 
 	Authorization     ClaimSourceAuthorization               `json:"authorization"`
 	RequestParameters map[string]ClaimSourceRequestParameter `json:"requestParameters"`
+}
+
+type CustomDomainRequest struct {
+	Name     string `json:"name"`
+	LogoUrl  string `json:"logoUrl"`
+	Domain   string `json:"domain"`
+	Homepage string `json:"homepage"`
+}
+
+type CustomDomainResponse struct {
+	Name              string `json:"name"`
+	LogoUrl           string `json:"logoUrl"`
+	Domain            string `json:"domain"`
+	Homepage          string `json:"homepage"`
+	VerificationToken string `json:"verificationToken"`
+	IsVerified        bool   `json:"isVerified"`
+	VerifiedAt        string `json:"verifiedAt"`
 }
 
 func (a *Api) PostDid(did DidRequest) (*DidResponse, error) {
@@ -401,21 +460,48 @@ func (a *Api) DeleteIssuerClient(issuerId string, clientId string) error {
 	return Delete(a, fmt.Sprintf("/ext/oidc/v1/issuers/%s/clients/%s", issuerId, clientId))
 }
 
-// Verifiers
-func (a *Api) CreateVerifier(verifier *VerifierRequest) (*VerifierResponse, error) {
-	return nil, fmt.Errorf("Not quite implemented yet")
+// End issuer clients
+
+// Verifier
+func (a *Api) PostVerifier(verifier *Verifier) (*Verifier, error) {
+	return Post[Verifier](a, fmt.Sprintf("/ext/oidc/v1/verifiers"), verifier)
 }
 
 func (a *Api) GetVerifiers(cursor string) (*VerifierListResponse, error) {
 	return nil, fmt.Errorf("Not quite implemented yet")
 }
 
-func (a *Api) GetVerifier(id string) (*VerifierResponse, error) {
-	return nil, fmt.Errorf("Not quite implemented yet")
+func (a *Api) GetVerifier(id string) (*Verifier, error) {
+	return Get[Verifier](a, fmt.Sprintf("/ext/oidc/v1/verifiers/%s", id))
 }
 
-func (a *Api) PutVerifier(id string, verifier *VerifierRequest) (*VerifierResponse, error) {
-	return nil, fmt.Errorf("Not quite implemented yet")
+func (a *Api) PutVerifier(id string, verifier *Verifier) (*Verifier, error) {
+	return Put[Verifier](a, fmt.Sprintf("/ext/oidc/v1/verifiers/%s", id), verifier)
+}
+
+func (a *Api) DeleteVerifier(id string) error {
+	return Delete(a, fmt.Sprintf("/ext/oidc/v1/verifiers/%s", id))
+}
+
+// Verifier client
+func (a *Api) PostVerifierClient(verifier_id string, verifier *VerifierClient) (*VerifierClient, error) {
+	return Post[VerifierClient](a, fmt.Sprintf("/ext/oidc/v1/verifiers/%s/clients", verifier_id), verifier)
+}
+
+func (a *Api) GetVerifierClients(cursor string) (*VerifierClientListResponse, error) {
+	return nil, fmt.Errorf("Not quite implemented yet") // TODO
+}
+
+func (a *Api) GetVerifierClient(verifier_id string, id string) (*VerifierClient, error) {
+	return Get[VerifierClient](a, fmt.Sprintf("/ext/oidc/v1/verifiers/%s/clients/%s", verifier_id, id))
+}
+
+func (a *Api) PutVerifierClient(verifier_id string, id string, verifier *VerifierClient) (*VerifierClient, error) {
+	return Put[VerifierClient](a, fmt.Sprintf("/ext/oidc/v1/verifiers/%s/clients/%s", verifier_id, id), verifier)
+}
+
+func (a *Api) DeleteVerifierClient(verifier_id string, id string) error {
+	return Delete(a, fmt.Sprintf("/ext/oidc/v1/verifiers/%s/clients/%s", verifier_id, id))
 }
 
 // Authentication Providers
@@ -434,6 +520,28 @@ func (a *Api) PutAuthenticationProvider(authenticationProvider *AuthenticationPr
 func (a *Api) DeleteAuthenticationProvider(id string) error {
 	return Delete(a, fmt.Sprintf("/core/v1/users/authenticationproviders/%s", id))
 }
+
+// End authentication provider
+
+func (a *Api) PostCustomDomain(customDomain *CustomDomainRequest) (*CustomDomainResponse, error) {
+	return Post[CustomDomainResponse](a, "/core/v1/config/domain", customDomain)
+}
+
+func (a *Api) GetCustomDomain() (*CustomDomainResponse, error) {
+	return Get[CustomDomainResponse](a, "/core/v1/config/domain")
+}
+
+func (a *Api) PutCustomDomain(id string, customDomain *CustomDomainRequest) (*CustomDomainResponse, error) {
+	return Put[CustomDomainResponse](a, "/core/v1/config/domain", customDomain)
+}
+
+func (a *Api) DeleteCustomDomain() error {
+	return Delete(a, "/core/v1/config")
+}
+
+// Custom domain
+
+// End custom domain
 
 func (a *Api) GetUrl(path string) (string, error) {
 	return fmt.Sprintf("%s%s", a.ApiUrl, path), nil
@@ -482,6 +590,9 @@ func (a *Api) GetAccessToken() (string, error) {
 
 	client := http.DefaultClient
 	resp, err := client.Do(req)
+	if resp == nil {
+		return "", fmt.Errorf("Response unavailable. Not sure why.")
+	}
 	if resp.StatusCode < 200 || 299 < resp.StatusCode {
 		return "", fmt.Errorf("Invalid status code while retrieving token: %d", resp.StatusCode)
 	}

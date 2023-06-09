@@ -170,7 +170,7 @@ func fromTerraformIssuerClient(d *schema.ResourceData) (*IssuerClientRequest, er
 	return &IssuerClientRequest{
 		Name:                     d.Get("name").(string),
 		RedirectUris:             castToStringSlice(d.Get("redirect_uris")),
-		ResponseTypes:            castToStringSlice(d.Get("response_Types")),
+		ResponseTypes:            castToStringSlice(d.Get("response_types")),
 		GrantTypes:               castToStringSlice(d.Get("grant_types")),
 		TokenEndpointAuthMethod:  d.Get("token_endpoint_auth_method").(string),
 		IdTokenSignedResponseAlg: d.Get("id_token_signed_response_alg").(string),

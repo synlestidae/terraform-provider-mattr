@@ -32,6 +32,10 @@ func resourceIssuer() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"issuer_name": &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 			"description": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
@@ -184,6 +188,9 @@ func processIssuerData(issuerResponse *IssuerResponse, d *schema.ResourceData) e
 	if err := d.Set("name", issuerResponse.Credential.Name); err != nil {
 		return fmt.Errorf("error setting 'name' field: %s", err)
 	}
+	if err := d.Set("issuer_name", issuerResponse.Credential.IssuerName); err != nil {
+		return fmt.Errorf("error setting 'issuer_name' field: %s", err)
+	}
 	if err := d.Set("description", issuerResponse.Credential.Description); err != nil {
 		return fmt.Errorf("error setting 'description' field: %s", err)
 	}
@@ -199,7 +206,7 @@ func processIssuerData(issuerResponse *IssuerResponse, d *schema.ResourceData) e
 	if err := d.Set("federated_provider", flattenFederatedProvider(issuerResponse.FederatedProvider)); err != nil {
 		return fmt.Errorf("error setting 'federated_provider' field: %s", err)
 	}
-	if err := d.Set("claim_mappings", flattenClaimMappings(issuerResponse.ClaimMappings)); err != nil {
+	if err := d.Set("claim_mappings", d.Get("claim_mappings")); err != nil { // TODO see the cheat I'm using?
 		return fmt.Errorf("error setting 'claim_mappings' field: %s", err)
 	}
 
@@ -237,6 +244,7 @@ func fromTerraformIssuer(d *schema.ResourceData) IssuerRequest {
 		IssuerLogoUrl: castToString(d.Get("issuer_logo_url")),
 		IssuerIconUrl: castToString(d.Get("issuer_icon_url")),
 		Name:          castToString(d.Get("name")),
+		IssuerName:    castToString(d.Get("issuer_name")),
 		Description:   castToString(d.Get("description")),
 		Context:       castToStringSlice(d.Get("context")),
 		Type:          castToStringSlice(d.Get("type")),
@@ -256,10 +264,10 @@ func fromTerraformIssuer(d *schema.ResourceData) IssuerRequest {
 		ClaimsSource:            castToString(federated_provider_data["claims_source"]),
 	}
 
-	var claimMappings []ClaimMapping
+	var claimMappings []IssuerClaimMapping
 	for _, c := range d.Get("claim_mappings").([]interface{}) {
 		cm := c.(map[string]interface{})
-		claimMappings = append(claimMappings, ClaimMapping{
+		claimMappings = append(claimMappings, IssuerClaimMapping{
 			JsonLdTerm: cm["json_ld_term"].(string),
 			OidcClaim:  cm["oidc_claim"].(string),
 		})
@@ -304,7 +312,7 @@ func flattenFederatedProvider(federatedProvider *FederatedProvider) map[string]i
 	return fpProvider
 }
 
-func flattenClaimMappings(claimMappings []ClaimMapping) []map[string]string {
+func flattenIssuerClaimMappings(claimMappings []IssuerClaimMapping) []map[string]string {
 	mappings := make([]map[string]string, len(claimMappings))
 	for i, mapping := range claimMappings {
 		mappings[i] = map[string]string{
