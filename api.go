@@ -35,7 +35,7 @@ type DidRequest struct {
 }
 
 type DidRequestOptions struct {
-	KeyType string `json:"keyType,omitempty"`
+	KeyType string `json:"keyType,omitempty" schemaOpts:"required"`
 	Url     string `json:"url,omitempty"`
 }
 
