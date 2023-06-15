@@ -26,7 +26,7 @@ func schemaForStruct(inputType reflect.Type) (*map[string]*schema.Schema, error)
 	for i := 0; i < numField; i++ {
 		field := inputType.Field(i)
 		name := snakeCase(field.Name)
-		schemaType, err := getSchemaType(inputType)
+		schemaType, err := getSchemaType(field.Type)
 		opts := fieldOpts(&field.Tag)
 
 		if err != nil {
@@ -99,6 +99,7 @@ func snakeCase(input string) string {
 }
 
 func getSchemaType(inputType reflect.Type) (schema.ValueType, error) {
+	fmt.Printf("Thing %s", inputType)
 	switch inputType.Kind() {
 	case reflect.String:
 		return schema.TypeString, nil
@@ -109,6 +110,7 @@ func getSchemaType(inputType reflect.Type) (schema.ValueType, error) {
 	case reflect.Float32, reflect.Float64:
 		return schema.TypeFloat, nil
 	case reflect.Struct:
+		return schema.TypeMap, nil
 	case reflect.Array:
 	case reflect.Map:
 	case reflect.Interface:
