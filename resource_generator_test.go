@@ -10,8 +10,9 @@ import (
 
 func TestSchemaForStruct(t *testing.T) {
 	type MyStruct struct {
-		Field1 string `schemaOpts:"required"`
-		Field2 int    `schemaOpts:"optional"`
+		Field1 string  `schemaOpts:"required"`
+		Field2 int     `schemaOpts:"optional"`
+		Field3 float32 `schemaOpts:"computed"`
 	}
 
 	expectedSchema := map[string]*schema.Schema{
@@ -27,23 +28,23 @@ func TestSchemaForStruct(t *testing.T) {
 			Required: false,
 			Optional: true,
 		},
+		"field3": {
+			Type:     schema.TypeFloat,
+			Computed: true,
+			Required: false,
+			Optional: false,
+		},
 	}
 
-	actualSchema, err := schemaForStruct(reflect.TypeOf(MyStruct{}))
+	var rc ResourceContainer
+
+	actualSchema, err := rc.genSchema(reflect.TypeOf(MyStruct{}))
 	if err != nil {
 		t.Errorf("Error generating schema: %v", err)
 		return
 	}
 
 	assertEqual(t, *actualSchema, expectedSchema)
-
-	//if !reflect.DeepEqual(*actualSchema, expectedSchema) {
-	//t.Errorf("MyFunction() returned incorrect result.\nGot:\n%v\nExpected:\n%v", actualSchema, expectedSchema)
-	//}
-
-	//if !reflect.DeepEqual(*actualSchema, expectedSchema) {
-	//t.Errorf("Generated schema does not match the expected schema")
-	//}
 }
 
 func TestSnakeCase(t *testing.T) {

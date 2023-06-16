@@ -9,13 +9,21 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-type SchemaOpts struct {
-	Computed bool
-	Required bool
-	Optional bool
+type ResourceContainer struct {
+	referenceType *reflect.Type
+	structData    *interface{}
+	resourceData  *schema.ResourceData
 }
 
-func schemaForStruct(inputType reflect.Type) (*map[string]*schema.Schema, error) {
+func (c *ResourceContainer) readResource(d *schema.ResourceData) (interface{}, error) {
+	panic("Not quite implemented")
+}
+
+func (c *ResourceContainer) readStruct(data *interface{}, d *schema.ResourceData) error {
+	panic("Not quite implemented")
+}
+
+func (c *ResourceContainer) genSchema(inputType reflect.Type) (*map[string]*schema.Schema, error) {
 	if inputType.Kind() != reflect.Struct {
 		return nil, fmt.Errorf("Unable to generate schema for kind: %s", inputType.Kind())
 	}
@@ -42,7 +50,7 @@ func schemaForStruct(inputType reflect.Type) (*map[string]*schema.Schema, error)
 
 		// now the recursive parts
 		if field.Type.Kind() == reflect.Struct {
-			nestedSchema, err := schemaForStruct(field.Type)
+			nestedSchema, err := c.genSchema(field.Type)
 
 			if err != nil {
 				return nil, err
@@ -57,6 +65,12 @@ func schemaForStruct(inputType reflect.Type) (*map[string]*schema.Schema, error)
 	}
 
 	return &schemaMap, nil
+}
+
+type SchemaOpts struct {
+	Computed bool
+	Required bool
+	Optional bool
 }
 
 func fieldOpts(tag *reflect.StructTag) SchemaOpts {
@@ -99,7 +113,6 @@ func snakeCase(input string) string {
 }
 
 func getSchemaType(inputType reflect.Type) (schema.ValueType, error) {
-	fmt.Printf("Thing %s", inputType)
 	switch inputType.Kind() {
 	case reflect.String:
 		return schema.TypeString, nil
