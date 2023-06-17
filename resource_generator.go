@@ -9,62 +9,153 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-type ResourceContainer struct {
-	referenceType *reflect.Type
-	structData    *interface{}
-	resourceData  *schema.ResourceData
+type ResourceRep struct {
+	kind      reflect.Kind
+	valueType schema.ValueType
+	fields    []Field
+	elem      *ResourceRep
 }
 
-func (c *ResourceContainer) readResource(d *schema.ResourceData) (interface{}, error) {
-	panic("Not quite implemented")
+type Field struct {
+	schemaName string
+	fieldName  string
+	resource   ResourceRep
+	opts       SchemaOpts
 }
 
-func (c *ResourceContainer) readStruct(data *interface{}, d *schema.ResourceData) error {
-	panic("Not quite implemented")
+type Visitor interface {
+	visitStruct(*ResourceRep) error
+	visitArray(*ResourceRep) error
+	visitPrimitive(*ResourceRep) error
 }
 
-func (c *ResourceContainer) genSchema(inputType reflect.Type) (*map[string]*schema.Schema, error) {
-	if inputType.Kind() != reflect.Struct {
-		return nil, fmt.Errorf("Unable to generate schema for kind: %s", inputType.Kind())
-	}
+type ResourceVisitor struct {
+	resource schema.Resource
+}
 
-	schemaMap := make(map[string]*schema.Schema, inputType.NumField())
-	numField := inputType.NumField()
+func (vs *ResourceVisitor) visitStruct(rs *ResourceRep) error {
+	// top level thing should be a resource
+	// so start by going through the fields
 
-	for i := 0; i < numField; i++ {
-		field := inputType.Field(i)
-		name := snakeCase(field.Name)
-		schemaType, err := getSchemaType(field.Type)
-		opts := fieldOpts(&field.Tag)
+	for _, field := range rs.fields {
+		var subVs ResourceVisitor
 
+		rtype, err := getSchemaType(field.resource.kind)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
-		newSchema := schema.Schema{
-			Type:     schemaType,
-			Computed: opts.Computed,
-			Required: opts.Required,
-			Optional: opts.Optional,
-		}
-
-		// now the recursive parts
-		if field.Type.Kind() == reflect.Struct {
-			nestedSchema, err := c.genSchema(field.Type)
-
+		if field.resource.hasPrimitive() {
+			vs.resource.Schema[field.schemaName] = &schema.Schema{
+				Type:     rtype,
+				Computed: field.opts.Computed,
+				Required: field.opts.Required,
+				Optional: field.opts.Optional,
+			}
+		} else if field.resource.kind == reflect.Struct {
+			err := field.resource.accept(&subVs)
 			if err != nil {
-				return nil, err
+				return err
 			}
+			vs.resource.Schema[field.schemaName] = &schema.Schema{
+				Type:     rtype,
+				Computed: field.opts.Computed,
+				Required: field.opts.Required,
+				Optional: field.opts.Optional,
+				Elem:     subVs.resource.Schema,
+			}
+		} else if field.resource.kind == reflect.Slice {
 
-			newSchema.Elem = &schema.Resource{
-				Schema: *nestedSchema,
+		}
+		// then set the options
+		// compute the names
+		// and so on and so on
+	}
+	panic("Not quite implmented")
+}
+
+func (vs *ResourceVisitor) visitArray(*ResourceRep) error {
+	panic("Not quite implmented")
+}
+
+func (rs *ResourceRep) hasPrimitive() bool {
+	switch rs.kind {
+	case reflect.Bool,
+		reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr,
+		reflect.Float32, reflect.Float64,
+		reflect.Complex64, reflect.Complex128,
+		reflect.String:
+		return true
+	default:
+		return false
+	}
+}
+
+func (r *ResourceRep) accept(visitor Visitor) error {
+	switch r.kind {
+	case reflect.Bool,
+		reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr,
+		reflect.Float32, reflect.Float64,
+		reflect.Complex64, reflect.Complex128,
+		reflect.String:
+		return visitor.visitPrimitive(r)
+	case reflect.Struct:
+		return visitor.visitStruct(r)
+	case reflect.Array:
+		return visitor.visitArray(r)
+	}
+	panic(fmt.Sprintf("Unsupported schema for type: %s", r.kind))
+}
+
+func resourceFromType(typ reflect.Type) (ResourceRep, error) {
+	var resource ResourceRep
+	kind := typ.Kind()
+
+	switch kind {
+	case reflect.Bool:
+	case reflect.String:
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+	case reflect.Float32, reflect.Float64:
+		resource.kind = kind
+		schemaType, err := getSchemaType(kind)
+		if err != nil {
+			return resource, err
+		}
+		resource.valueType = schemaType
+		return resource, nil
+
+	case reflect.Struct:
+		numField := typ.NumField()
+		fields := make([]Field, numField)
+
+		for i := 0; i < numField; i++ {
+			field := typ.Field(i)
+			schemaName := snakeCase(field.Name)
+			opts := fieldOpts(&field.Tag)
+			fieldResource, err := resourceFromType(field.Type)
+			if err != err {
+				return resource, err
+			}
+			fields[i] = Field{
+				schemaName: schemaName,
+				fieldName:  field.Name,
+				resource:   fieldResource,
+				opts:       opts,
 			}
 		}
-
-		schemaMap[name] = &newSchema
+	case reflect.Array:
+	case reflect.Map:
+	case reflect.Interface:
+	case reflect.Slice:
+		panic("Not yet implemented")
+	case reflect.Chan:
+	case reflect.Pointer:
+	case reflect.UnsafePointer:
+		panic(fmt.Sprintf("Unsupported schema for type: %s", typ.Kind()))
 	}
-
-	return &schemaMap, nil
+	panic(fmt.Sprintf("Unsupported schema for type: %s", typ.Kind()))
 }
 
 type SchemaOpts struct {
@@ -112,8 +203,8 @@ func snakeCase(input string) string {
 	return builder.String()
 }
 
-func getSchemaType(inputType reflect.Type) (schema.ValueType, error) {
-	switch inputType.Kind() {
+func getSchemaType(kind reflect.Kind) (schema.ValueType, error) {
+	switch kind {
 	case reflect.String:
 		return schema.TypeString, nil
 	case reflect.Bool:
@@ -126,18 +217,13 @@ func getSchemaType(inputType reflect.Type) (schema.ValueType, error) {
 		return schema.TypeMap, nil
 	case reflect.Array:
 	case reflect.Map:
-	case reflect.Interface:
 	case reflect.Slice:
-		//return nil, fmt.Errorf("Not yet implemented")
 		panic("Not yet implemented")
 	case reflect.Chan:
 	case reflect.Pointer:
 	case reflect.UnsafePointer:
-		panic(fmt.Sprintf("Unsupported schema for type: %s", inputType.Kind()))
-		//return nil, fmt.Errorf("Unsupported schema for type: %s", inputType.Kind())
-		//default:
-		//panic("Unknown type: %s", inputType.Kind())
-		//return nil, fmt.Errorf("Unknown type: %s", inputType.Kind())
+	case reflect.Interface:
+		panic(fmt.Sprintf("Unsupported schema for type: %s", kind))
 	}
-	panic(fmt.Sprintf("Unsupported schema for type: %s", inputType.Kind()))
+	panic(fmt.Sprintf("Unsupported schema for type: %s", kind))
 }
