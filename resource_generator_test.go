@@ -36,7 +36,8 @@ func TestSchemaForStruct(t *testing.T) {
 		},
 	}
 
-	var rc ResourceContainer
+	doSchemaTest(t, reflect.TypeOf(MyStruct{}), expectedSchema)
+	/*var rc ResourceContainer
 
 	actualSchema, err := rc.genSchema(reflect.TypeOf(MyStruct{}))
 	if err != nil {
@@ -44,7 +45,7 @@ func TestSchemaForStruct(t *testing.T) {
 		return
 	}
 
-	assertEqual(t, *actualSchema, expectedSchema)
+	assertEqual(t, *actualSchema, expectedSchema)*/
 }
 
 func TestSnakeCase(t *testing.T) {
@@ -63,6 +64,16 @@ func TestSnakeCase(t *testing.T) {
 			t.Errorf("snakeCase(%s) = %s, expected %s", tc.input, actual, tc.expected)
 		}
 	}
+}
+
+func doSchemaTest(t *testing.T, typ reflect.Type, expectedSchema map[string]*schema.Schema) {
+	var visitor ResourceVisitor
+	res, err := typeResource(typ)
+	if err = res.accept(&visitor); err != nil {
+		t.Errorf("Failed to produce ResourceRep: %s", err)
+	}
+
+	assertEqual(t, expectedSchema, visitor.schema.Elem)
 }
 
 func assertEqual(t *testing.T, actual, expected interface{}) {
