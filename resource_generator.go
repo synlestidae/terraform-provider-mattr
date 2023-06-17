@@ -19,8 +19,73 @@ type ResourceRep struct {
 type Field struct {
 	schemaName string
 	fieldName  string
-	resource   ResourceRep
 	opts       SchemaOpts
+	resource   ResourceRep
+}
+
+func typeResource(t reflect.Type) (*ResourceRep, error) {
+	var rep ResourceRep
+	rep.kind = t.Kind()
+
+	switch t.Kind() {
+	case reflect.Bool,
+		reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr,
+		reflect.Float32, reflect.Float64,
+		reflect.String:
+
+		valueType, err := getSchemaType(t.Kind())
+		if err != nil {
+			return nil, err
+		}
+		rep.valueType = valueType
+		break
+	case reflect.Struct:
+		numField := t.NumField()
+		rep.fields = make([]Field, numField)
+
+		for i := 0; i < numField; i++ {
+			field := t.Field(i)
+			fieldName := field.Name
+			schemaName := snakeCase(fieldName)
+			opts := fieldOpts(&field.Tag)
+			resource, err := typeResource(field.Type)
+			if err != nil {
+				return nil, err
+			}
+
+			rep.fields[i] = Field{
+				schemaName: schemaName,
+				fieldName:  fieldName,
+				opts:       opts,
+				resource:   *resource,
+			}
+		}
+		break
+	case reflect.Array:
+	case reflect.Slice:
+		rep.valueType = schema.TypeList
+		typeElem, err := typeResource(t.Elem())
+		if err != nil {
+			return nil, err
+		}
+		rep.elem = typeElem
+		break
+	default:
+		panic(fmt.Sprintf("Unsupported schema for type: %s", t.Kind()))
+	}
+
+	return &rep, nil
+}
+
+func fieldOpts(tag *reflect.StructTag) SchemaOpts {
+	options := trimSlice(strings.Split(tag.Get("schemaOpts"), ","))
+
+	return SchemaOpts{
+		Computed: contains(options, "computed"),
+		Required: contains(options, "required"),
+		Optional: contains(options, "optional"),
+	}
 }
 
 type Visitor interface {
@@ -56,13 +121,11 @@ func (vs *ResourceVisitor) visitStruct(rs *ResourceRep) error {
 			return err
 		}
 
-		schemaMap[field.schemaName] = &schema.Schema{
-			Type:     schema.TypeMap,
-			Computed: field.opts.Computed,
-			Required: field.opts.Required,
-			Optional: field.opts.Optional,
-			Elem:     subVs.schema,
-		}
+		opts := field.opts
+		schemaMap[field.schemaName] = &subVs.schema
+		schemaMap[field.schemaName].Computed = opts.Computed
+		schemaMap[field.schemaName].Required = opts.Required
+		schemaMap[field.schemaName].Optional = opts.Optional
 	}
 
 	vs.schema = schema.Schema{
@@ -176,16 +239,6 @@ type SchemaOpts struct {
 	Computed bool
 	Required bool
 	Optional bool
-}
-
-func fieldOpts(tag *reflect.StructTag) SchemaOpts {
-	options := trimSlice(strings.Split(tag.Get("schemaOpts"), ","))
-
-	return SchemaOpts{
-		Computed: contains(options, "computed"),
-		Required: contains(options, "required"),
-		Optional: contains(options, "optional"),
-	}
 }
 
 func trimSlice(input []string) []string {
