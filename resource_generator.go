@@ -30,52 +30,66 @@ type Visitor interface {
 }
 
 type ResourceVisitor struct {
-	resource schema.Resource
+	schema schema.Schema
+}
+
+func (vs *ResourceVisitor) visitPrimitive(rs *ResourceRep) error {
+	schemaType, err := getSchemaType(rs.kind)
+	if err != nil {
+		return err
+	}
+
+	vs.schema = schema.Schema{
+		Type: schemaType,
+	}
+
+	return nil
 }
 
 func (vs *ResourceVisitor) visitStruct(rs *ResourceRep) error {
-	// top level thing should be a resource
-	// so start by going through the fields
+	schemaMap := make(map[string]*schema.Schema, len(rs.fields))
 
 	for _, field := range rs.fields {
 		var subVs ResourceVisitor
-
-		rtype, err := getSchemaType(field.resource.kind)
+		err := field.resource.accept(&subVs)
 		if err != nil {
 			return err
 		}
 
-		if field.resource.hasPrimitive() {
-			vs.resource.Schema[field.schemaName] = &schema.Schema{
-				Type:     rtype,
-				Computed: field.opts.Computed,
-				Required: field.opts.Required,
-				Optional: field.opts.Optional,
-			}
-		} else if field.resource.kind == reflect.Struct {
-			err := field.resource.accept(&subVs)
-			if err != nil {
-				return err
-			}
-			vs.resource.Schema[field.schemaName] = &schema.Schema{
-				Type:     rtype,
-				Computed: field.opts.Computed,
-				Required: field.opts.Required,
-				Optional: field.opts.Optional,
-				Elem:     subVs.resource.Schema,
-			}
-		} else if field.resource.kind == reflect.Slice {
-
+		schemaMap[field.schemaName] = &schema.Schema{
+			Type:     schema.TypeMap,
+			Computed: field.opts.Computed,
+			Required: field.opts.Required,
+			Optional: field.opts.Optional,
+			Elem:     subVs.schema,
 		}
-		// then set the options
-		// compute the names
-		// and so on and so on
 	}
-	panic("Not quite implmented")
+
+	vs.schema = schema.Schema{
+		Type: schema.TypeMap,
+		Elem: schemaMap,
+	}
+
+	return nil
 }
 
-func (vs *ResourceVisitor) visitArray(*ResourceRep) error {
-	panic("Not quite implmented")
+func (vs *ResourceVisitor) visitArray(rs *ResourceRep) error {
+	var subVs ResourceVisitor
+
+	if rs.elem == nil {
+		return fmt.Errorf("Array does not specify elem type")
+	}
+
+	if err := rs.elem.accept(&subVs); err != nil {
+		return err
+	}
+
+	vs.schema = schema.Schema{
+		Type: schema.TypeList,
+		Elem: &subVs.schema,
+	}
+
+	return nil
 }
 
 func (rs *ResourceRep) hasPrimitive() bool {
