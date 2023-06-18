@@ -1,8 +1,9 @@
-package main
+package provider
 
 import (
 	"fmt"
 	"log"
+	"nz.antunovic/mattr-terraform-provider/api"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
@@ -147,20 +148,20 @@ func resourceDidCreate(d *schema.ResourceData, m interface{}) error {
 
 	// TODO: check if the did exists first
 
-	api := m.(ProviderConfig).Api
+	didApi := m.(ProviderConfig).Api
 
 	// prepare the did body request
 	method := d.Get("method").(string)
-	options := DidRequestOptions{
+	options := api.DidRequestOptions{
 		KeyType: d.Get("key_type").(string),
 		Url:     d.Get("url").(string),
 	}
-	did_request := DidRequest{
+	did_request := api.DidRequest{
 		Method:  method,
 		Options: options,
 	}
 
-	did_response, err := api.PostDid(did_request)
+	did_response, err := didApi.PostDid(did_request)
 	if err != nil {
 		return err
 	}
@@ -177,10 +178,10 @@ func resourceDidCreate(d *schema.ResourceData, m interface{}) error {
 func resourceDidRead(d *schema.ResourceData, m interface{}) error {
 	log.Println("Reading did")
 
-	api := m.(ProviderConfig).Api
+	didApi := m.(ProviderConfig).Api
 
 	did := d.Id()
-	did_response, err := api.GetDid(did)
+	did_response, err := didApi.GetDid(did)
 	if err != nil {
 		return err
 	}
@@ -197,10 +198,10 @@ func resourceDidRead(d *schema.ResourceData, m interface{}) error {
 func resourceDidDelete(d *schema.ResourceData, m interface{}) error {
 	log.Println("Reading did")
 
-	api := m.(ProviderConfig).Api
+	didApi := m.(ProviderConfig).Api
 
 	did := d.Id()
-	err := api.DeleteDid(did)
+	err := didApi.DeleteDid(did)
 	if err != nil {
 		return err
 	}
@@ -211,7 +212,7 @@ func resourceDidDelete(d *schema.ResourceData, m interface{}) error {
 
 }
 
-func processDidData(d *schema.ResourceData, response *DidResponse) error {
+func processDidData(d *schema.ResourceData, response *api.DidResponse) error {
 	d.Set("registration_status", response.RegistrationStatus)
 	d.Set("registered", response.LocalMetadata.Registered)
 
@@ -229,7 +230,7 @@ func processDidData(d *schema.ResourceData, response *DidResponse) error {
 	return processDidDocument(d, &response.LocalMetadata.InitialDidDocument)
 }
 
-func processDidDocument(d *schema.ResourceData, didDocument *DidDocument) error {
+func processDidDocument(d *schema.ResourceData, didDocument *api.DidDocument) error {
 	publicKey := make([]map[string]string, len(didDocument.PublicKey))
 	keyAgreement := make([]map[string]string, len(didDocument.KeyAgreement))
 

@@ -1,8 +1,9 @@
-package main
+package provider
 
 import (
 	"fmt"
 	"log"
+	"nz.antunovic/mattr-terraform-provider/api"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
@@ -155,7 +156,7 @@ func resourceVerifierClientDelete(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func processVerifierClientData(verifier_client *VerifierClient, d *schema.ResourceData) error {
+func processVerifierClientData(verifier_client *api.VerifierClient, d *schema.ResourceData) error {
 	log.Println("Converting verifier client from REST")
 
 	d.SetId(verifier_client.Id)
@@ -186,8 +187,8 @@ func processVerifierClientData(verifier_client *VerifierClient, d *schema.Resour
 	return nil
 }
 
-func fromTerraformVerifierClient(d *schema.ResourceData) (*VerifierClient, error) {
-	return &VerifierClient{
+func fromTerraformVerifierClient(d *schema.ResourceData) (*api.VerifierClient, error) {
+	return &api.VerifierClient{
 		Name:                     d.Get("name").(string),
 		RedirectUris:             castToStringSlice(d.Get("redirect_uris")),
 		ResponseTypes:            castToStringSlice(d.Get("response_types")),

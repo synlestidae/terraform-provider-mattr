@@ -1,7 +1,8 @@
-package main
+package provider
 
 import (
 	"log"
+	"nz.antunovic/mattr-terraform-provider/api"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
@@ -118,7 +119,7 @@ func resourceVerifierDelete(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func processVerifierData(verifier *Verifier, d *schema.ResourceData) error {
+func processVerifierData(verifier *api.Verifier, d *schema.ResourceData) error {
 	log.Println("Converting verifier from REST")
 
 	d.SetId(verifier.Id)
@@ -142,18 +143,18 @@ func processVerifierData(verifier *Verifier, d *schema.ResourceData) error {
 	return nil
 }
 
-func fromTerraformVerifier(d *schema.ResourceData) (*Verifier, error) {
-	var claimMappings []VerifierClaimMapping
+func fromTerraformVerifier(d *schema.ResourceData) (*api.Verifier, error) {
+	var claimMappings []api.VerifierClaimMapping
 	for _, c := range d.Get("claim_mapping").([]interface{}) {
 		cm := c.(map[string]interface{})
 
-		claimMappings = append(claimMappings, VerifierClaimMapping{
+		claimMappings = append(claimMappings, api.VerifierClaimMapping{
 			JsonLdFqn: cm["json_ld_fqn"].(string),
 			OidcClaim: cm["oidc_claim"].(string),
 		})
 	}
 
-	return &Verifier{
+	return &api.Verifier{
 		Id:                     d.Id(),
 		VerifierDid:            d.Get("verifier_did").(string),
 		PresentationTemplateId: d.Get("presentation_template_id").(string),
@@ -162,7 +163,7 @@ func fromTerraformVerifier(d *schema.ResourceData) (*Verifier, error) {
 	}, nil
 }
 
-func flattenVerifierClaimMappings(claimMappings []VerifierClaimMapping) []map[string]string {
+func flattenVerifierClaimMappings(claimMappings []api.VerifierClaimMapping) []map[string]string {
 	mappings := make([]map[string]string, len(claimMappings))
 	for i, mapping := range claimMappings {
 		mappings[i] = map[string]string{

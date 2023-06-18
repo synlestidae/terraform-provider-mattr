@@ -1,7 +1,8 @@
-package main
+package provider
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"nz.antunovic/mattr-terraform-provider/api"
 )
 
 func Provider() *schema.Provider {
@@ -45,11 +46,11 @@ func Provider() *schema.Provider {
 }
 
 type ProviderConfig struct {
-	Api Api
+	Api api.Api
 }
 
 func ProviderConfigure(d *schema.ResourceData) (interface{}, error) {
-	api := Api{
+	api := api.Api{
 		ClientId:     getOrEmpty(d, "client_id"),
 		ClientSecret: getOrEmpty(d, "client_secret"),
 		Audience:     getOrEmpty(d, "audience"),

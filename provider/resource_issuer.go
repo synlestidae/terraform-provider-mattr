@@ -1,10 +1,11 @@
-package main
+package provider
 
 import (
 	"fmt"
 	"log"
 	"strconv"
 	"strings"
+	"nz.antunovic/mattr-terraform-provider/api"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
@@ -173,7 +174,7 @@ func resourceIssuerDelete(d *schema.ResourceData, m interface{}) error {
 	return api.DeleteIssuer(issuer_id)
 }
 
-func processIssuerData(issuerResponse *IssuerResponse, d *schema.ResourceData) error {
+func processIssuerData(issuerResponse *api.IssuerResponse, d *schema.ResourceData) error {
 	log.Println("Processing issuer data")
 	d.SetId(issuerResponse.Id)
 	if err := d.Set("issuer_did", issuerResponse.Credential.IssuerDid); err != nil {
@@ -234,12 +235,12 @@ func processIssuerData(issuerResponse *IssuerResponse, d *schema.ResourceData) e
 	return nil
 }
 
-func fromTerraformIssuer(d *schema.ResourceData) IssuerRequest {
+func fromTerraformIssuer(d *schema.ResourceData) api.IssuerRequest {
 	log.Println("Preparing issuer data")
 
 	credentialBranding := d.Get("credential_branding").(map[string]interface{})
 
-	cred := IssuerCredential{
+	cred := api.IssuerCredential{
 		IssuerDid:     castToString(d.Get("issuer_did")),
 		IssuerLogoUrl: castToString(d.Get("issuer_logo_url")),
 		IssuerIconUrl: castToString(d.Get("issuer_icon_url")),
@@ -248,14 +249,14 @@ func fromTerraformIssuer(d *schema.ResourceData) IssuerRequest {
 		Description:   castToString(d.Get("description")),
 		Context:       castToStringSlice(d.Get("context")),
 		Type:          castToStringSlice(d.Get("type")),
-		CredentialBranding: &CredentialBranding{
+		CredentialBranding: &api.CredentialBranding{
 			BackgroundColor:   castToString(credentialBranding["background_color"]),
 			WatermarkImageUrl: castToString(credentialBranding["watermark_image_url"]),
 		},
 	}
 
 	federated_provider_data := d.Get("federated_provider").(map[string]interface{})
-	fedProv := FederatedProvider{
+	fedProv := api.FederatedProvider{
 		Url:                     castToString(federated_provider_data["url"]),
 		Scope:                   splitList(federated_provider_data["scope"]),
 		ClientId:                castToString(federated_provider_data["client_id"]),
@@ -264,10 +265,10 @@ func fromTerraformIssuer(d *schema.ResourceData) IssuerRequest {
 		ClaimsSource:            castToString(federated_provider_data["claims_source"]),
 	}
 
-	var claimMappings []IssuerClaimMapping
+	var claimMappings []api.IssuerClaimMapping
 	for _, c := range d.Get("claim_mappings").([]interface{}) {
 		cm := c.(map[string]interface{})
-		claimMappings = append(claimMappings, IssuerClaimMapping{
+		claimMappings = append(claimMappings, api.IssuerClaimMapping{
 			JsonLdTerm: cm["json_ld_term"].(string),
 			OidcClaim:  cm["oidc_claim"].(string),
 		})
@@ -284,7 +285,7 @@ func fromTerraformIssuer(d *schema.ResourceData) IssuerRequest {
 
 	log.Println("Prepared issuer data")
 
-	return IssuerRequest{
+	return api.IssuerRequest{
 		Credential:                 &cred,
 		FederatedProvider:          &fedProv,
 		ClaimMappings:              claimMappings,
@@ -293,7 +294,7 @@ func fromTerraformIssuer(d *schema.ResourceData) IssuerRequest {
 	}
 }
 
-func flattenCredentialBranding(credentialBranding *CredentialBranding) map[string]string {
+func flattenCredentialBranding(credentialBranding *api.CredentialBranding) map[string]string {
 	log.Println("Brand", *credentialBranding)
 	branding := make(map[string]string, 2)
 	branding["background_color"] = credentialBranding.BackgroundColor
@@ -301,7 +302,7 @@ func flattenCredentialBranding(credentialBranding *CredentialBranding) map[strin
 	return branding
 }
 
-func flattenFederatedProvider(federatedProvider *FederatedProvider) map[string]interface{} {
+func flattenFederatedProvider(federatedProvider *api.FederatedProvider) map[string]interface{} {
 	fpProvider := make(map[string]interface{}, 6)
 	fpProvider["url"] = federatedProvider.Url
 	fpProvider["scope"] = strings.Join(federatedProvider.Scope, " ")
@@ -312,7 +313,7 @@ func flattenFederatedProvider(federatedProvider *FederatedProvider) map[string]i
 	return fpProvider
 }
 
-func flattenIssuerClaimMappings(claimMappings []IssuerClaimMapping) []map[string]string {
+func flattenIssuerClaimMappings(claimMappings []api.IssuerClaimMapping) []map[string]string {
 	mappings := make([]map[string]string, len(claimMappings))
 	for i, mapping := range claimMappings {
 		mappings[i] = map[string]string{

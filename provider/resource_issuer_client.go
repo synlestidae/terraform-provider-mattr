@@ -1,7 +1,8 @@
-package main
+package provider
 
 import (
 	"log"
+	"nz.antunovic/mattr-terraform-provider/api"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
@@ -133,7 +134,7 @@ func resourceIssuerClientDelete(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func processIssuerClientData(issuer_client *IssuerClientResponse, d *schema.ResourceData) error {
+func processIssuerClientData(issuer_client *api.IssuerClientResponse, d *schema.ResourceData) error {
 	log.Println("Converting issuer client from REST")
 
 	var err error
@@ -166,8 +167,8 @@ func processIssuerClientData(issuer_client *IssuerClientResponse, d *schema.Reso
 	return nil
 }
 
-func fromTerraformIssuerClient(d *schema.ResourceData) (*IssuerClientRequest, error) {
-	return &IssuerClientRequest{
+func fromTerraformIssuerClient(d *schema.ResourceData) (*api.IssuerClientRequest, error) {
+	return &api.IssuerClientRequest{
 		Name:                     d.Get("name").(string),
 		RedirectUris:             castToStringSlice(d.Get("redirect_uris")),
 		ResponseTypes:            castToStringSlice(d.Get("response_types")),

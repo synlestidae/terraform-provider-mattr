@@ -1,9 +1,12 @@
-package main
+package provider
 
 import (
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"nz.antunovic/mattr-terraform-provider/api"
+
+
 )
 
 func resourceClaimSource() *schema.Resource {
@@ -102,7 +105,7 @@ func resourceClaimSourceDelete(d *schema.ResourceData, m interface{}) error {
 	return api.DeleteClaimSource(d.Id())
 }
 
-func processClaimSourceData(claimSource *ClaimSource, d *schema.ResourceData) {
+func processClaimSourceData(claimSource *api.ClaimSource, d *schema.ResourceData) {
 	authorization := make(map[string]string, 2)
 	authorization["type"] = claimSource.Authorization.Type
 	authorization["value"] = claimSource.Authorization.Value
@@ -125,25 +128,25 @@ func processClaimSourceData(claimSource *ClaimSource, d *schema.ResourceData) {
 	d.SetId(claimSource.Id)
 }
 
-func fromTerraformClaimSource(d *schema.ResourceData) ClaimSource {
+func fromTerraformClaimSource(d *schema.ResourceData) api.ClaimSource {
 	authorizationMap := d.Get("authorization").(map[string]interface{})
 	requestParametersList := d.Get("request_parameter").([]interface{})
 
-	authorization := ClaimSourceAuthorization{
+	authorization := api.ClaimSourceAuthorization{
 		Type:  authorizationMap["type"].(string),
 		Value: authorizationMap["value"].(string),
 	}
 
-	requestParametersMap := make(map[string]ClaimSourceRequestParameter, len(requestParametersList))
+	requestParametersMap := make(map[string]api.ClaimSourceRequestParameter, len(requestParametersList))
 	for _, param := range requestParametersList {
 		paramMap := param.(map[string]interface{})
-		requestParametersMap[paramMap["property"].(string)] = ClaimSourceRequestParameter{
+		requestParametersMap[paramMap["property"].(string)] = api.ClaimSourceRequestParameter{
 			MapFrom:      paramMap["map_from"].(string),
 			DefaultValue: paramMap["default_value"].(string),
 		}
 	}
 
-	return ClaimSource{
+	return api.ClaimSource{
 		Id:                d.Id(),
 		Name:              d.Get("name").(string),
 		Url:               d.Get("url").(string),
