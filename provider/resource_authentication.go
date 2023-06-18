@@ -1,9 +1,9 @@
-package main
+package provider
 
 import (
 	"log"
 	"strconv"
-
+	"nz.antunovic/mattr-terraform-provider/api"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
@@ -118,7 +118,7 @@ func resourceAuthenticationDelete(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func processAuthenticationData(authentication *AuthenticationProvider, d *schema.ResourceData) error {
+func processAuthenticationData(authentication *api.AuthenticationProvider, d *schema.ResourceData) error {
 	d.SetId(authentication.Id)
 
 	var err error
@@ -153,7 +153,7 @@ func processAuthenticationData(authentication *AuthenticationProvider, d *schema
 	return nil
 }
 
-func fromTerraformAuthentication(d *schema.ResourceData) (*AuthenticationProvider, error) {
+func fromTerraformAuthentication(d *schema.ResourceData) (*api.AuthenticationProvider, error) {
 	staticRequestParameters := d.Get("static_request_parameters").(map[string]any)
 
 	forwardedParams := d.Get("forwarded_request_parameters").([]interface{})
@@ -166,7 +166,7 @@ func fromTerraformAuthentication(d *schema.ResourceData) (*AuthenticationProvide
 		}
 	}
 
-	return &AuthenticationProvider{
+	return &api.AuthenticationProvider{
 		Id:                         d.Id(),
 		RedirectUrl:                castToString(d.Get("redirect_url")),
 		Url:                        castToString(d.Get("url")),

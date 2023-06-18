@@ -1,4 +1,4 @@
-package main
+package api
 
 type AuthRequest struct {
 	ClientId     string `json:"client_id"`

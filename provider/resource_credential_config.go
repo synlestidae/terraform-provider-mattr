@@ -1,9 +1,9 @@
-package main
+package provider
 
 import (
 	"log"
 	"strconv"
-
+	"nz.antunovic/mattr-terraform-provider/api"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
@@ -204,7 +204,7 @@ func resourceCredentialConfigDelete(d *schema.ResourceData, m interface{}) error
 	return nil
 }
 
-func processCredentialConfigData(config *CredentialConfig, d *schema.ResourceData) {
+func processCredentialConfigData(config *api.CredentialConfig, d *schema.ResourceData) {
 	log.Println("Processing credential config data")
 	// issuerMap
 	issuerMap := make(map[string]string, 3)
@@ -258,28 +258,28 @@ func processCredentialConfigData(config *CredentialConfig, d *schema.ResourceDat
 	log.Println("Processed credential config")
 }
 
-func fromTerraformCredentialConfig(d *schema.ResourceData) CredentialConfig {
+func fromTerraformCredentialConfig(d *schema.ResourceData) api.CredentialConfig {
 	log.Println("Converting credential config from REST")
 	configIssuerMap := d.Get("issuer").(map[string]interface{})
 	configBrandingMap := d.Get("credential_branding").(map[string]interface{})
 	claimMappingsList := d.Get("claim_mapping").([]interface{})
 	configExpiresInMap := d.Get("expires_in").(map[string]interface{})
 
-	configIssuer := IssuerInfo{
+	configIssuer := api.IssuerInfo{
 		Name:    configIssuerMap["name"].(string),
 		LogoUrl: configIssuerMap["logo_url"].(string),
 		IconUrl: configIssuerMap["icon_url"].(string),
 	}
 
-	configBranding := CredentialBranding{
+	configBranding := api.CredentialBranding{
 		BackgroundColor:   configBrandingMap["background_color"].(string),
 		WatermarkImageUrl: configBrandingMap["watermark_image_url"].(string),
 	}
 
-	claimMappings := make(map[string]ClaimMappingConfig, len(claimMappingsList))
+	claimMappings := make(map[string]api.ClaimMappingConfig, len(claimMappingsList))
 	for _, claim := range claimMappingsList {
 		claimObj := claim.(map[string]any)
-		claimMappings[claimObj["name"].(string)] = ClaimMappingConfig{
+		claimMappings[claimObj["name"].(string)] = api.ClaimMappingConfig{
 			MapFrom:      claimObj["map_from"].(string),
 			Required:     claimObj["required"].(bool),
 			DefaultValue: claimObj["default_value"].(string),
@@ -323,7 +323,7 @@ func fromTerraformCredentialConfig(d *schema.ResourceData) CredentialConfig {
 		panic("Failed to convert seconds") // TODO error handling
 	}
 
-	configExpiresIn := ExpiresIn{
+	configExpiresIn := api.ExpiresIn{
 		Years:   years,
 		Months:  months,
 		Weeks:   weeks,
@@ -335,7 +335,7 @@ func fromTerraformCredentialConfig(d *schema.ResourceData) CredentialConfig {
 
 	log.Println("Converted from resource data")
 
-	return CredentialConfig{
+	return api.CredentialConfig{
 		Name:               d.Get("name").(string),
 		Description:        d.Get("description").(string),
 		Type:               d.Get("type").(string),

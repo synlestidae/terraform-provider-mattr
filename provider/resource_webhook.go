@@ -1,8 +1,9 @@
-package main
+package provider
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	_ "github.com/motemen/go-loghttp/global"
+	"nz.antunovic/mattr-terraform-provider/api"
 )
 
 func resourceWebhook() *schema.Resource {
@@ -79,14 +80,14 @@ func resourceWebhookDelete(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func processWebhookData(webhook_response *WebhookResponse, d *schema.ResourceData) {
+func processWebhookData(webhook_response *api.WebhookResponse, d *schema.ResourceData) {
 	d.SetId(webhook_response.Id)
 	d.Set("url", webhook_response.Url)
 	d.Set("events", webhook_response.Events)
 	d.Set("disabled", webhook_response.Disabled)
 }
 
-func fromTerraform(d *schema.ResourceData) WebhookRequest {
+func fromTerraform(d *schema.ResourceData) api.WebhookRequest {
 	event_list := d.Get("events").([]interface{})
 	events := make([]string, len(event_list), len(event_list))
 
@@ -94,7 +95,7 @@ func fromTerraform(d *schema.ResourceData) WebhookRequest {
 		events[i] = event.(string)
 	}
 
-	return WebhookRequest{
+	return api.WebhookRequest{
 		Events:   events,
 		Url:      d.Get("url").(string),
 		Disabled: d.Get("disabled").(bool),

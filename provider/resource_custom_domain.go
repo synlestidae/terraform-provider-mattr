@@ -1,7 +1,8 @@
-package main
+package provider
 
 import (
 	"log"
+	"nz.antunovic/mattr-terraform-provider/api"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
@@ -121,7 +122,7 @@ func resourceCustomDomainDelete(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func processCustomDomainData(custom_domain *CustomDomainResponse, d *schema.ResourceData) error {
+func processCustomDomainData(custom_domain *api.CustomDomainResponse, d *schema.ResourceData) error {
 	log.Println("Converting custom domain from REST")
 
 	d.SetId(custom_domain.Domain)
@@ -137,8 +138,8 @@ func processCustomDomainData(custom_domain *CustomDomainResponse, d *schema.Reso
 	return nil
 }
 
-func fromTerraformCustomDomain(d *schema.ResourceData) (*CustomDomainRequest, error) {
-	return &CustomDomainRequest{
+func fromTerraformCustomDomain(d *schema.ResourceData) (*api.CustomDomainRequest, error) {
+	return &api.CustomDomainRequest{
 		Name:     d.Get("name").(string),
 		LogoUrl:  d.Get("logo_url").(string),
 		Domain:   d.Get("domain").(string),
