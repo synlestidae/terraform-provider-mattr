@@ -14,6 +14,7 @@ type ResourceRep struct {
 	valueType schema.ValueType
 	fields    []Field
 	elem      *ResourceRep
+	singleton bool,
 }
 
 type Field struct {
