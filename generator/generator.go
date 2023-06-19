@@ -1,4 +1,4 @@
-package main
+package generator
 
 import (
 	"fmt"
@@ -14,7 +14,7 @@ type ResourceRep struct {
 	valueType schema.ValueType
 	fields    []Field
 	elem      *ResourceRep
-	singleton bool,
+	singleton bool
 }
 
 type Field struct {
@@ -185,55 +185,6 @@ func (r *ResourceRep) accept(visitor Visitor) error {
 		return visitor.visitArray(r)
 	}
 	panic(fmt.Sprintf("Unsupported schema for type: %s", r.kind))
-}
-
-func resourceFromType(typ reflect.Type) (ResourceRep, error) {
-	var resource ResourceRep
-	kind := typ.Kind()
-
-	switch kind {
-	case reflect.Bool:
-	case reflect.String:
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
-	case reflect.Float32, reflect.Float64:
-		resource.kind = kind
-		schemaType, err := getSchemaType(kind)
-		if err != nil {
-			return resource, err
-		}
-		resource.valueType = schemaType
-		return resource, nil
-
-	case reflect.Struct:
-		numField := typ.NumField()
-		fields := make([]Field, numField)
-
-		for i := 0; i < numField; i++ {
-			field := typ.Field(i)
-			schemaName := snakeCase(field.Name)
-			opts := fieldOpts(&field.Tag)
-			fieldResource, err := resourceFromType(field.Type)
-			if err != err {
-				return resource, err
-			}
-			fields[i] = Field{
-				schemaName: schemaName,
-				fieldName:  field.Name,
-				resource:   fieldResource,
-				opts:       opts,
-			}
-		}
-	case reflect.Array:
-	case reflect.Map:
-	case reflect.Interface:
-	case reflect.Slice:
-		panic("Not yet implemented")
-	case reflect.Chan:
-	case reflect.Pointer:
-	case reflect.UnsafePointer:
-		panic(fmt.Sprintf("Unsupported schema for type: %s", typ.Kind()))
-	}
-	panic(fmt.Sprintf("Unsupported schema for type: %s", typ.Kind()))
 }
 
 type SchemaOpts struct {
