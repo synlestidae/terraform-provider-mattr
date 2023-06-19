@@ -48,6 +48,28 @@ func TestSchemaForStruct(t *testing.T) {
 	assertEqual(t, *actualSchema, expectedSchema)*/
 }
 
+func TestRequestInt(t *testing.T) {
+	res := ResourceRep{
+		kind:      reflect.Struct,
+		valueType: schema.TypeMap,
+		fields: []Field{
+			{
+				schemaName: "test_field",
+				fieldName:  "testField",
+				resource: ResourceRep{
+					kind:      reflect.Int,
+					valueType: schema.TypeInt,
+				},
+			},
+		},
+	}
+
+	data := schema.ResourceData{}
+	data.Set("test_field", 123)
+
+	doRequestTest(t, &res, &data, map[string]interface{}{"testField": 123})
+}
+
 func TestSnakeCase(t *testing.T) {
 	testCases := []struct {
 		input    string
@@ -74,6 +96,18 @@ func doSchemaTest(t *testing.T, typ reflect.Type, expectedSchema map[string]*sch
 	}
 
 	assertEqual(t, expectedSchema, visitor.schema.Elem)
+}
+
+func doRequestTest(t *testing.T, rp *ResourceRep, data *schema.ResourceData, expected interface{}) {
+	rv := RequestVisitor{
+		data: data,
+	}
+
+	if err := rp.accept(&rv); err != nil {
+		t.Errorf("Failed to produce request: %s", err)
+	}
+
+	assertEqual(t, rv.value, expected)
 }
 
 func assertEqual(t *testing.T, actual, expected interface{}) {

@@ -262,10 +262,10 @@ func (rv *RequestVisitor) visitStruct(rs *ResourceRep) error {
 		} else if data, ok := rv.data.(*map[string]interface{}); ok {
 			subVs.data = (*data)[field.schemaName] // TODO don't visit if missing
 		} else {
-			return fmt.Errorf("Failed to convert '%s' to map[string]interface{}")
+			return fmt.Errorf("Failed to convert '%s' to map[string]interface{}", field.schemaName)
 		}
 
-		field.resource.elem.accept(&subVs)
+		field.resource.accept(&subVs)
 		valueMap[field.fieldName] = subVs.value
 	}
 
