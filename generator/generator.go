@@ -155,8 +155,8 @@ func (vs *ResourceVisitor) visitList(rs *ResourceRep) error {
 	return nil
 }
 
-func (rs *ResourceRep) hasPrimitive() bool {
-	switch rs.kind {
+func isPrimitive(kind reflect.Kind) bool {
+	switch kind {
 	case reflect.Bool,
 		reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
 		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr,
@@ -248,7 +248,7 @@ func getSchemaType(kind reflect.Kind) (schema.ValueType, error) {
 
 type RequestVisitor struct {
 	value interface{}
-	data interface{}
+	data  interface{}
 }
 
 func (rv *RequestVisitor) visitStruct(rs *ResourceRep) error {
@@ -274,13 +274,13 @@ func (rv *RequestVisitor) visitStruct(rs *ResourceRep) error {
 }
 
 func (rv *RequestVisitor) visitList(rs *ResourceRep) error {
-	list, ok := rv.data.([]interface{}) 
+	list, ok := rv.data.([]interface{})
 	if !ok {
 		return fmt.Errorf("Failed to convert data to []interface")
 	}
 	valueList := make([]interface{}, len(list))
 	for i, data := range list {
-		subVs := RequestVisitor {
+		subVs := RequestVisitor{
 			data: data,
 		}
 		rs.elem.accept(&subVs)
@@ -290,7 +290,15 @@ func (rv *RequestVisitor) visitList(rs *ResourceRep) error {
 	return nil
 }
 
-func (rv *RequestVisitor) visitPrimitive(*ResourceRep) error {
-	panic("not quite implemented")
-}
+func (rv *RequestVisitor) visitPrimitive(rp *ResourceRep) error {
+	valType := reflect.TypeOf(rv.data)
+	valKind := valType.Kind()
 
+	// Check if rv.data is assignable to rp.kind
+	if !isPrimitive(valKind) || valKind != rp.kind {
+		return fmt.Errorf("Failed to assign '%s' to %s", valType.Kind(), rp.kind)
+	}
+
+	rv.value = rv.data
+	return nil
+}
