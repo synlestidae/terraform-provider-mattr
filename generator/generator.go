@@ -14,7 +14,6 @@ type ResourceRep struct {
 	valueType schema.ValueType
 	fields    []Field
 	elem      *ResourceRep
-	singleton bool
 }
 
 type Field struct {
@@ -91,7 +90,7 @@ func fieldOpts(tag *reflect.StructTag) SchemaOpts {
 
 type Visitor interface {
 	visitStruct(*ResourceRep) error
-	visitArray(*ResourceRep) error
+	visitList(*ResourceRep) error
 	visitPrimitive(*ResourceRep) error
 }
 
@@ -137,7 +136,7 @@ func (vs *ResourceVisitor) visitStruct(rs *ResourceRep) error {
 	return nil
 }
 
-func (vs *ResourceVisitor) visitArray(rs *ResourceRep) error {
+func (vs *ResourceVisitor) visitList(rs *ResourceRep) error {
 	var subVs ResourceVisitor
 
 	if rs.elem == nil {
@@ -182,7 +181,7 @@ func (r *ResourceRep) accept(visitor Visitor) error {
 	case reflect.Struct:
 		return visitor.visitStruct(r)
 	case reflect.Array:
-		return visitor.visitArray(r)
+		return visitor.visitList(r)
 	}
 	panic(fmt.Sprintf("Unsupported schema for type: %s", r.kind))
 }
@@ -246,3 +245,52 @@ func getSchemaType(kind reflect.Kind) (schema.ValueType, error) {
 	}
 	panic(fmt.Sprintf("Unsupported schema for type: %s", kind))
 }
+
+type RequestVisitor struct {
+	value interface{}
+	data interface{}
+}
+
+func (rv *RequestVisitor) visitStruct(rs *ResourceRep) error {
+	valueMap := make(map[string]interface{}, len(rs.fields))
+
+	for _, field := range rs.fields {
+		var subVs RequestVisitor
+
+		if data, ok := rv.data.(*schema.ResourceData); ok {
+			subVs.data = data.Get(field.schemaName) // TODO don't visit if missing
+		} else if data, ok := rv.data.(*map[string]interface{}); ok {
+			subVs.data = (*data)[field.schemaName] // TODO don't visit if missing
+		} else {
+			return fmt.Errorf("Failed to convert '%s' to map[string]interface{}")
+		}
+
+		field.resource.elem.accept(&subVs)
+		valueMap[field.fieldName] = subVs.value
+	}
+
+	rv.value = &valueMap
+	return nil
+}
+
+func (rv *RequestVisitor) visitList(rs *ResourceRep) error {
+	list, ok := rv.data.([]interface{}) 
+	if !ok {
+		return fmt.Errorf("Failed to convert data to []interface")
+	}
+	valueList := make([]interface{}, len(list))
+	for i, data := range list {
+		subVs := RequestVisitor {
+			data: data,
+		}
+		rs.elem.accept(&subVs)
+		valueList[i] = subVs.value
+	}
+	rv.value = valueList
+	return nil
+}
+
+func (rv *RequestVisitor) visitPrimitive(*ResourceRep) error {
+	panic("not quite implemented")
+}
+
