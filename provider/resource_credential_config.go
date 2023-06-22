@@ -4,7 +4,7 @@ import (
 	"log"
 	"strconv"
 	"nz.antunovic/mattr-terraform-provider/api"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func resourceCredentialConfig() *schema.Resource {

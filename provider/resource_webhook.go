@@ -1,7 +1,7 @@
 package provider
 
 import (
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	_ "github.com/motemen/go-loghttp/global"
 	"nz.antunovic/mattr-terraform-provider/api"
 )
