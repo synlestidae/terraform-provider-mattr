@@ -9,18 +9,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-type Visitor interface {
-	visitResource(*schema.ResourceData, map[string]*schema.Schema) (interface{}, error)
-	visitMap(map[string]interface{}) (interface{}, error)
-	visitList([]interface{}) (interface{}, error)
-	visitPrimitive(interface{}) (interface{}, error)
-
-}
-
 type RequestVisitor struct {
 }
 
-func accept(v Visitor, data interface{}) (interface{}, error) {
+func (v *RequestVisitor) accept(data interface{}) (interface{}, error) {
 	t := reflect.TypeOf(data)
 
 	if data, ok := data.(map[string]interface{}); ok {
@@ -41,7 +33,7 @@ func (rv *RequestVisitor) visitResource(rd *schema.ResourceData, sch map[string]
 
 	for key, _ := range sch {
 		value := rd.Get(key).(interface{})
-		reqVal, err := accept(rv, value)	
+		reqVal, err := rv.accept(value)	
 		if err != nil {
 			return nil, err;
 		}
@@ -57,7 +49,7 @@ func (rv *RequestVisitor) visitMap(data map[string]interface{}) (interface{}, er
 
 	for key, value := range data {
 		fmt.Printf("Key %s", key)
-		reqVal, err := accept(rv, value)
+		reqVal, err := rv.accept(value)
 		if err != nil {
 			return nil, err
 		}
@@ -72,7 +64,7 @@ func (rv *RequestVisitor) visitList(data []interface{}) (interface{}, error) {
 	req := make([]interface{}, len(data))	
 
 	for i, value := range data {
-		reqVal, err := accept(rv, value)
+		reqVal, err := rv.accept(value)
 		if err != nil {
 			return nil, err
 		}
