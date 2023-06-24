@@ -726,7 +726,7 @@ func Send[T any](a *Api, method string, path string, body interface{}) (*T, erro
 	return result, nil
 }
 
-func processResponse[T any](resp *http.Response) (*T, error) {
+/*func processResponse[T any](resp *http.Response) (*T, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode < 200 || 299 < resp.StatusCode {
@@ -750,7 +750,7 @@ func processResponse[T any](resp *http.Response) (*T, error) {
 	}
 
 	return &response, nil
-}
+}*/
 
 func unmarshal[T any](b []byte) (v T, err error) {
 	return v, json.Unmarshal(b, &v)
