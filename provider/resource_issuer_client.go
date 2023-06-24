@@ -61,7 +61,7 @@ func resourceIssuerClientCreate(d *schema.ResourceData, m interface{}) error {
 	log.Println("Creating issuer client")
 
 	issuer_id := d.Get("issuer_id").(string)
-	api := m.(ProviderConfig).Api
+	api := m.(api.ProviderConfig).Api
 	issuer_client_request, err := fromTerraformIssuerClient(d)
 	if err != nil {
 		return err
@@ -83,7 +83,7 @@ func resourceIssuerClientRead(d *schema.ResourceData, m interface{}) error {
 
 	id := d.Id()
 	issuer_id := d.Get("issuer_id").(string)
-	api := m.(ProviderConfig).Api
+	api := m.(api.ProviderConfig).Api
 	issuer_client_response, err := api.GetIssuerClient(issuer_id, id)
 
 	if err != nil {
@@ -106,7 +106,7 @@ func resourceIssuerClientUpdate(d *schema.ResourceData, m interface{}) error {
 
 	id := d.Id()
 	issuer_id := d.Get("issuer_id").(string)
-	api := m.(ProviderConfig).Api
+	api := m.(api.ProviderConfig).Api
 	issuer_client_response, err := api.PutIssuerClient(issuer_id, id, issuer_client_request)
 	if err != nil {
 		return err
@@ -122,7 +122,7 @@ func resourceIssuerClientUpdate(d *schema.ResourceData, m interface{}) error {
 func resourceIssuerClientDelete(d *schema.ResourceData, m interface{}) error {
 	log.Println("Deleting issuer client")
 
-	api := m.(ProviderConfig).Api
+	api := m.(api.ProviderConfig).Api
 	issuer_id := d.Get("issuer_id").(string)
 	id := d.Id()
 	err := api.DeleteIssuerClient(issuer_id, id)

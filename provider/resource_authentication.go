@@ -60,7 +60,7 @@ func resourceAuthentication() *schema.Resource {
 
 func resourceAuthenticationCreate(d *schema.ResourceData, m interface{}) error {
 	log.Println("Creating authentication provider")
-	api := m.(ProviderConfig).Api
+	api := m.(api.ProviderConfig).Api
 	authentication_request, err := fromTerraformAuthentication(d)
 	if err != nil {
 		return err
@@ -78,7 +78,7 @@ func resourceAuthenticationCreate(d *schema.ResourceData, m interface{}) error {
 func resourceAuthenticationRead(d *schema.ResourceData, m interface{}) error {
 	log.Println("Reading authentication provider")
 	id := d.Id()
-	api := m.(ProviderConfig).Api
+	api := m.(api.ProviderConfig).Api
 	authentication_response, err := api.GetAuthenticationProvider(id)
 	if err != nil {
 		return err
@@ -91,7 +91,7 @@ func resourceAuthenticationRead(d *schema.ResourceData, m interface{}) error {
 
 func resourceAuthenticationUpdate(d *schema.ResourceData, m interface{}) error {
 	log.Println("Updating authentication provider")
-	api := m.(ProviderConfig).Api
+	api := m.(api.ProviderConfig).Api
 	authentication_request, err := fromTerraformAuthentication(d)
 	if err != nil {
 		return err
@@ -109,7 +109,7 @@ func resourceAuthenticationUpdate(d *schema.ResourceData, m interface{}) error {
 func resourceAuthenticationDelete(d *schema.ResourceData, m interface{}) error {
 	log.Println("Deleting authentication provider")
 	id := d.Id()
-	api := m.(ProviderConfig).Api
+	api := m.(api.ProviderConfig).Api
 	err := api.DeleteAuthenticationProvider(id)
 	if err != nil {
 		return err

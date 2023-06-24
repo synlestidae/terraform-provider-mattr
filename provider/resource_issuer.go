@@ -54,21 +54,24 @@ func resourceIssuer() *schema.Resource {
 			"credential_branding": &schema.Schema{
 				Type:     schema.TypeMap,
 				Optional: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"background_color": &schema.Schema{
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-						"watermark_image_url": &schema.Schema{
-							Type:     schema.TypeString,
-							Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeMap,
+					Elem: &schema.Resource {
+						Schema: map[string]*schema.Schema{
+							"background_color": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"watermark_image_url": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
 						},
 					},
 				},
 			},
 			"federated_provider": &schema.Schema{
-				Type:     schema.TypeMap,
+				Type:     schema.TypeList,
 				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -132,7 +135,7 @@ func resourceIssuer() *schema.Resource {
 
 func resourceIssuerCreate(d *schema.ResourceData, m interface{}) error {
 	log.Println("Creating issuer")
-	api := m.(ProviderConfig).Api
+	api := m.(api.ProviderConfig).Api
 	issuer_request := fromTerraformIssuer(d)
 	issuer_response, err := api.PostIssuer(&issuer_request)
 	if err != nil {
@@ -145,7 +148,7 @@ func resourceIssuerCreate(d *schema.ResourceData, m interface{}) error {
 func resourceIssuerRead(d *schema.ResourceData, m interface{}) error {
 	log.Println("Getting issuer")
 	issuer_id := d.Id()
-	api := m.(ProviderConfig).Api
+	api := m.(api.ProviderConfig).Api
 	issuer_response, err := api.GetIssuer(issuer_id)
 	if err != nil {
 		return err
@@ -157,7 +160,7 @@ func resourceIssuerRead(d *schema.ResourceData, m interface{}) error {
 func resourceIssuerUpdate(d *schema.ResourceData, m interface{}) error {
 	log.Println("Updating issuer")
 	issuer_id := d.Id()
-	api := m.(ProviderConfig).Api
+	api := m.(api.ProviderConfig).Api
 	issuer_request := fromTerraformIssuer(d)
 	issuer_response, err := api.PutIssuer(issuer_id, &issuer_request)
 	if err != nil {
@@ -170,7 +173,7 @@ func resourceIssuerUpdate(d *schema.ResourceData, m interface{}) error {
 func resourceIssuerDelete(d *schema.ResourceData, m interface{}) error {
 	log.Println("Deleting issuer")
 	issuer_id := d.Id()
-	api := m.(ProviderConfig).Api
+	api := m.(api.ProviderConfig).Api
 	return api.DeleteIssuer(issuer_id)
 }
 

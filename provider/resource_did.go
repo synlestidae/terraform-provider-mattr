@@ -148,7 +148,7 @@ func resourceDidCreate(d *schema.ResourceData, m interface{}) error {
 
 	// TODO: check if the did exists first
 
-	didApi := m.(ProviderConfig).Api
+	didApi := m.(api.ProviderConfig).Api
 
 	// prepare the did body request
 	method := d.Get("method").(string)
@@ -178,7 +178,7 @@ func resourceDidCreate(d *schema.ResourceData, m interface{}) error {
 func resourceDidRead(d *schema.ResourceData, m interface{}) error {
 	log.Println("Reading did")
 
-	didApi := m.(ProviderConfig).Api
+	didApi := m.(api.ProviderConfig).Api
 
 	did := d.Id()
 	did_response, err := didApi.GetDid(did)
@@ -198,7 +198,7 @@ func resourceDidRead(d *schema.ResourceData, m interface{}) error {
 func resourceDidDelete(d *schema.ResourceData, m interface{}) error {
 	log.Println("Reading did")
 
-	didApi := m.(ProviderConfig).Api
+	didApi := m.(api.ProviderConfig).Api
 
 	did := d.Id()
 	err := didApi.DeleteDid(did)

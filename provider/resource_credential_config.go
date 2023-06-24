@@ -155,7 +155,7 @@ func resourceCredentialConfig() *schema.Resource {
 
 func resourceCredentialConfigCreate(d *schema.ResourceData, m interface{}) error {
 	log.Println("Creating credential config")
-	api := m.(ProviderConfig).Api
+	api := m.(api.ProviderConfig).Api
 	config_request := fromTerraformCredentialConfig(d)
 	config_response, err := api.PostCredentialConfig(&config_request)
 	if err != nil {
@@ -169,7 +169,7 @@ func resourceCredentialConfigCreate(d *schema.ResourceData, m interface{}) error
 func resourceCredentialConfigRead(d *schema.ResourceData, m interface{}) error {
 	log.Println("Reading credential config")
 	id := d.Id()
-	api := m.(ProviderConfig).Api
+	api := m.(api.ProviderConfig).Api
 	config_response, err := api.GetCredentialConfig(id)
 	if err != nil {
 		return err
@@ -181,7 +181,7 @@ func resourceCredentialConfigRead(d *schema.ResourceData, m interface{}) error {
 
 func resourceCredentialConfigUpdate(d *schema.ResourceData, m interface{}) error {
 	log.Println("Updating credential config")
-	api := m.(ProviderConfig).Api
+	api := m.(api.ProviderConfig).Api
 	id := d.Id()
 	config_request := fromTerraformCredentialConfig(d)
 	config_response, err := api.PutCredentialConfig(id, &config_request)
@@ -195,7 +195,7 @@ func resourceCredentialConfigUpdate(d *schema.ResourceData, m interface{}) error
 
 func resourceCredentialConfigDelete(d *schema.ResourceData, m interface{}) error {
 	log.Println("Deleting credential config")
-	api := m.(ProviderConfig).Api
+	api := m.(api.ProviderConfig).Api
 	err := api.DeleteCredentialConfig(d.Id())
 	if err != nil {
 		return err

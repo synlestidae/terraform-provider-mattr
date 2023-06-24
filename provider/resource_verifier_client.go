@@ -62,7 +62,7 @@ func resourceVerifierClient() *schema.Resource {
 func resourceVerifierClientCreate(d *schema.ResourceData, m interface{}) error {
 	log.Println("Creating verifier client")
 
-	api := m.(ProviderConfig).Api
+	api := m.(api.ProviderConfig).Api
 	verifier_client_request, err := fromTerraformVerifierClient(d)
 	if err != nil {
 		return err
@@ -88,7 +88,7 @@ func resourceVerifierClientRead(d *schema.ResourceData, m interface{}) error {
 	log.Println("Reading credential config")
 
 	id := d.Id()
-	api := m.(ProviderConfig).Api
+	api := m.(api.ProviderConfig).Api
 
 	verifier_id, ok := d.Get("verifier_id").(string)
 	if !ok {
@@ -117,7 +117,7 @@ func resourceVerifierClientUpdate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	id := d.Id()
-	api := m.(ProviderConfig).Api
+	api := m.(api.ProviderConfig).Api
 
 	verifier_id, ok := d.Get("verifier_id").(string)
 	if !ok {
@@ -139,7 +139,7 @@ func resourceVerifierClientUpdate(d *schema.ResourceData, m interface{}) error {
 func resourceVerifierClientDelete(d *schema.ResourceData, m interface{}) error {
 	log.Println("Deleting verifier client")
 
-	api := m.(ProviderConfig).Api
+	api := m.(api.ProviderConfig).Api
 	id := d.Id()
 
 	verifier_id, ok := d.Get("verifier_id").(string)

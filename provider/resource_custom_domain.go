@@ -50,7 +50,7 @@ func resourceCustomDomain() *schema.Resource {
 func resourceCustomDomainCreate(d *schema.ResourceData, m interface{}) error {
 	log.Println("Creating custom domain")
 
-	api := m.(ProviderConfig).Api
+	api := m.(api.ProviderConfig).Api
 	custom_domain_request, err := fromTerraformCustomDomain(d)
 	if err != nil {
 		return err
@@ -71,7 +71,7 @@ func resourceCustomDomainCreate(d *schema.ResourceData, m interface{}) error {
 func resourceCustomDomainRead(d *schema.ResourceData, m interface{}) error {
 	log.Println("Reading credential config")
 
-	api := m.(ProviderConfig).Api
+	api := m.(api.ProviderConfig).Api
 
 	custom_domain_response, err := api.GetCustomDomain()
 	if err != nil {
@@ -94,7 +94,7 @@ func resourceCustomDomainUpdate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	id := d.Id()
-	api := m.(ProviderConfig).Api
+	api := m.(api.ProviderConfig).Api
 
 	custom_domain_response, err := api.PutCustomDomain(id, custom_domain_request)
 	if err != nil {
@@ -111,7 +111,7 @@ func resourceCustomDomainUpdate(d *schema.ResourceData, m interface{}) error {
 func resourceCustomDomainDelete(d *schema.ResourceData, m interface{}) error {
 	log.Println("Deleting custom domain")
 
-	api := m.(ProviderConfig).Api
+	api := m.(api.ProviderConfig).Api
 
 	err := api.DeleteCustomDomain()
 	if err != nil {

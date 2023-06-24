@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"nz.antunovic/mattr-terraform-provider/api"
-	"nz.antunovic/mattr-terraform-provider/provider"
 )
 
 type Generator struct {
@@ -17,7 +16,7 @@ type Generator struct {
 
 func (generator *Generator) GenResource() schema.Resource {
 	create := func(d *schema.ResourceData, m interface{}) error {
-		api := m.(provider.ProviderConfig).Api
+		api := m.(api.ProviderConfig).Api
 		var requestVisitor RequestVisitor
 
 		url, err := api.GetUrl(generator.Path)
@@ -28,7 +27,7 @@ func (generator *Generator) GenResource() schema.Resource {
 		if err != nil {
 			return err
 		}
-		headers := map[string]string {
+		headers := map[string]string{
 			"Authorization": "Bearer " + accessToken,
 		}
 
@@ -41,7 +40,7 @@ func (generator *Generator) GenResource() schema.Resource {
 		if err != nil {
 			return err
 		}
-		responseVisitor := ResponseVisitor {
+		responseVisitor := ResponseVisitor{
 			resourceData: d,
 		}
 		if _, err := responseVisitor.accept(response); err != nil {
@@ -52,7 +51,7 @@ func (generator *Generator) GenResource() schema.Resource {
 	}
 
 	read := func(d *schema.ResourceData, m interface{}) error {
-		api := m.(provider.ProviderConfig).Api
+		api := m.(api.ProviderConfig).Api
 
 		url, err := api.GetUrl(generator.Path)
 		if err != nil {
@@ -63,7 +62,7 @@ func (generator *Generator) GenResource() schema.Resource {
 		if err != nil {
 			return err
 		}
-		headers := map[string]string {
+		headers := map[string]string{
 			"Authorization": "Bearer " + accessToken,
 		}
 
@@ -71,7 +70,7 @@ func (generator *Generator) GenResource() schema.Resource {
 		if err != nil {
 			return err
 		}
-		responseVisitor := ResponseVisitor {
+		responseVisitor := ResponseVisitor{
 			resourceData: d,
 		}
 		if _, err := responseVisitor.accept(response); err != nil {
@@ -82,7 +81,7 @@ func (generator *Generator) GenResource() schema.Resource {
 	}
 
 	update := func(d *schema.ResourceData, m interface{}) error {
-		api := m.(provider.ProviderConfig).Api
+		api := m.(api.ProviderConfig).Api
 		var requestVisitor RequestVisitor
 
 		url, err := api.GetUrl(generator.Path)
@@ -94,7 +93,7 @@ func (generator *Generator) GenResource() schema.Resource {
 		if err != nil {
 			return err
 		}
-		headers := map[string]string {
+		headers := map[string]string{
 			"Authorization": "Bearer " + accessToken,
 		}
 
@@ -107,7 +106,7 @@ func (generator *Generator) GenResource() schema.Resource {
 		if err != nil {
 			return err
 		}
-		responseVisitor := ResponseVisitor {
+		responseVisitor := ResponseVisitor{
 			resourceData: d,
 		}
 		if _, err := responseVisitor.accept(response); err != nil {
@@ -118,7 +117,7 @@ func (generator *Generator) GenResource() schema.Resource {
 	}
 
 	deleteResource := func(d *schema.ResourceData, m interface{}) error {
-		api := m.(provider.ProviderConfig).Api
+		api := m.(api.ProviderConfig).Api
 		url, err := api.GetUrl(generator.Path)
 		if err != nil {
 			return err
@@ -128,7 +127,7 @@ func (generator *Generator) GenResource() schema.Resource {
 		if err != nil {
 			return err
 		}
-		headers := map[string]string {
+		headers := map[string]string{
 			"Authorization": "Bearer " + accessToken,
 		}
 
@@ -137,12 +136,12 @@ func (generator *Generator) GenResource() schema.Resource {
 
 	resource := schema.Resource{
 		Create: create,
-		Update: update,
 		Read:   read,
+		Delete: deleteResource,
 	}
 
 	if !generator.Immutable {
-		resource.Delete = deleteResource
+		resource.Update = update
 	}
 
 	return resource
