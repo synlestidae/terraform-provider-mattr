@@ -6,9 +6,11 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 type Visitor interface {
+	visitResource(*schema.ResourceData, map[string]*schema.Schema) (interface{}, error)
 	visitMap(map[string]interface{}) (interface{}, error)
 	visitList([]interface{}) (interface{}, error)
 	visitPrimitive(interface{}) (interface{}, error)
@@ -28,23 +30,39 @@ func accept(v Visitor, data interface{}) (interface{}, error) {
 		return v.visitList(data)
 	}
 	if isPrimitive(t.Kind()) {
-		return v.visitPrimitive(t);
+		return v.visitPrimitive(data);
 	}
 
 	return nil, fmt.Errorf("Unable to convert value of type: %T", data)
 }
 
+func (rv *RequestVisitor) visitResource(rd *schema.ResourceData, sch map[string]*schema.Schema) (interface{}, error) {
+	req := make(map[string]interface{})
+
+	for key, _ := range sch {
+		value := rd.Get(key).(interface{})
+		reqVal, err := accept(rv, value)	
+		if err != nil {
+			return nil, err;
+		}
+
+		req[snakeToCamel(key)] = reqVal
+	}
+
+	return req, nil
+}
 
 func (rv *RequestVisitor) visitMap(data map[string]interface{}) (interface{}, error) {
 	req := make(map[string]interface{}, len(data))
 
 	for key, value := range data {
-		reqVal, err := accept(rv, &value)
+		fmt.Printf("Key %s", key)
+		reqVal, err := accept(rv, value)
 		if err != nil {
 			return nil, err
 		}
 
-		req[camelCase(key)] = reqVal
+		req[snakeToCamel(key)] = reqVal
 	}
 
 	return req, nil
@@ -112,6 +130,10 @@ func snakeCase(input string) string {
 	return builder.String()
 }
 
-func camelCase(input string) string {
-	return input
+func snakeToCamel(snakeCase string) string {
+	words := strings.Split(snakeCase, "_")
+	for i := 1; i < len(words); i++ {
+		words[i] = strings.Title(words[i])
+	}
+	return strings.Join(words, "")
 }
