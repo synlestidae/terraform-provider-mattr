@@ -48,7 +48,6 @@ func (rv *RequestVisitor) visitMap(data map[string]interface{}) (interface{}, er
 	req := make(map[string]interface{}, len(data))
 
 	for key, value := range data {
-		fmt.Printf("Key %s", key)
 		reqVal, err := rv.accept(value)
 		if err != nil {
 			return nil, err
