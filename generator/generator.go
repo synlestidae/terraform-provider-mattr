@@ -17,7 +17,9 @@ type Generator struct {
 func (generator *Generator) GenResource() schema.Resource {
 	create := func(d *schema.ResourceData, m interface{}) error {
 		api := m.(api.ProviderConfig).Api
-		var requestVisitor RequestVisitor
+		requestVisitor := RequestVisitor{
+			schema: generator.Schema,
+		}
 
 		url, err := api.GetUrl(generator.Path)
 		if err != nil {
