@@ -89,7 +89,7 @@ func TestSchemaMapList(t *testing.T) {
 	}
 
 	var fooBarString []string
-	fooBarString = []string{ "foo", "bar" }
+	fooBarString = []string{"foo", "bar"}
 	// Create a new instance of ResourceData
 	rd := schema.TestResourceDataRaw(t, resourceSchema, map[string]interface{}{})
 	if err := rd.Set("foo_bar", fooBarString); err != nil {
@@ -103,7 +103,7 @@ func TestSchemaMapList(t *testing.T) {
 	}
 
 	assertEqual(t, value, map[string]interface{}{
-		"fooBar": []interface{}{ "foo", "bar" },
+		"fooBar": []interface{}{"foo", "bar"},
 	})
 }
 
@@ -125,7 +125,7 @@ func TestSchemaMapMap(t *testing.T) {
 	}
 
 	fooBarMap := map[string]string{
-		"background_color":"green",
+		"background_color": "green",
 	}
 	// Create a new instance of ResourceData
 	rd := schema.TestResourceDataRaw(t, resourceSchema, map[string]interface{}{})
@@ -141,7 +141,7 @@ func TestSchemaMapMap(t *testing.T) {
 
 	assertEqual(t, value, map[string]any{
 		"fooBar": map[string]any{
-			"backgroundColor":"green",
+			"backgroundColor": "green",
 		},
 	})
 }
