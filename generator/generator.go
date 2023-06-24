@@ -138,6 +138,7 @@ func (generator *Generator) GenResource() schema.Resource {
 		Create: create,
 		Read:   read,
 		Delete: deleteResource,
+		Schema: generator.Schema,
 	}
 
 	if !generator.Immutable {
