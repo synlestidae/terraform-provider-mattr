@@ -4,14 +4,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	_ "github.com/motemen/go-loghttp/global"
 	"nz.antunovic/mattr-terraform-provider/api"
+	"nz.antunovic/mattr-terraform-provider/generator"
 )
 
 func resourceWebhook() *schema.Resource {
-	return &schema.Resource{
-		Create: resourceWebhookCreate,
-		Read:   resourceWebhookRead,
-		Update: resourceWebhookUpdate,
-		Delete: resourceWebhookDelete,
+	generator := generator.Generator {
+		Path: "/core/v1/webhooks",
+		Client: &api.HttpClient{},
 		Schema: map[string]*schema.Schema{
 			"events": &schema.Schema{
 				Type: schema.TypeList,
@@ -33,10 +32,14 @@ func resourceWebhook() *schema.Resource {
 			},
 		},
 	}
+
+	resource := generator.GenResource()
+	
+	return &resource
 }
 
 func resourceWebhookCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(ProviderConfig).Api
+	api := m.(api.ProviderConfig).Api
 	webhook_request := fromTerraform(d)
 	webhook_response, err := api.PostWebhook(&webhook_request)
 	if err != nil {
@@ -47,7 +50,7 @@ func resourceWebhookCreate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceWebhookRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(ProviderConfig).Api
+	api := m.(api.ProviderConfig).Api
 	id := d.Id()
 	webhook, err := api.GetWebhook(id)
 	if err != nil {
@@ -59,7 +62,7 @@ func resourceWebhookRead(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceWebhookUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(ProviderConfig).Api
+	api := m.(api.ProviderConfig).Api
 	id := d.Id()
 	webhook_request := fromTerraform(d)
 	webhook, err := api.PutWebhook(id, &webhook_request)
@@ -71,7 +74,7 @@ func resourceWebhookUpdate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceWebhookDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(ProviderConfig).Api
+	api := m.(api.ProviderConfig).Api
 	id := d.Id()
 	err := api.DeleteWebhook(id)
 	if err != nil {

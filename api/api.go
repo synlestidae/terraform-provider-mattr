@@ -20,6 +20,10 @@ type Api struct {
 	AccessTokenExpiresAt int64
 }
 
+type ProviderConfig struct {
+	Api Api
+}
+
 func (a *Api) Init() {
 	if len(a.AuthUrl) == 0 {
 		a.AuthUrl = "https://auth.mattr.global/oauth/token"

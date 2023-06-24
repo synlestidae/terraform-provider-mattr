@@ -1,9 +1,9 @@
 package generator
 
 import (
-	"reflect"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"reflect"
 )
 
 type ResponseVisitor struct {

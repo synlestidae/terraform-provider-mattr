@@ -27,15 +27,18 @@ func resourceClaimSource() *schema.Resource {
 			"authorization": &schema.Schema{
 				Type:     schema.TypeMap,
 				Required: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"type": &schema.Schema{
-							Type:     schema.TypeString,
-							Required: true,
-						},
-						"value": &schema.Schema{
-							Type:     schema.TypeString,
-							Required: true,
+				Elem: &schema.Schema {
+					Type: schema.TypeMap,
+					Elem: &schema.Resource {
+						Schema: map[string]*schema.Schema{
+							"type": &schema.Schema{
+								Type:     schema.TypeString,
+								Required: true,
+							},
+							"value": &schema.Schema{
+								Type:     schema.TypeString,
+								Required: true,
+							},
 						},
 					},
 				},
@@ -66,7 +69,7 @@ func resourceClaimSource() *schema.Resource {
 
 func resourceClaimSourceCreate(d *schema.ResourceData, m interface{}) error {
 	log.Println("Creating claim source")
-	api := m.(ProviderConfig).Api
+	api := m.(api.ProviderConfig).Api
 	claimSource := fromTerraformClaimSource(d)
 	createdClaimSource, err := api.PostClaimSource(&claimSource)
 	if err != nil {
@@ -78,7 +81,7 @@ func resourceClaimSourceCreate(d *schema.ResourceData, m interface{}) error {
 
 func resourceClaimSourceRead(d *schema.ResourceData, m interface{}) error {
 	log.Println("Reading claim source")
-	api := m.(ProviderConfig).Api
+	api := m.(api.ProviderConfig).Api
 	claimSource, err := api.GetClaimSource(d.Id())
 	if err != nil {
 		return err
@@ -89,7 +92,7 @@ func resourceClaimSourceRead(d *schema.ResourceData, m interface{}) error {
 
 func resourceClaimSourceUpdate(d *schema.ResourceData, m interface{}) error {
 	log.Println("Updating claim source")
-	api := m.(ProviderConfig).Api
+	api := m.(api.ProviderConfig).Api
 	claimSource := fromTerraformClaimSource(d)
 	updatedClaimSource, err := api.PutClaimSource(d.Id(), &claimSource)
 	if err != nil {
@@ -101,7 +104,7 @@ func resourceClaimSourceUpdate(d *schema.ResourceData, m interface{}) error {
 
 func resourceClaimSourceDelete(d *schema.ResourceData, m interface{}) error {
 	log.Println("Deleting claim source")
-	api := m.(ProviderConfig).Api
+	api := m.(api.ProviderConfig).Api
 	return api.DeleteClaimSource(d.Id())
 }
 

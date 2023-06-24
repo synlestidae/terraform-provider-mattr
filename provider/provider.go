@@ -45,12 +45,8 @@ func Provider() *schema.Provider {
 	}
 }
 
-type ProviderConfig struct {
-	Api api.Api
-}
-
 func ProviderConfigure(d *schema.ResourceData) (interface{}, error) {
-	api := api.Api{
+	a := api.Api{
 		ClientId:     getOrEmpty(d, "client_id"),
 		ClientSecret: getOrEmpty(d, "client_secret"),
 		Audience:     getOrEmpty(d, "audience"),
@@ -58,8 +54,8 @@ func ProviderConfigure(d *schema.ResourceData) (interface{}, error) {
 		ApiUrl:       getOrEmpty(d, "api_url"),
 	}
 
-	config := ProviderConfig{
-		Api: api,
+	config := api.ProviderConfig{
+		Api: a,
 	}
 
 	return config, nil
