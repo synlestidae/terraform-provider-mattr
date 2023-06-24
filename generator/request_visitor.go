@@ -10,11 +10,15 @@ import (
 )
 
 type RequestVisitor struct {
+	schema map[string]*schema.Schema
 }
 
 func (v *RequestVisitor) accept(data interface{}) (interface{}, error) {
 	t := reflect.TypeOf(data)
 
+	if data, ok := data.(*schema.ResourceData); ok {
+		return v.visitResourceData(data)
+	}
 	if data, ok := data.(map[string]interface{}); ok {
 		return v.visitMap(data)
 	}
@@ -25,13 +29,13 @@ func (v *RequestVisitor) accept(data interface{}) (interface{}, error) {
 		return v.visitPrimitive(data)
 	}
 
-	return nil, fmt.Errorf("Unable to convert value of type: %T", data)
+	return nil, fmt.Errorf("Unable to convert value of type %T to request", data)
 }
 
-func (rv *RequestVisitor) visitResource(rd *schema.ResourceData, sch map[string]*schema.Schema) (interface{}, error) {
+func (rv *RequestVisitor) visitResourceData(rd *schema.ResourceData) (interface{}, error) {
 	req := make(map[string]interface{})
 
-	for key, _ := range sch {
+	for key, _ := range rv.schema {
 		value := rd.Get(key).(interface{})
 		reqVal, err := rv.accept(value)
 		if err != nil {

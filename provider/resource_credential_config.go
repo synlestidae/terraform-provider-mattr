@@ -44,19 +44,22 @@ func resourceCredentialConfig() *schema.Resource {
 			"issuer": &schema.Schema{
 				Type:     schema.TypeMap,
 				Required: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"name": &schema.Schema{
-							Type:     schema.TypeString,
-							Required: true,
-						},
-						"logo_url": &schema.Schema{
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-						"icon_url": &schema.Schema{
-							Type:     schema.TypeString,
-							Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeMap,
+					Elem: &schema.Resource {
+							Schema: map[string]*schema.Schema{
+								"name": &schema.Schema{
+								Type:     schema.TypeString,
+								Required: true,
+							},
+							"logo_url": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"icon_url": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
 						},
 					},
 				},
@@ -64,15 +67,18 @@ func resourceCredentialConfig() *schema.Resource {
 			"credential_branding": &schema.Schema{
 				Type:     schema.TypeMap,
 				Optional: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"background_color": &schema.Schema{
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-						"watermark_image_url": &schema.Schema{
-							Type:     schema.TypeString,
-							Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeMap,
+					Elem: &schema.Resource {
+						Schema: map[string]*schema.Schema{
+							"background_color": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"watermark_image_url": &schema.Schema{
+								Type:     schema.TypeString,
+								Optional: true,
+							},
 						},
 					},
 				},
@@ -114,37 +120,40 @@ func resourceCredentialConfig() *schema.Resource {
 				Optional: true,
 			},
 			"expires_in": &schema.Schema{
-				Type:     schema.TypeMap,
+				Type: schema.TypeMap,
 				Optional: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"years": &schema.Schema{
-							Type:     schema.TypeInt,
-							Optional: true,
-						},
-						"months": &schema.Schema{
-							Type:     schema.TypeInt,
-							Optional: true,
-						},
-						"weeks": &schema.Schema{
-							Type:     schema.TypeInt,
-							Optional: true,
-						},
-						"days": &schema.Schema{
-							Type:     schema.TypeInt,
-							Optional: true,
-						},
-						"hours": &schema.Schema{
-							Type:     schema.TypeInt,
-							Optional: true,
-						},
-						"minutes": &schema.Schema{
-							Type:     schema.TypeInt,
-							Optional: true,
-						},
-						"seconds": &schema.Schema{
-							Type:     schema.TypeInt,
-							Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeMap,
+					Elem: &schema.Resource {
+						Schema: map[string]*schema.Schema{
+							"years": &schema.Schema{
+								Type:     schema.TypeInt,
+								Optional: true,
+							},
+							"months": &schema.Schema{
+								Type:     schema.TypeInt,
+								Optional: true,
+							},
+							"weeks": &schema.Schema{
+								Type:     schema.TypeInt,
+								Optional: true,
+							},
+							"days": &schema.Schema{
+								Type:     schema.TypeInt,
+								Optional: true,
+							},
+							"hours": &schema.Schema{
+								Type:     schema.TypeInt,
+								Optional: true,
+							},
+							"minutes": &schema.Schema{
+								Type:     schema.TypeInt,
+								Optional: true,
+							},
+							"seconds": &schema.Schema{
+								Type:     schema.TypeInt,
+								Optional: true,
+							},
 						},
 					},
 				},

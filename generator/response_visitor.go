@@ -11,6 +11,7 @@ type ResponseVisitor struct {
 }
 
 func (v *ResponseVisitor) accept(data interface{}) (interface{}, error) {
+	fmt.Printf("Printing")
 	t := reflect.TypeOf(data)
 
 	if data, ok := data.(map[string]interface{}); ok {
@@ -25,10 +26,8 @@ func (v *ResponseVisitor) accept(data interface{}) (interface{}, error) {
 		return v.visitPrimitive(data)
 	}
 
-	return nil, fmt.Errorf("Unable to accept value of type: %T", data)
+	return nil, fmt.Errorf("Unable to accept value of type %T in response", data, t)
 }
-
-//func (rv *ResponseVisitor) visitResource(rd *schema.ResourceData, sch map[string]*schema.Schema) (interface{}, error) {
 
 func (rv *ResponseVisitor) visitMap(data map[string]interface{}) (interface{}, error) {
 	for key, value := range data {
