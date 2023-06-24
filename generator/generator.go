@@ -1,8 +1,10 @@
 package generator
 
 import (
+	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"nz.antunovic/mattr-terraform-provider/api"
+	"nz.antunovic/mattr-terraform-provider/provider"
 )
 
 type Generator struct {
@@ -14,27 +16,123 @@ type Generator struct {
 }
 
 func (generator *Generator) GenResource() schema.Resource {
-
 	create := func(d *schema.ResourceData, m interface{}) error {
-		//var reqVisitor RequestVisitor
+		api := m.(provider.ProviderConfig).Api
+		var requestVisitor RequestVisitor
 
-		panic("Not quite implemented")
+		url, err := api.GetUrl(generator.Path)
+		if err != nil {
+			return err
+		}
+		accessToken, err := api.GetAccessToken()
+		if err != nil {
+			return err
+		}
+		headers := map[string]string {
+			"Authorization": "Bearer " + accessToken,
+		}
+
+		body, err := requestVisitor.accept(d)
+		if err != nil {
+			return err
+		}
+
+		response, err := generator.Client.Post(url, headers, body)
+		if err != nil {
+			return err
+		}
+		responseVisitor := ResponseVisitor {
+			resourceData: d,
+		}
+		if _, err := responseVisitor.accept(response); err != nil {
+			return err
+		}
+
+		return nil
 	}
 
 	read := func(d *schema.ResourceData, m interface{}) error {
-		//var reqVisitor RequestVisitor
+		api := m.(provider.ProviderConfig).Api
 
-		panic("Not quite implemented")
+		url, err := api.GetUrl(generator.Path)
+		if err != nil {
+			return err
+		}
+		fullUrl := fmt.Sprintf("%s/%s", url, d.Id())
+		accessToken, err := api.GetAccessToken()
+		if err != nil {
+			return err
+		}
+		headers := map[string]string {
+			"Authorization": "Bearer " + accessToken,
+		}
+
+		response, err := generator.Client.Get(fullUrl, headers)
+		if err != nil {
+			return err
+		}
+		responseVisitor := ResponseVisitor {
+			resourceData: d,
+		}
+		if _, err := responseVisitor.accept(response); err != nil {
+			return err
+		}
+
+		return nil
 	}
 
 	update := func(d *schema.ResourceData, m interface{}) error {
-		//var reqVisitor RequestVisitor
+		api := m.(provider.ProviderConfig).Api
+		var requestVisitor RequestVisitor
 
-		panic("Not quite implemented")
+		url, err := api.GetUrl(generator.Path)
+		if err != nil {
+			return err
+		}
+		fullUrl := fmt.Sprintf("%s/%s", url, d.Id())
+		accessToken, err := api.GetAccessToken()
+		if err != nil {
+			return err
+		}
+		headers := map[string]string {
+			"Authorization": "Bearer " + accessToken,
+		}
+
+		body, err := requestVisitor.accept(d)
+		if err != nil {
+			return err
+		}
+
+		response, err := generator.Client.Put(fullUrl, headers, body)
+		if err != nil {
+			return err
+		}
+		responseVisitor := ResponseVisitor {
+			resourceData: d,
+		}
+		if _, err := responseVisitor.accept(response); err != nil {
+			return err
+		}
+
+		return nil
 	}
 
 	deleteResource := func(d *schema.ResourceData, m interface{}) error {
-		panic("Not quite implemented")
+		api := m.(provider.ProviderConfig).Api
+		url, err := api.GetUrl(generator.Path)
+		if err != nil {
+			return err
+		}
+		fullUrl := fmt.Sprintf("%s/%s", url, d.Id())
+		accessToken, err := api.GetAccessToken()
+		if err != nil {
+			return err
+		}
+		headers := map[string]string {
+			"Authorization": "Bearer " + accessToken,
+		}
+
+		return generator.Client.Delete(fullUrl, headers)
 	}
 
 	resource := schema.Resource{
