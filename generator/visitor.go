@@ -22,7 +22,7 @@ func (v *RequestVisitor) accept(data interface{}) (interface{}, error) {
 		return v.visitList(data)
 	}
 	if isPrimitive(t.Kind()) {
-		return v.visitPrimitive(data);
+		return v.visitPrimitive(data)
 	}
 
 	return nil, fmt.Errorf("Unable to convert value of type: %T", data)
@@ -33,9 +33,9 @@ func (rv *RequestVisitor) visitResource(rd *schema.ResourceData, sch map[string]
 
 	for key, _ := range sch {
 		value := rd.Get(key).(interface{})
-		reqVal, err := rv.accept(value)	
+		reqVal, err := rv.accept(value)
 		if err != nil {
-			return nil, err;
+			return nil, err
 		}
 
 		req[snakeToCamel(key)] = reqVal
@@ -61,7 +61,7 @@ func (rv *RequestVisitor) visitMap(data map[string]interface{}) (interface{}, er
 }
 
 func (rv *RequestVisitor) visitList(data []interface{}) (interface{}, error) {
-	req := make([]interface{}, len(data))	
+	req := make([]interface{}, len(data))
 
 	for i, value := range data {
 		reqVal, err := rv.accept(value)
@@ -71,7 +71,7 @@ func (rv *RequestVisitor) visitList(data []interface{}) (interface{}, error) {
 
 		req[i] = reqVal
 	}
-	
+
 	return req, nil
 }
 
