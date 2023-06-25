@@ -2,18 +2,16 @@ package generator
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"reflect"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 type ResponseVisitor struct {
 	resourceData *schema.ResourceData
+	id string
 }
 
 func (v *ResponseVisitor) accept(data interface{}) (interface{}, error) {
-	fmt.Printf("Printing")
-	t := reflect.TypeOf(data)
-
 	if data, ok := data.(map[string]interface{}); ok {
 		return v.visitMap(data)
 	}
@@ -22,11 +20,11 @@ func (v *ResponseVisitor) accept(data interface{}) (interface{}, error) {
 		return v.visitList(data)
 	}
 
-	if isPrimitive(t.Kind()) {
-		return v.visitPrimitive(data)
+	if data, ok := data.(*interface{}); ok {
+		return v.accept(*data)
 	}
 
-	return nil, fmt.Errorf("Unable to accept value of type %T in response", data, t)
+	return v.visitPrimitive(data)
 }
 
 func (rv *ResponseVisitor) visitMap(data map[string]interface{}) (interface{}, error) {
@@ -37,8 +35,12 @@ func (rv *ResponseVisitor) visitMap(data map[string]interface{}) (interface{}, e
 		}
 
 		schemaName := snakeCase(key)
-		if err := rv.resourceData.Set(schemaName, schemaVal); err != nil {
-			return nil, err
+		if schemaName != "id" { 
+			if err := rv.resourceData.Set(schemaName, schemaVal); err != nil {
+				return nil, err
+			}
+		} else {
+			rv.id = schemaVal.(string) // todo 
 		}
 	}
 
@@ -61,5 +63,15 @@ func (rv *ResponseVisitor) visitList(data []interface{}) (interface{}, error) {
 }
 
 func (rv ResponseVisitor) visitPrimitive(data interface{}) (interface{}, error) {
-	return data, nil
+	switch data := data.(type) {
+	case int64:
+		return data, nil
+	case float64:
+		return data, nil
+	case string:
+		return data, nil
+	case bool:
+		return data, nil
+	}
+	return nil, fmt.Errorf("Unable to accept value of type %s in response", reflect.TypeOf(data))
 }

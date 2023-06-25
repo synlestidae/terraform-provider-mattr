@@ -49,6 +49,8 @@ func (generator *Generator) GenResource() schema.Resource {
 			return err
 		}
 
+		d.SetId(responseVisitor.id)
+
 		return nil
 	}
 
