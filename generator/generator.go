@@ -12,6 +12,10 @@ type Generator struct {
 	Singleton bool
 	Schema    map[string]*schema.Schema
 	Client    api.Client
+	ModifyRequest func (*interface{}) error
+	ModifyResponse func (*interface{}) error
+	ModifyResourceData func (*schema.ResourceData) error
+	GetId func(*interface{}, *interface{}) string
 }
 
 func (generator *Generator) GenResource() schema.Resource {
