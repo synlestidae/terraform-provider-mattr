@@ -43,6 +43,8 @@ func send[T any](method string, url string, headers map[string]string, body *int
 	var bodyJson []byte
 	var err error
 
+	// TODO raw bytes do not get converted to json
+
 	if body != nil {
 		bodyJson, err = json.Marshal(*body)
 		if err != nil {
