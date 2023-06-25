@@ -15,6 +15,7 @@ type Generator struct {
 	ModifyRequestBody func (*interface{}) error
 	ModifyRequest func (url *string, headers *map[string]string, body *interface{}) error
 	ModifyResponseBody func (*interface{}) error
+	ModifyResponse func (headers *map[string]string, body *interface{}) error
 	ModifyResourceData func (*schema.ResourceData) error
 	GetId func(*interface{}, *interface{}) string
 }
@@ -43,9 +44,23 @@ func (generator *Generator) GenResource() schema.Resource {
 			return err
 		}
 
+		if generator.ModifyRequestBody != nil {
+			generator.ModifyRequestBody(&body)
+		}
+
+		if generator.ModifyRequest != nil {
+			generator.ModifyRequest(&url, &headers, &body)
+		}
+
 		response, err := generator.Client.Post(url, headers, body)
 		if err != nil {
 			return err
+		}
+		if generator.ModifyResponseBody != nil {
+			generator.ModifyResponseBody(&response)
+		}
+		if generator.ModifyResponse != nil {
+			generator.ModifyResponse(&map[string]string{}, &response) // TODO response headers
 		}
 		responseVisitor := ResponseVisitor{
 			resourceData: d,
@@ -54,7 +69,14 @@ func (generator *Generator) GenResource() schema.Resource {
 			return err
 		}
 
-		d.SetId(responseVisitor.id)
+		var id string
+		if generator.GetId != nil {
+			id = generator.GetId(&body, &response)
+		} else {
+			id = responseVisitor.id
+		}
+
+		d.SetId(id)
 
 		return nil
 	}
