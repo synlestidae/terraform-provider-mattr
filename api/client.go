@@ -1,78 +1,85 @@
-package api
+	package api
 
-import (
-	"log"
-	"fmt"
-	"encoding/json"
-	"net/http"
-	"io/ioutil"
-	"bytes"
-)
+	import (
+		"log"
+		"fmt"
+		"encoding/json"
+		"net/http"
+		"io/ioutil"
+		"bytes"
+		"reflect"
+	)
 
-type Client interface {
-	Post(url string, headers map[string]string, body interface{}) (interface{}, error)	
-	Get(url string, headers map[string]string) (interface{}, error)	
-	Put(url string, headers map[string]string, body interface{}) (interface{}, error)	
-	Delete(url string, headers map[string]string) error	
-}
+	type Client interface {
+		Post(url string, headers map[string]string, body interface{}) (interface{}, error)	
+		Get(url string, headers map[string]string) (interface{}, error)	
+		Put(url string, headers map[string]string, body interface{}) (interface{}, error)	
+		Delete(url string, headers map[string]string) error	
+	}
 
-type HttpClient struct {
-}
+	type HttpClient struct {
+	}
 
 
-func (client *HttpClient) Post(url string, headers map[string]string, body interface{}) (interface{}, error) {
-	return send[interface{}]("POST", url, headers, &body)
-}
+	func (client *HttpClient) Post(url string, headers map[string]string, body interface{}) (interface{}, error) {
+		return send[interface{}]("POST", url, headers, &body)
+	}
 
-func (client *HttpClient) Get(url string, headers map[string]string) (interface{}, error) {
-	return send[interface{}]("GET", url, headers, nil)
-}
+	func (client *HttpClient) Get(url string, headers map[string]string) (interface{}, error) {
+		return send[interface{}]("GET", url, headers, nil)
+	}
 
-func (client *HttpClient) Put(url string, headers map[string]string, body interface{}) (interface{}, error) {
-	return send[interface{}]("PUT", url, headers, &body)
-}
+	func (client *HttpClient) Put(url string, headers map[string]string, body interface{}) (interface{}, error) {
+		return send[interface{}]("PUT", url, headers, &body)
+	}
 
-func (client *HttpClient) Delete(url string, headers map[string]string) error {
-	_, err := send[interface{}]("DELETE", url, headers, nil)
-	return err
-}
+	func (client *HttpClient) Delete(url string, headers map[string]string) error {
+		_, err := send[interface{}]("DELETE", url, headers, nil)
+		return err
+	}
 
-func send[T any](method string, url string, headers map[string]string, body *interface{}) (*T, error) {
-	client := http.DefaultClient 
+	func send[T any](method string, url string, headers map[string]string, body *interface{}) (*T, error) {
+		client := http.DefaultClient 
 
-	var bodyJson []byte
-	var err error
+		var bodyJson []byte
+		var err error
 
-	// TODO raw bytes do not get converted to json
+		// raw bytes do not get converted to json
 
-	if body != nil {
-		bodyJson, err = json.Marshal(*body)
+		if body != nil {
+			if reflect.TypeOf(body) == reflect.TypeOf(&[]byte{}) {
+				// Handle the case when body is of type *[]byte
+				byteSlice := (*body).([]byte)
+        bodyJson = byteSlice
+			} else {
+				bodyJson, err = json.Marshal(body)
+				if err != nil {
+					return nil, err
+				}
+			}
+		}
+
+		bodyBuf := bytes.NewBuffer(bodyJson)
+		request, err := http.NewRequest(method, url, bodyBuf)
 		if err != nil {
 			return nil, err
 		}
-	}
+		for name, value := range headers {
+			request.Header.Set(name, value)
+		}
+		request.Header.Set("Content-Type", "application/json")
 
-	bodyBuf := bytes.NewBuffer(bodyJson)
-	request, err := http.NewRequest(method, url, bodyBuf)
-	if err != nil {
-		return nil, err
-	}
-	for name, value := range headers {
-		request.Header.Set(name, value)
-	}
-	request.Header.Set("Content-Type", "application/json")
+		resp, err := client.Do(request)
+		if err != nil {
+			return nil, err
+		}
 
-	resp, err := client.Do(request)
-	if err != nil {
-		return nil, err
-	}
+		result, err := processResponse[T](resp)
+		if err != nil {
+			return nil, err
+		}
 
-	result, err := processResponse[T](resp)
-	if err != nil {
-		return nil, err
-	}
-
-	return result, nil
+		return result, nil
 }
 
 func processResponse[T any](resp *http.Response) (*T, error) {
