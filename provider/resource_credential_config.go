@@ -1,10 +1,10 @@
 package provider
 
 import (
-	"log"
-	"strconv"
-	"nz.antunovic/mattr-terraform-provider/api"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"log"
+	"nz.antunovic/mattr-terraform-provider/api"
+	"strconv"
 )
 
 func resourceCredentialConfig() *schema.Resource {
@@ -46,9 +46,9 @@ func resourceCredentialConfig() *schema.Resource {
 				Required: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeMap,
-					Elem: &schema.Resource {
-							Schema: map[string]*schema.Schema{
-								"name": &schema.Schema{
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"name": &schema.Schema{
 								Type:     schema.TypeString,
 								Required: true,
 							},
@@ -69,7 +69,7 @@ func resourceCredentialConfig() *schema.Resource {
 				Optional: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeMap,
-					Elem: &schema.Resource {
+					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"background_color": &schema.Schema{
 								Type:     schema.TypeString,
@@ -120,11 +120,11 @@ func resourceCredentialConfig() *schema.Resource {
 				Optional: true,
 			},
 			"expires_in": &schema.Schema{
-				Type: schema.TypeMap,
+				Type:     schema.TypeMap,
 				Optional: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeMap,
-					Elem: &schema.Resource {
+					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"years": &schema.Schema{
 								Type:     schema.TypeInt,
