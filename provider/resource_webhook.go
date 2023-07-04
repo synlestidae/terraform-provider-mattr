@@ -8,8 +8,8 @@ import (
 )
 
 func resourceWebhook() *schema.Resource {
-	generator := generator.Generator {
-		Path: "/core/v1/webhooks",
+	generator := generator.Generator{
+		Path:   "/core/v1/webhooks",
 		Client: &api.HttpClient{},
 		Schema: map[string]*schema.Schema{
 			"events": &schema.Schema{
@@ -34,73 +34,6 @@ func resourceWebhook() *schema.Resource {
 	}
 
 	resource := generator.GenResource()
-	
+
 	return &resource
-}
-
-func resourceWebhookCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(api.ProviderConfig).Api
-	webhook_request := fromTerraform(d)
-	webhook_response, err := api.PostWebhook(&webhook_request)
-	if err != nil {
-		return err
-	}
-	processWebhookData(webhook_response, d)
-	return nil
-}
-
-func resourceWebhookRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(api.ProviderConfig).Api
-	id := d.Id()
-	webhook, err := api.GetWebhook(id)
-	if err != nil {
-		return err
-	}
-	processWebhookData(webhook, d)
-
-	return nil
-}
-
-func resourceWebhookUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(api.ProviderConfig).Api
-	id := d.Id()
-	webhook_request := fromTerraform(d)
-	webhook, err := api.PutWebhook(id, &webhook_request)
-	if err != nil {
-		return err
-	}
-	processWebhookData(webhook, d)
-	return nil
-}
-
-func resourceWebhookDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(api.ProviderConfig).Api
-	id := d.Id()
-	err := api.DeleteWebhook(id)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func processWebhookData(webhook_response *api.WebhookResponse, d *schema.ResourceData) {
-	d.SetId(webhook_response.Id)
-	d.Set("url", webhook_response.Url)
-	d.Set("events", webhook_response.Events)
-	d.Set("disabled", webhook_response.Disabled)
-}
-
-func fromTerraform(d *schema.ResourceData) api.WebhookRequest {
-	event_list := d.Get("events").([]interface{})
-	events := make([]string, len(event_list), len(event_list))
-
-	for i, event := range event_list {
-		events[i] = event.(string)
-	}
-
-	return api.WebhookRequest{
-		Events:   events,
-		Url:      d.Get("url").(string),
-		Disabled: d.Get("disabled").(bool),
-	}
 }

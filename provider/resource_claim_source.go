@@ -5,8 +5,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"nz.antunovic/mattr-terraform-provider/api"
-
-
 )
 
 func resourceClaimSource() *schema.Resource {
@@ -27,9 +25,9 @@ func resourceClaimSource() *schema.Resource {
 			"authorization": &schema.Schema{
 				Type:     schema.TypeMap,
 				Required: true,
-				Elem: &schema.Schema {
+				Elem: &schema.Schema{
 					Type: schema.TypeMap,
-					Elem: &schema.Resource {
+					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"type": &schema.Schema{
 								Type:     schema.TypeString,

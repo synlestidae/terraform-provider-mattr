@@ -3,9 +3,9 @@ package provider
 import (
 	"fmt"
 	"log"
+	"nz.antunovic/mattr-terraform-provider/api"
 	"strconv"
 	"strings"
-	"nz.antunovic/mattr-terraform-provider/api"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -56,7 +56,7 @@ func resourceIssuer() *schema.Resource {
 				Optional: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeMap,
-					Elem: &schema.Resource {
+					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"background_color": &schema.Schema{
 								Type:     schema.TypeString,

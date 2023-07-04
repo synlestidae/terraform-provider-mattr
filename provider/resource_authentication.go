@@ -1,10 +1,10 @@
 package provider
 
 import (
-	"log"
-	"strconv"
-	"nz.antunovic/mattr-terraform-provider/api"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"log"
+	"nz.antunovic/mattr-terraform-provider/api"
+	"strconv"
 )
 
 func resourceAuthentication() *schema.Resource {

@@ -56,6 +56,7 @@
 				if err != nil {
 					return nil, err
 				}
+				headers["Content-Type"] = "application/json"
 			}
 		}
 
@@ -67,7 +68,6 @@
 		for name, value := range headers {
 			request.Header.Set(name, value)
 		}
-		request.Header.Set("Content-Type", "application/json")
 
 		resp, err := client.Do(request)
 		if err != nil {
