@@ -9,34 +9,67 @@ resource "mattr_webhook" "issue_webhook" {
   disabled = true
 }
 
-resource mattr_compact_credential_template test_cc_template {
-  file_name = "template.pdf"
+
+resource "mattr_compact_credential_template" "test_cc_template" {
+  file_name     = "{{ code }}_{{ name }}"
   template_path = "template.pdf"
-  name = "Certificate"
+  name =	"SamplePDF_WorkingAtHightsVC"
   font_paths = [
     "fonts/PublicSans-Bold.ttf",
     "fonts/PublicSans-Regular.ttf"
   ]
 
   metadata = {
-     "title" = "{{ certificationName }} Certification – {{ name }}"
+    title = "{{ certificationName }} Certification – {{ name }}"
   }
 
   fonts {
-    name = "PublicSans-Regular"
+    name      = "PublicSans-Regular"
     file_name = "PublicSans-Regular.ttf"
   }
 
   fonts {
-    name = "PublicSans-Bold"
+    name      = "PublicSans-Bold"
     file_name = "PublicSans-Bold.ttf"
   }
-  
+
   fields {
-    key = "name"
-    value = "{{ name }}"
-    is_required = true
+    key               = "name"
+    value             = "{{ name }}"
+    is_required       = true
     alternative_text = "{{ name }}"
-    font_name = "PublicSans-Regular"
+    font_name         = "PublicSans-Regular"
+  }
+
+  fields {
+    key               = "code"
+    value             = "{{ code }}"
+    is_required       = true
+    alternative_text = "{{ code }}"
+    font_name         = "PublicSans-Bold"
+  }
+
+  fields {
+    key               = "certificationName"
+    value             = "{{ certificationName }}"
+    is_required       = true
+    alternative_text = "{{ certificationName }}"
+    font_name         = "PublicSans-Bold"
+  }
+
+  fields {
+    key               = "certificationLevel"
+    value             = "{{ certificationLevel }}"
+    is_required       = true
+    alternative_text = "{{ certificationLevel }}"
+    font_name         = "PublicSans-Regular"
+  }
+
+  fields {
+    key               = "expiry"
+    value             = "{{ date expiry 'dd MMM yyyy' }}"
+    is_required       = true
+    alternative_text = "{{ date expiry 'PPP' }}"
+    font_name         = "PublicSans-Regular"
   }
 }
