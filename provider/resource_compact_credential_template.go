@@ -10,6 +10,8 @@ import (
   "archive/zip"
 	"io/ioutil"
 	"fmt"
+	"log"
+	"path"
 )
 
 func resourceCompactCredentialTemplate() *schema.Resource {
@@ -26,6 +28,9 @@ func resourceCompactCredentialTemplate() *schema.Resource {
 			},
       "font_paths": &schema.Schema{ 
 				Type:     schema.TypeList,
+				Elem: &schema.Schema {
+					Type: schema.TypeString,
+				},
 				Optional: true,
 			},
 			"name": &schema.Schema{
@@ -58,7 +63,7 @@ func resourceCompactCredentialTemplate() *schema.Resource {
 			},
 			"fields": &schema.Schema{
 				Type:     schema.TypeList,
-				Required: true,
+				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"key": &schema.Schema{
@@ -96,31 +101,31 @@ func resourceCompactCredentialTemplate() *schema.Resource {
 
 		// these params dont get included
     templatePath := bodyMap["templatePath"].(string)
-    fontPaths := bodyMap["fontPaths"].([]string)
+    fontPaths := castToStringSlice(bodyMap["fontPaths"].([]interface{}))
     delete(bodyMap, "templatePath")
     delete(bodyMap, "fontPaths")
 
     writer := zip.NewWriter(buffer)
-		defer writer.Close()
 
     // read the fonts into zip fonts dir
 		for _, font := range fontPaths {
+			log.Printf("Reading font %s", font)
 			fontFile, err := ioutil.ReadFile(font)
 			if err != nil {
 				return err
 			}
 
-			fontWriter, err := writer.Create(fmt.Sprintf("fonts/%s", fontFile))
+			fontWriter, err := writer.Create(fmt.Sprintf("fonts/%s", path.Base(font)))
 			if err != nil {
 				return err
 			}
-			//defer fontWriter.Close()
 			if _, err := fontWriter.Write(fontFile); err != nil {
 				return err
 			}
 		}
 
 		// write template.pdf
+		log.Printf("Reading template %s", templatePath)
 		templateBytes, err := ioutil.ReadFile(templatePath)
 		if err != nil {
 			return err
@@ -129,12 +134,10 @@ func resourceCompactCredentialTemplate() *schema.Resource {
 		if err != nil {
 			return err
 		}
-		//defer templateWriter.close()
 		if _, err := templateWriter.Write(templateBytes); err != nil {
 			return err
 		}
 
-		// now serialize the JSON
 		bodyJson, err := json.Marshal(bodyMap)
 		if err != nil {
 			return err
@@ -143,14 +146,23 @@ func resourceCompactCredentialTemplate() *schema.Resource {
 		if err != nil {
 			return err
 		}
-		//defer configWriter.Close()
 		if _, err := configWriter.Write(bodyJson); err != nil {
 			return err
 		}
+
+		err = writer.Close()
+		if err != nil {
+				return err
+		}
 		
 		(*headers)["Content-Type"] = "application/zip"
-		*body = buffer.Bytes()
+		zip := buffer.Bytes()
 
+		if err = ioutil.WriteFile("/tmp/payload.zip", zip, 755); err != nil {
+			return err
+		}
+		log.Printf("Going to upload zip file of %d bytes", len(zip))
+		*body = zip 
 		return nil
 	}
 

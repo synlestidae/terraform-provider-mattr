@@ -730,32 +730,6 @@ func Send[T any](a *Api, method string, path string, body interface{}) (*T, erro
 	return result, nil
 }
 
-/*func processResponse[T any](resp *http.Response) (*T, error) {
-	defer resp.Body.Close()
-
-	if resp.StatusCode < 200 || 299 < resp.StatusCode {
-		response_body, _ := ioutil.ReadAll(resp.Body)
-		log.Println("Response body: ", string(response_body))
-		return nil, fmt.Errorf("Got status code %d from API", resp.StatusCode)
-	}
-
-	// read raw json body
-	response_body, err := ioutil.ReadAll(resp.Body)
-	log.Println("Response body: ", string(response_body))
-	if err != nil {
-		return nil, err
-	}
-
-	// parse the body
-	var response T
-	err = json.Unmarshal(response_body, &response)
-	if err != nil {
-		return nil, err
-	}
-
-	return &response, nil
-}*/
-
 func unmarshal[T any](b []byte) (v T, err error) {
 	return v, json.Unmarshal(b, &v)
 }

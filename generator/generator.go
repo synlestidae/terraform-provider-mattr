@@ -48,11 +48,15 @@ func (generator *Generator) GenResource() schema.Resource {
 		// modify request
 
 		if generator.ModifyRequestBody != nil {
-			generator.ModifyRequestBody(&body)
+			if err = generator.ModifyRequestBody(&body); err != nil {
+				return err
+			}
 		}
 
 		if generator.ModifyRequest != nil {
-			generator.ModifyRequest(&url, &headers, &body)
+			if err = generator.ModifyRequest(&url, &headers, &body); err != nil {
+				return err
+			}
 		}
 
 		// send
@@ -65,10 +69,14 @@ func (generator *Generator) GenResource() schema.Resource {
 		// modify response
 
 		if generator.ModifyResponseBody != nil {
-			generator.ModifyResponseBody(&response)
+			if err = generator.ModifyResponseBody(&response); err != nil {
+				return err
+			}
 		}
 		if generator.ModifyResponse != nil {
-			generator.ModifyResponse(&map[string]string{}, &response) // TODO response headers
+			if err = generator.ModifyResponse(&map[string]string{}, &response); err != nil { // TODO response headers
+				return err
+			}
 		}
 
 		// process response
