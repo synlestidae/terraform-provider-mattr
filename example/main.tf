@@ -18,10 +18,7 @@ resource "mattr_compact_credential_template" "test_cc_template" {
     "fonts/PublicSans-Bold.ttf",
     "fonts/PublicSans-Regular.ttf"
   ]
-
-  metadata = {
-    title = "{{ certificationName }} Certification – {{ name }}"
-  }
+  title = "{{ certificationName }} Certification – {{ name }}"
 
   fonts {
     name      = "PublicSans-Regular"

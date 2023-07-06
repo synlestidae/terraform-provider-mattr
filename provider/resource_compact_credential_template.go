@@ -41,8 +41,8 @@ func resourceCompactCredentialTemplate() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"metadata": &schema.Schema{
-				Type:     schema.TypeMap,
+			"title": &schema.Schema{
+				Type:     schema.TypeString,
 				Optional: true,
 			},
 			"fonts": &schema.Schema{
@@ -104,6 +104,14 @@ func resourceCompactCredentialTemplate() *schema.Resource {
     fontPaths := castToStringSlice(bodyMap["fontPaths"].([]interface{}))
     delete(bodyMap, "templatePath")
     delete(bodyMap, "fontPaths")
+
+		title := bodyMap["title"].(interface{})
+    delete(bodyMap, "title")
+		if title != nil {
+			bodyMap["metadata"] = map[string]string {
+				"title": title.(string),
+			}
+		}
 
     writer := zip.NewWriter(buffer)
 

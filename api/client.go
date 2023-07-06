@@ -47,10 +47,13 @@
 		// raw bytes do not get converted to json
 
 		if body != nil {
-			if reflect.TypeOf(body) == reflect.TypeOf(&[]byte{}) {
+			if reflect.TypeOf(*body) == reflect.TypeOf([]byte{}) {
 				// Handle the case when body is of type *[]byte
 				byteSlice := (*body).([]byte)
         bodyJson = byteSlice
+				if err != nil {
+					return nil, err
+				}
 			} else {
 				bodyJson, err = json.Marshal(body)
 				if err != nil {
