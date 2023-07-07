@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"log"
 	"path"
+	"github.com/k0kubun/pp"
 )
 
 func resourceCompactCredentialTemplate() *schema.Resource {
@@ -93,11 +94,25 @@ func resourceCompactCredentialTemplate() *schema.Resource {
 		},
 	}
 
-	generator.ModifyRequest = func(url *string, headers *map[string]string, body *interface{}) error {
-    //config := make(map[string]interface{})
+	generator.ModifyRequestBody = func(body *interface{}) error {
     bodyMap := (*body).(map[string]interface{})
 
-		buffer := new(bytes.Buffer)
+		if title, ok := bodyMap["title"].(interface{}); ok {
+			delete(bodyMap, "title")
+			bodyMap["metadata"] = map[string]string {
+				"title": title.(string),
+			}
+		}
+
+		return nil
+	}
+
+	generator.ModifyRequest = func(url *string, headers *map[string]string, body *interface{}) error {
+    bodyMap := (*body).(map[string]interface{})
+
+		d := pp.Sprint(bodyMap)
+		log.Println("Here is: %s", d);
+		log.Println("Here is another: %s", map[string]string{"hello": "world"});
 
 		// these params dont get included
     templatePath := bodyMap["templatePath"].(string)
@@ -105,14 +120,8 @@ func resourceCompactCredentialTemplate() *schema.Resource {
     delete(bodyMap, "templatePath")
     delete(bodyMap, "fontPaths")
 
-		title := bodyMap["title"].(interface{})
-    delete(bodyMap, "title")
-		if title != nil {
-			bodyMap["metadata"] = map[string]string {
-				"title": title.(string),
-			}
-		}
 
+		buffer := new(bytes.Buffer)
     writer := zip.NewWriter(buffer)
 
     // read the fonts into zip fonts dir
@@ -171,6 +180,28 @@ func resourceCompactCredentialTemplate() *schema.Resource {
 		}
 		log.Printf("Going to upload zip file of %d bytes", len(zip))
 		*body = zip 
+		return nil
+	}
+
+
+	generator.ModifyResponseBody = func(body *interface{}) error {
+		log.Printf("Body is %T", body)
+    bodyMap1 := (*body).(*interface{})
+    bodyMap := (*bodyMap1).(map[string]interface{})
+
+		metadata := bodyMap["metadata"].(interface{})
+		if metadata != nil {
+			metadataMap := metadata.(map[string]interface{})
+			if metadataMap["title"] != nil {
+				title := metadataMap["title"].(string)
+				bodyMap["title"] = metadataMap["title"]
+				bodyMap["metadata"] = map[string]string {
+					"title": title,
+				}
+				delete(bodyMap, "metadata")
+			}
+		}
+
 		return nil
 	}
 

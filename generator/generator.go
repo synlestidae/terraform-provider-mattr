@@ -60,14 +60,12 @@ func (generator *Generator) GenResource() schema.Resource {
 		}
 
 		// send
-
 		response, err := generator.Client.Post(url, headers, body)
 		if err != nil {
 			return err
 		}
 
 		// modify response
-
 		if generator.ModifyResponseBody != nil {
 			if err = generator.ModifyResponseBody(&response); err != nil {
 				return err
@@ -80,7 +78,6 @@ func (generator *Generator) GenResource() schema.Resource {
 		}
 
 		// process response
-
 		responseVisitor := ResponseVisitor{
 			resourceData: d,
 		}

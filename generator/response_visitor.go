@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"log"
 )
 
 type ResponseVisitor struct {
@@ -36,6 +37,7 @@ func (rv *ResponseVisitor) visitMap(data map[string]interface{}) (interface{}, e
 
 		schemaName := snakeCase(key)
 		if schemaName != "id" { 
+			log.Printf("Setting '%v' = '%v'", schemaName, schemaVal)
 			if err := rv.resourceData.Set(schemaName, schemaVal); err != nil {
 				return nil, err
 			}
