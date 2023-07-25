@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+overall_status=0
+
 clean_terraform() {
   echo "Removing Terraform files from `pwd`"
   # Remove all Terraform-related files
@@ -66,7 +68,13 @@ for DIRECTORY in */; do
 
   # Run the test for the current directory
   run_test "$DIRECTORY"
-  echo "Tests returned exit code $?"
+  test_status=$?
+  echo "Tests returned exit code $test_status"
+
+  # Update the overall status based on the current test's result
+  if [[ $test_status -ne 0 ]]; then
+    overall_status=1
+  fi
 
   # Kill the Python server process after the test
   kill "$server_pid"
@@ -74,3 +82,7 @@ for DIRECTORY in */; do
 done
 
 echo "Done testing"
+echo "Exiting with code $test_status"
+
+# Exit with the overall status
+exit $overall_status
