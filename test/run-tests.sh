@@ -19,7 +19,6 @@ clean_terraform() {
 
 run_test() {
   echo "Running test in `pwd`"
-  pushd "$1" >/dev/null
   if [[ $? -ne 0 ]]; then
     return 1
   fi
@@ -32,7 +31,6 @@ run_test() {
   TF_LOG=DEBUG terraform destroy -auto-approve || return 1
   status_code=$?
 
-  popd >/dev/null
   return $status_code
 }
 
@@ -70,8 +68,10 @@ for DIRECTORY in */; do
   echo "Booted server"
 
   # Run the test for the current directory
-  run_test "$DIRECTORY"
+  pushd "$DIRECTORY" >/dev/null
+  run_test "./"
   test_status=$?
+  popd
   echo "Tests returned exit code $test_status"
 
   # Update the overall status based on the current test's result
