@@ -1,0 +1,19 @@
+{
+  "id": "57fa09e2-82f3-4d3d-9eca-d0253e84a4e6",
+  "name": "My claims from example.com",
+  "url": "https://example.com",
+  "authorization": {
+    "type": "api-key",
+    "value": "6hrFDATxrG9w14QY9wwnmVhLE0Wg6LIvwOwUaxz761m1J"
+  },
+  "requestParameters": {
+    "property1": {
+      "mapFrom": "claims.accountType",
+      "defaultValue": "student"
+    },
+    "property2": {
+      "mapFrom": "claims.accountType",
+      "defaultValue": "student"
+    }
+  }
+}
