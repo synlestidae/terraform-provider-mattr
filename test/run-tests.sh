@@ -19,9 +19,6 @@ clean_terraform() {
 
 run_test() {
   echo "Running test in `pwd`"
-  if [[ $? -ne 0 ]]; then
-    return 1
-  fi
 
   # Clean up and remove any and all Terraform data for the test
   clean_terraform  
@@ -29,9 +26,6 @@ run_test() {
   TF_LOG=DEBUG terraform apply -auto-approve || return 1
   TF_LOG=DEBUG terraform show || return 1
   TF_LOG=DEBUG terraform destroy -auto-approve || return 1
-  status_code=$?
-
-  return $status_code
 }
 
 echo "Running tests"
@@ -71,6 +65,9 @@ for DIRECTORY in */; do
   pushd "$DIRECTORY" >/dev/null
   run_test "./"
   test_status=$?
+  if [[ $test_status -ne 0 ]]; then
+    overall_status=1
+  fi
   popd
   echo "Tests returned exit code $test_status"
 
