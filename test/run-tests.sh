@@ -43,6 +43,7 @@ for DIRECTORY in */; do
   DIRECTORY="${DIRECTORY%/}"  # Remove trailing slash
 
   # Run the Python server in the background
+  echo "Booting server"
   python3 server.py "$DIRECTORY" &
   server_pid=$!
 
@@ -53,8 +54,8 @@ for DIRECTORY in */; do
 
   sleep "$WAIT_INTERVAL"
 
-  until curl -sSf "http://127.0.0.1:8080" >/dev/null; do
-    echo "Booting server"
+  until curl -sSf "http://127.0.0.1:8080" ; do
+    echo "Waiting for server..."
     sleep "$WAIT_INTERVAL"
     ELAPSED_TIME=$((ELAPSED_TIME + WAIT_INTERVAL))
 
@@ -63,6 +64,8 @@ for DIRECTORY in */; do
       exit 1
     fi
   done
+
+  echo "Server ready"
 
   echo "Booted server"
 
