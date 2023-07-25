@@ -25,7 +25,7 @@ class MockServerHandler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header("Content-type", "text/plain")
             self.end_headers()
-            self.wfile.write(b"Welcome! I am ready for you.")
+            self.wfile.write(b"Welcome! I am ready for you.\n")
             return
 
         file_path = os.path.join(base_path, f"{path}.{method.lower()}.json").strip("/")
