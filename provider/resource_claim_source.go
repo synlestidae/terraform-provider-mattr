@@ -1,157 +1,144 @@
 package provider
 
 import (
-	"log"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"nz.antunovic/mattr-terraform-provider/api"
+	"nz.antunovic/mattr-terraform-provider/generator"
 )
 
 func resourceClaimSource() *schema.Resource {
-	return &schema.Resource{
-		Create: resourceClaimSourceCreate,
-		Read:   resourceClaimSourceRead,
-		Update: resourceClaimSourceUpdate,
-		Delete: resourceClaimSourceDelete,
-		Schema: map[string]*schema.Schema{
-			"name": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
-			},
-			"url": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
-			},
-			"authorization": &schema.Schema{
-				Type:     schema.TypeMap,
-				Required: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeMap,
-					Elem: &schema.Resource{
-						Schema: map[string]*schema.Schema{
-							"type": &schema.Schema{
-								Type:     schema.TypeString,
-								Required: true,
-							},
-							"value": &schema.Schema{
-								Type:     schema.TypeString,
-								Required: true,
-							},
-						},
+	claimSourceSchema := map[string]*schema.Schema{
+		"name": &schema.Schema{
+			Type:     schema.TypeString,
+			Required: true,
+		},
+		"url": &schema.Schema{
+			Type:     schema.TypeString,
+			Required: true,
+		},
+		"authorization_type": &schema.Schema{
+			Type:     schema.TypeString,
+			Required: true,
+		},
+		"authorization_value": &schema.Schema{
+			Type:     schema.TypeString,
+			Required: true,
+		},
+		"request_parameter": &schema.Schema{
+			Type:     schema.TypeSet,
+			Required: true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"name": &schema.Schema{
+						Type:     schema.TypeString,
+						Required: true,
 					},
-				},
-			},
-			"request_parameter": &schema.Schema{
-				Type:     schema.TypeList,
-				Required: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"property": &schema.Schema{
-							Type:     schema.TypeString,
-							Required: true,
-						},
-						"map_from": &schema.Schema{
-							Type:     schema.TypeString,
-							Required: true,
-						},
-						"default_value": &schema.Schema{
-							Type:     schema.TypeString,
-							Required: true,
-						},
+					"map_from": &schema.Schema{
+						Type:     schema.TypeString,
+						Required: true,
+					},
+					"default_value": &schema.Schema{
+						Type:     schema.TypeString,
+						Optional: true,
 					},
 				},
 			},
 		},
 	}
-}
 
-func resourceClaimSourceCreate(d *schema.ResourceData, m interface{}) error {
-	log.Println("Creating claim source")
-	api := m.(api.ProviderConfig).Api
-	claimSource := fromTerraformClaimSource(d)
-	createdClaimSource, err := api.PostClaimSource(&claimSource)
-	if err != nil {
-		return err
+	claimSourceGenerator := generator.Generator{
+		Path:               "/core/v1/claimsources",
+		Client:             &api.HttpClient{},
+		Schema:             claimSourceSchema,
+		ModifyRequestBody:  convertReqParamsBody,
+		ModifyResponseBody: convertResParamsBody,
 	}
-	processClaimSourceData(createdClaimSource, d)
-	return nil
+
+	resource := claimSourceGenerator.GenResource()
+
+	return &resource
 }
 
-func resourceClaimSourceRead(d *schema.ResourceData, m interface{}) error {
-	log.Println("Reading claim source")
-	api := m.(api.ProviderConfig).Api
-	claimSource, err := api.GetClaimSource(d.Id())
-	if err != nil {
-		return err
+func convertReqParamsBody(body interface{}) (interface{}, error) {
+	reqMap, ok := body.(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("Unexpected type for /v1/core/claimsources response: %T", body)
 	}
-	processClaimSourceData(claimSource, d)
-	return nil
-}
 
-func resourceClaimSourceUpdate(d *schema.ResourceData, m interface{}) error {
-	log.Println("Updating claim source")
-	api := m.(api.ProviderConfig).Api
-	claimSource := fromTerraformClaimSource(d)
-	updatedClaimSource, err := api.PutClaimSource(d.Id(), &claimSource)
-	if err != nil {
-		return err
+	authorization := make(map[string]interface{}, 2)
+	authorization["type"] = reqMap["authorizationType"]
+	authorization["value"] = reqMap["authorizationValue"]
+	reqMap["authorization"] = authorization
+	delete(reqMap, "authorizationType")
+	delete(reqMap, "authorizationValue")
+
+	paramList, ok := reqMap["requestParameter"].([]interface{})
+	if !ok {
+		return nil, fmt.Errorf("Unexpected type for /core/v1/claimsources 'requestParameter' field: %T", reqMap)
 	}
-	processClaimSourceData(updatedClaimSource, d)
-	return nil
-}
 
-func resourceClaimSourceDelete(d *schema.ResourceData, m interface{}) error {
-	log.Println("Deleting claim source")
-	api := m.(api.ProviderConfig).Api
-	return api.DeleteClaimSource(d.Id())
-}
-
-func processClaimSourceData(claimSource *api.ClaimSource, d *schema.ResourceData) {
-	authorization := make(map[string]string, 2)
-	authorization["type"] = claimSource.Authorization.Type
-	authorization["value"] = claimSource.Authorization.Value
-
-	requestParameters := make([]map[string]string, len(claimSource.RequestParameters))
-	i := 0
-	for k, parameter := range claimSource.RequestParameters {
-		requestParameters[i] = map[string]string{
-			"name":          k,
-			"map_from":      parameter.MapFrom,
-			"default_value": parameter.DefaultValue,
+	paramsMap := make(map[string]interface{}, len(paramList))
+	for i, param := range paramList {
+		paramElem, ok := param.(map[string]interface{})
+		if !ok {
+			return nil, fmt.Errorf("Unexpected type for /v1/core/claimsources request parameter %d: %T", i, param)
 		}
-		i++
+
+		property, ok := paramElem["name"].(string)
+		if !ok {
+			return nil, fmt.Errorf("Unexpected type for property field in /v1/core/claimsources request parameter: %T", paramElem["name"])
+		}
+
+		paramMap := map[string]string{
+			"mapFrom":      paramElem["mapFrom"].(string),
+			"defaultValue": paramElem["defaultValue"].(string),
+		}
+
+		paramsMap[property] = paramMap
 	}
 
-	d.Set("name", claimSource.Name)
-	d.Set("url", claimSource.Url)
-	d.Set("authorization", authorization)
-	d.Set("request_parameter", requestParameters)
-	d.SetId(claimSource.Id)
+	delete(reqMap, "requestParameter")
+	reqMap["requestParameters"] = paramsMap
+
+	return reqMap, nil
 }
 
-func fromTerraformClaimSource(d *schema.ResourceData) api.ClaimSource {
-	authorizationMap := d.Get("authorization").(map[string]interface{})
-	requestParametersList := d.Get("request_parameter").([]interface{})
-
-	authorization := api.ClaimSourceAuthorization{
-		Type:  authorizationMap["type"].(string),
-		Value: authorizationMap["value"].(string),
+func convertResParamsBody(body interface{}) (interface{}, error) {
+	reqMap, ok := body.(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("Unexpected type for response body: %T", body)
 	}
 
-	requestParametersMap := make(map[string]api.ClaimSourceRequestParameter, len(requestParametersList))
-	for _, param := range requestParametersList {
-		paramMap := param.(map[string]interface{})
-		requestParametersMap[paramMap["property"].(string)] = api.ClaimSourceRequestParameter{
-			MapFrom:      paramMap["map_from"].(string),
-			DefaultValue: paramMap["default_value"].(string),
+	authorizationMap := reqMap["authorization"].(map[string]interface{})
+	reqMap["authorization_type"] = authorizationMap["type"]
+	reqMap["authorization_value"] = authorizationMap["value"]
+	delete(reqMap, "authorization")
+
+	paramsMap, ok := reqMap["requestParameters"].(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("Unexpected type for requestParameters field in response: %T", reqMap["requestParameters"])
+	}
+
+	paramList := make([]interface{}, 0, len(paramsMap))
+	for property, paramMap := range paramsMap {
+		paramMapTyped, ok := paramMap.(map[string]interface{})
+		if !ok {
+			return nil, fmt.Errorf("Unexpected type for property '%s' in requestParameters: %T", property, paramMap)
 		}
+
+		param := map[string]interface{}{
+			"name":     property,
+			"mapFrom":      paramMapTyped["mapFrom"].(string),
+			"defaultValue": paramMapTyped["defaultValue"].(string),
+		}
+
+		paramList = append(paramList, param)
 	}
 
-	return api.ClaimSource{
-		Id:                d.Id(),
-		Name:              d.Get("name").(string),
-		Url:               d.Get("url").(string),
-		Authorization:     authorization,
-		RequestParameters: requestParametersMap,
-	}
+	reqMap["requestParameter"] = paramList
+	delete(reqMap, "requestParameters")
+
+	return reqMap, nil
 }

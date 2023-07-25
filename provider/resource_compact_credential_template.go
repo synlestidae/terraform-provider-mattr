@@ -1,15 +1,15 @@
 package provider
 
 import (
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	_ "github.com/motemen/go-loghttp/global"
-	"nz.antunovic/mattr-terraform-provider/api"
-	"nz.antunovic/mattr-terraform-provider/generator"
+	"archive/zip"
 	"bytes"
 	"encoding/json"
-  "archive/zip"
-	"io/ioutil"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	_ "github.com/motemen/go-loghttp/global"
+	"io/ioutil"
+	"nz.antunovic/mattr-terraform-provider/api"
+	"nz.antunovic/mattr-terraform-provider/generator"
 )
 
 func resourceCompactCredentialTemplate() *schema.Resource {
@@ -17,16 +17,19 @@ func resourceCompactCredentialTemplate() *schema.Resource {
 		Path:   "/v2/credentials/compact/pdf/templates",
 		Client: &api.HttpClient{},
 		Schema: map[string]*schema.Schema{
-      "template_path": &schema.Schema{ 
+			"template_path": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
-        Elem: &schema.Schema{ 
-            Type:     schema.TypeString,
-        },
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
 			},
-      "font_paths": &schema.Schema{ 
+			"font_paths": &schema.Schema{
 				Type:     schema.TypeList,
 				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
 			},
 			"name": &schema.Schema{
 				Type:     schema.TypeString,
@@ -89,21 +92,21 @@ func resourceCompactCredentialTemplate() *schema.Resource {
 	}
 
 	generator.ModifyRequest = func(url *string, headers *map[string]string, body *interface{}) error {
-    //config := make(map[string]interface{})
-    bodyMap := (*body).(map[string]interface{})
+		//config := make(map[string]interface{})
+		bodyMap := (*body).(map[string]interface{})
 
 		buffer := new(bytes.Buffer)
 
 		// these params dont get included
-    templatePath := bodyMap["templatePath"].(string)
-    fontPaths := bodyMap["fontPaths"].([]string)
-    delete(bodyMap, "templatePath")
-    delete(bodyMap, "fontPaths")
+		templatePath := bodyMap["templatePath"].(string)
+		fontPaths := bodyMap["fontPaths"].([]string)
+		delete(bodyMap, "templatePath")
+		delete(bodyMap, "fontPaths")
 
-    writer := zip.NewWriter(buffer)
+		writer := zip.NewWriter(buffer)
 		defer writer.Close()
 
-    // read the fonts into zip fonts dir
+		// read the fonts into zip fonts dir
 		for _, font := range fontPaths {
 			fontFile, err := ioutil.ReadFile(font)
 			if err != nil {
@@ -147,7 +150,7 @@ func resourceCompactCredentialTemplate() *schema.Resource {
 		if _, err := configWriter.Write(bodyJson); err != nil {
 			return err
 		}
-		
+
 		(*headers)["Content-Type"] = "application/zip"
 		*body = buffer.Bytes()
 

@@ -33,7 +33,7 @@ func Provider() *schema.Provider {
 			"mattr_did":                         resourceDid(),
 			"mattr_webhook":                     resourceWebhook(),
 			"mattr_issuer":                      resourceIssuer(),
-			"mattr_credential":                  resourceCredentialConfig(),
+			"mattr_credential_web":                  resourceCredentialConfig(),
 			"mattr_claim_source":                resourceClaimSource(),
 			"mattr_authentication_provider":     resourceAuthentication(),
 			"mattr_issuer_client":               resourceIssuerClient(),
@@ -41,6 +41,8 @@ func Provider() *schema.Provider {
 			"mattr_verifier_client":             resourceVerifierClient(),
 			"mattr_custom_domain":               resourceCustomDomain(),
 			"mattr_compact_credential_template": resourceCompactCredentialTemplate(),
+			"mattr_credential_offer":            resourceCredentialOffer(),
+			"mattr_presentation":                resourcePresentation(),
 		},
 		ConfigureFunc: ProviderConfigure,
 	}
