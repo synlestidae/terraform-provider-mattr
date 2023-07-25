@@ -10,8 +10,7 @@
   "tokenEndpointAuthMethod": "client_secret_post",
   "claimsSource": "idToken",
   "staticRequestParameters": {
-    "prompt": "login",
-    "max_age": 10000
+    "prompt": "login"
   },
   "forwardedRequestParameters": [
     "login_hint"
