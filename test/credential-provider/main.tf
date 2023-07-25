@@ -8,8 +8,8 @@ terraform {
 }
 
 provider "mattr" {
-  api_url       = "http://localhost:8080/"
-  auth_url      = "http://localhost:8080/auth"
+  api_url       = "http://127.0.0.1:8080/"
+  auth_url      = "http://127.0.0.1:8080/auth"
   client_id     = "test-client-id" 
   client_secret = "test-secret-id"
   audience      = "all-ages"
