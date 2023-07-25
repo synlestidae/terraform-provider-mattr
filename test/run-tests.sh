@@ -27,9 +27,9 @@ run_test() {
   # Clean up and remove any and all Terraform data for the test
   clean_terraform  
   terraform init
-  TF_LOG=DEBUG terraform apply -auto-approve
-  TF_LOG=DEBUG terraform show
-  TF_LOG=DEBUG terraform destroy -auto-approve
+  TF_LOG=DEBUG terraform apply -auto-approve || return 1
+  TF_LOG=DEBUG terraform show || return 1
+  TF_LOG=DEBUG terraform destroy -auto-approve || return 1
   status_code=$?
 
   popd >/dev/null
@@ -47,7 +47,7 @@ for DIRECTORY in */; do
   server_pid=$!
 
   # Wait for the server to be up and running
-  MAX_WAIT_TIME=20  # Maximum wait time in seconds
+  MAX_WAIT_TIME=5  # Maximum wait time in seconds
   WAIT_INTERVAL=1   # Wait interval in seconds
   ELAPSED_TIME=0
 
