@@ -1,62 +1,19 @@
 {
-  "id": "983c0a86-204f-4431-9371-f5a22e506599",
-  "name": "Course credential",
-  "description": "This credential shows that the person has attended a course.",
-  "type": "CourseCredential",
-  "additionalTypes": [
-    "AlumniCredential",
-    "EducationCredential"
-  ],
-  "contexts": [
-    "https://json-ld.org/contexts/person.jsonld",
-    {
-      "pic": {
-        "@id": "http://xmlns.com/foaf/0.1/depiction",
-        "@type": "@id"
-      }
+  "id": "57fa09e2-82f3-4d3d-9eca-d0253e84a4e6",
+  "name": "My claims from example.com",
+  "url": "https://example.com",
+  "authorization": {
+    "type": "api-key",
+    "value": "6hrFDATxrG9w14QY9wwnmVhLE0Wg6LIvwOwUaxz761m1J"
+  },
+  "requestParameters": {
+    "property1": {
+      "mapFrom": "claims.accountType",
+      "defaultValue": "student"
+    },
+    "property2": {
+      "mapFrom": "claims.accountType",
+      "defaultValue": "student"
     }
-  ],
-  "issuer": {
-    "name": "ABC University",
-    "logoUrl": "https://example.edu/img/logo.png",
-    "iconUrl": "https://example.edu/img/icon.png"
-  },
-  "proofType": [
-    "Ed25519Signature2018"
-  ],
-  "credentialBranding": {
-    "backgroundColor": "#B00AA0",
-    "watermarkImageUrl": "https://example.edu/img/watermark.png"
-  },
-  "claimMappings": {
-    "firstName": {
-      "mapFrom": "claims.given_name",
-      "required": true
-    },
-    "address": {
-      "mapFrom": "claims.address.formatted"
-    },
-    "picture": {
-      "mapFrom": "claims.picture",
-      "defaultValue": "http://example.edu/img/placeholder.png"
-    },
-    "badge": {
-      "defaultValue": "http://example.edu/img/badge.png"
-    },
-    "providerSubjectId": {
-      "mapFrom": "authenticationProvider.subjectId"
-    }
-  },
-  "persist": false,
-  "revocable": true,
-  "claimSourceId": "78e1b90c-401d-45bb-89c0-938da4d44c60",
-  "expiresIn": {
-    "years": 0,
-    "months": 3,
-    "weeks": 0,
-    "days": 0,
-    "hours": 0,
-    "minutes": 0,
-    "seconds": 0
   }
 }

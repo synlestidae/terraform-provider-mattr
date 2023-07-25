@@ -45,7 +45,8 @@ func resourceCredentialConfig() *schema.Resource {
 			Required: true,
 		},
 		"proof_type": &schema.Schema{
-			Type:     schema.TypeString,
+			Type:     schema.TypeSet,
+			Elem:     &schema.Schema{Type: schema.TypeString},
 			Optional: true,
 		},
 		"background_color": &schema.Schema{

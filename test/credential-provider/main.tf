@@ -48,7 +48,7 @@ resource "mattr_credential_web" "test_credential" {
   issuer_logo_url = "https://example.edu/img/logo.png"
   issuer_icon_url = "https://example.edu/img/icon.png"
 
-  proof_type = "Ed25519Signature2018"
+  proof_type = ["Ed25519Signature2018"]
 
   background_color = "#B00AA0"
   watermark_image_url = "https://example.edu/img/watermark.png"
@@ -106,8 +106,7 @@ resource "mattr_authentication_provider" "test_authentication_provider" {
   claims_source = "idToken"
 
   static_request_parameters = {
-    "prompt": "login",
-    "max_age": 10000,
+    "prompt": "login"
   }
   forwarded_request_parameters = [
     "login_hint"
