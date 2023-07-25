@@ -53,7 +53,7 @@ for DIRECTORY in */; do
 
   sleep "$WAIT_INTERVAL"
 
-  until curl -sSf "http://localhost:8080" >/dev/null; do
+  until curl -sSf "http://127.0.0.1:8080" >/dev/null; do
     echo "Booting server"
     sleep "$WAIT_INTERVAL"
     ELAPSED_TIME=$((ELAPSED_TIME + WAIT_INTERVAL))
@@ -77,6 +77,7 @@ for DIRECTORY in */; do
   fi
 
   # Kill the Python server process after the test
+  echo "Shutting down the server"
   kill "$server_pid"
   wait "$server_pid"
 done

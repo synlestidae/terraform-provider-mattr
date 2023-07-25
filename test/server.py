@@ -50,10 +50,10 @@ class MockServerHandler(BaseHTTPRequestHandler):
             self.wfile.write(b"Sorry, I can't find that file.")
 
 def run_mock_server(base_path, port=8080):
-    server_address = ("localhost", port)
+    server_address = ("127.0.0.1", port)
     httpd = HTTPServer(server_address, MockServerHandler)
     httpd.base_path = base_path
-    print(f"Mock server is running at http://localhost:{port}/")
+    print(f"Mock server is running at http://127.0.0.1:{port}/")
     httpd.serve_forever()
 
 if __name__ == "__main__":
