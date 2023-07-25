@@ -20,6 +20,29 @@ type Api struct {
 	AccessTokenExpiresAt int64
 }
 
+func (*ApiError) Error() string {
+	// Got (status code ${Status}|error) from (${Method} ${Url}|API)
+	// API responded with error( ${Code})(: ${Message})
+	// For detail in Details:
+	//   Error in '${Param}': ${Msg}
+	return ""
+}
+
+type ErrorDetail struct {
+	Msg string
+	Param string
+	Location string
+}
+
+type ApiError struct {
+	Method string
+	Url string
+	Code string
+	Status int
+	Message string
+	Details []ErrorDetail 
+}
+
 type ProviderConfig struct {
 	Api Api
 }
@@ -594,6 +617,9 @@ func (a *Api) GetAccessToken() (string, error) {
 
 	client := http.DefaultClient
 	resp, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
 	if resp == nil {
 		return "", fmt.Errorf("Response unavailable. Not sure why.")
 	}

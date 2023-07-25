@@ -2,13 +2,13 @@ package generator
 
 import (
 	"fmt"
+	"log"
 	"reflect"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 type ResponseVisitor struct {
-	resourceData *schema.ResourceData
-	id string
+	id     string
+	schema interface{}
 }
 
 func (v *ResponseVisitor) accept(data interface{}) (interface{}, error) {
@@ -28,23 +28,25 @@ func (v *ResponseVisitor) accept(data interface{}) (interface{}, error) {
 }
 
 func (rv *ResponseVisitor) visitMap(data map[string]interface{}) (interface{}, error) {
+	newMap := make(map[string]interface{})
+
 	for key, value := range data {
+		log.Printf("Visiting key '%s'", key)
 		schemaVal, err := rv.accept(value)
 		if err != nil {
 			return nil, err
 		}
 
 		schemaName := snakeCase(key)
-		if schemaName != "id" { 
-			if err := rv.resourceData.Set(schemaName, schemaVal); err != nil {
-				return nil, err
-			}
-		} else {
-			rv.id = schemaVal.(string) // todo 
+		if schemaName != "id" {
+			log.Printf("Setting %s = %v", schemaName, schemaVal)
+			newMap[schemaName] = schemaVal
+		} else if schemaName == "id" && schemaVal != nil {
+			rv.id = schemaVal.(string) // todo
 		}
 	}
 
-	return rv.resourceData, nil
+	return newMap, nil
 }
 
 func (rv *ResponseVisitor) visitList(data []interface{}) (interface{}, error) {
@@ -72,6 +74,8 @@ func (rv ResponseVisitor) visitPrimitive(data interface{}) (interface{}, error) 
 		return data, nil
 	case bool:
 		return data, nil
+	case nil:
+		return nil, nil
 	}
 	return nil, fmt.Errorf("Unable to accept value of type %s in response", reflect.TypeOf(data))
 }

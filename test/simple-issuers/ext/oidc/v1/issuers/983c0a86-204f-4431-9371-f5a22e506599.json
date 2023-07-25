@@ -1,0 +1,48 @@
+{
+  "id": "983c0a86-204f-4431-9371-f5a22e506599",
+  "federatedProvider": {
+    "callbackUrl": "https://tenant.vii.mattr.global/ext/oidc/v1/issuers/983c0a86-204f-4431-9371-f5a22e506599/federated/callback",
+    "url": "https://example-university.au.auth0.com",
+    "scope": [
+      "openid",
+      "profile",
+      "email"
+    ],
+    "clientId": "vJ0SCKchr4XjC0xHNE8DkH6Pmlg2lkCN",
+    "clientSecret": "QNwfa4Yi4Im9zy1u_15n7SzWKt-9G5cdH0r1bONRpUPfN-UIRaaXv_90z8V6-OjH",
+    "tokenEndpointAuthMethod": "client_secret_post",
+    "claimsSource": "userInfo"
+  },
+  "credential": {
+    "issuerDid": "did:key:z6MkjBWPPa1njEKygyr3LR3pRKkqv714vyTkfnUdP6ToFSH5",
+    "issuerName": "Example University",
+    "issuerLogoUrl": "https://example.edu/img/logo.png",
+    "issuerIconUrl": "https://example.edu/img/icon.png",
+    "name": "University Attendance Credential",
+    "description": "This credential shows that the person has attended the mentioned course and attained the relevant awards.",
+    "context": [
+      "https://schema.org"
+    ],
+    "type": "AlumniCredential",
+    "proofType": [
+      "Ed25519Signature2018"
+    ],
+    "credentialBranding": {
+      "backgroundColor": "#B00AA0",
+      "watermarkImageUrl": "https://example.edu/img/watermark.png"
+    }
+  },
+  "staticRequestParameters": {
+    "prompt": "login",
+    "max_age": 10000
+  },
+  "forwardedRequestParameters": [
+    "login_hint"
+  ],
+  "claimMappings": [
+    {
+      "jsonLdTerm": "alumniOf",
+      "oidcClaim": "alumni_of"
+    }
+  ]
+}

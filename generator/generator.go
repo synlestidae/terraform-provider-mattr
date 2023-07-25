@@ -2,22 +2,27 @@ package generator
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"nz.antunovic/mattr-terraform-provider/api"
 )
 
 type Generator struct {
 	Path      string
+	GetPath func(*schema.ResourceData) (string, error)
 	Immutable bool
 	Singleton bool
 	Schema    map[string]*schema.Schema
 	Client    api.Client
-	ModifyRequestBody func (*interface{}) error
-	ModifyRequest func (url *string, headers *map[string]string, body *interface{}) error
-	ModifyResponseBody func (*interface{}) error
-	ModifyResponse func (headers *map[string]string, body *interface{}) error
-	ModifyResourceData func (*schema.ResourceData) error
-	GetId func(*interface{}, *interface{}) string
+
+	ModifyRequestBody  func(interface{}) (interface{}, error)
+	ModifyResponseBody func(interface{}) (interface{}, error)
+
+	ModifyRequest      func(url *string, headers *map[string]string, body *interface{}) error
+	ModifyResponse     func(headers *map[string]string, body *interface{}) error
+	ModifyResourceData func(*schema.ResourceData) error
+	GetId              func(*interface{}, *interface{}) string
 }
 
 func (generator *Generator) GenResource() schema.Resource {
@@ -28,7 +33,18 @@ func (generator *Generator) GenResource() schema.Resource {
 			schema: generator.Schema,
 		}
 
-		url, err := api.GetUrl(generator.Path)
+		var path string
+		var err error 
+		if generator.GetPath != nil {
+			path, err = generator.GetPath(d)
+			if err != nil {
+				return err
+			}
+		} else {
+			path = generator.Path
+		}
+
+		url, err := api.GetUrl(path)
 		if err != nil {
 			return err
 		}
@@ -48,7 +64,10 @@ func (generator *Generator) GenResource() schema.Resource {
 		// modify request
 
 		if generator.ModifyRequestBody != nil {
-			generator.ModifyRequestBody(&body)
+			body, err = generator.ModifyRequestBody(body)
+			if err != nil {
+				return err
+			}
 		}
 
 		if generator.ModifyRequest != nil {
@@ -65,18 +84,21 @@ func (generator *Generator) GenResource() schema.Resource {
 		// modify response
 
 		if generator.ModifyResponseBody != nil {
-			generator.ModifyResponseBody(&response)
+			response, err = generator.ModifyResponseBody(response)
+			if err != nil {
+				return err
+			}
 		}
 		if generator.ModifyResponse != nil {
 			generator.ModifyResponse(&map[string]string{}, &response) // TODO response headers
 		}
 
 		// process response
+		log.Printf("Resource %v", d)
 
-		responseVisitor := ResponseVisitor{
-			resourceData: d,
-		}
-		if _, err := responseVisitor.accept(response); err != nil {
+		responseVisitor := ResponseVisitor{}
+		transformedResponse, err := responseVisitor.accept(response)
+		if err != nil {
 			return err
 		}
 
@@ -90,6 +112,13 @@ func (generator *Generator) GenResource() schema.Resource {
 		}
 
 		d.SetId(id)
+		if data, ok := transformedResponse.(map[string]interface{}); ok {
+			for key, val := range data {
+				if _, ok := d.GetOk(key); ok {
+					d.Set(key, val)
+				}
+			}
+		}
 
 		return nil
 	}
@@ -97,11 +126,28 @@ func (generator *Generator) GenResource() schema.Resource {
 	read := func(d *schema.ResourceData, m interface{}) error {
 		api := m.(api.ProviderConfig).Api
 
-		url, err := api.GetUrl(generator.Path)
+		var path string
+		var err error 
+		if generator.GetPath != nil {
+			path, err = generator.GetPath(d)
+			if err != nil {
+				return err
+			}
+		} else {
+			path = generator.Path
+		}
+
+		url, err := api.GetUrl(path)
 		if err != nil {
 			return err
 		}
-		fullUrl := fmt.Sprintf("%s/%s", url, d.Id())
+		var fullUrl string
+		if generator.Singleton {
+			fullUrl = url
+		} else {
+			fullUrl = fmt.Sprintf("%s/%s", url, d.Id())
+		}
+		fmt.Printf("FULL URL %s", fullUrl)
 		accessToken, err := api.GetAccessToken()
 		if err != nil {
 			return err
@@ -120,18 +166,25 @@ func (generator *Generator) GenResource() schema.Resource {
 		// modify response
 
 		if generator.ModifyResponseBody != nil {
-			generator.ModifyResponseBody(&response)
+			response, err = generator.ModifyResponseBody(response)
+			if err != nil {
+				return err
+			}
 		}
 		if generator.ModifyResponse != nil {
 			generator.ModifyResponse(&map[string]string{}, &response) // TODO response headers
 		}
 
 		// process response
-		responseVisitor := ResponseVisitor{
-			resourceData: d,
-		}
-		if _, err := responseVisitor.accept(response); err != nil {
+		responseVisitor := ResponseVisitor{}
+		transformedResponse, err := responseVisitor.accept(response)
+		if err != nil {
 			return err
+		}
+		if data, ok := transformedResponse.(map[string]interface{}); ok {
+			for key, val := range data {
+				d.Set(key, val)
+			}
 		}
 
 		return nil
@@ -141,13 +194,31 @@ func (generator *Generator) GenResource() schema.Resource {
 		// prepare request
 
 		api := m.(api.ProviderConfig).Api
-		var requestVisitor RequestVisitor
+		requestVisitor := RequestVisitor{
+			schema: generator.Schema,
+		}
 
-		url, err := api.GetUrl(generator.Path)
+		var path string
+		var err error
+		if generator.GetPath != nil {
+			path, err = generator.GetPath(d)
+			if err != nil {
+				return err
+			}
+		} else {
+			path = generator.Path
+		}
+
+		url, err := api.GetUrl(path)
 		if err != nil {
 			return err
 		}
-		fullUrl := fmt.Sprintf("%s/%s", url, d.Id())
+		var fullUrl string
+		if generator.Singleton {
+			fullUrl = url
+		} else {
+			fullUrl = fmt.Sprintf("%s/%s", url, d.Id())
+		}
 		accessToken, err := api.GetAccessToken()
 		if err != nil {
 			return err
@@ -164,7 +235,10 @@ func (generator *Generator) GenResource() schema.Resource {
 		// modify request
 
 		if generator.ModifyRequestBody != nil {
-			generator.ModifyRequestBody(&body)
+			body, err = generator.ModifyRequestBody(body)
+			if err != nil {
+				return err
+			}
 		}
 
 		if generator.ModifyRequest != nil {
@@ -181,7 +255,10 @@ func (generator *Generator) GenResource() schema.Resource {
 		// modify response
 
 		if generator.ModifyResponseBody != nil {
-			generator.ModifyResponseBody(&response)
+			response, err = generator.ModifyResponseBody(response)
+			if err != nil {
+				return err
+			}
 		}
 		if generator.ModifyResponse != nil {
 			generator.ModifyResponse(&map[string]string{}, &response) // TODO response headers
@@ -189,10 +266,9 @@ func (generator *Generator) GenResource() schema.Resource {
 
 		// process response
 
-		responseVisitor := ResponseVisitor{
-			resourceData: d,
-		}
-		if _, err := responseVisitor.accept(response); err != nil {
+		responseVisitor := ResponseVisitor{}
+		transformedResponse, err := responseVisitor.accept(response)
+		if err != nil {
 			return err
 		}
 
@@ -204,6 +280,11 @@ func (generator *Generator) GenResource() schema.Resource {
 		}
 
 		d.SetId(id)
+		if data, ok := transformedResponse.(map[string]interface{}); ok {
+			for key, val := range data {
+				d.Set(key, val)
+			}
+		}
 
 		return nil
 	}
@@ -212,11 +293,28 @@ func (generator *Generator) GenResource() schema.Resource {
 		// prepare request
 
 		api := m.(api.ProviderConfig).Api
-		url, err := api.GetUrl(generator.Path)
+
+		var path string
+		var err error
+		if generator.GetPath != nil {
+			path, err = generator.GetPath(d)
+			if err != nil {
+				return err
+			}
+		} else {
+			path = generator.Path
+		}
+
+		url, err := api.GetUrl(path)
 		if err != nil {
 			return err
 		}
-		fullUrl := fmt.Sprintf("%s/%s", url, d.Id())
+		var fullUrl string
+		if generator.Singleton {
+			fullUrl = url
+		} else {
+			fullUrl = fmt.Sprintf("%s/%s", url, d.Id())
+		}
 		accessToken, err := api.GetAccessToken()
 		if err != nil {
 			return err
@@ -230,10 +328,6 @@ func (generator *Generator) GenResource() schema.Resource {
 		err = generator.Client.Delete(fullUrl, headers)
 
 		// consume response
-
-		if err != nil {
-			d.SetId("")
-		}
 
 		return err
 	}

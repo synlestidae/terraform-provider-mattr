@@ -25,11 +25,22 @@ func (v *RequestVisitor) accept(data interface{}) (interface{}, error) {
 	if data, ok := data.([]interface{}); ok {
 		return v.visitList(data)
 	}
+	if data, ok := (data).(*schema.Set); ok {
+		return v.visitSet(data)
+	}
 	if isPrimitive(t.Kind()) {
 		return v.visitPrimitive(data)
 	}
 
 	return nil, fmt.Errorf("Unable to convert value of type %T to request", data)
+}
+
+func (rv *RequestVisitor) visitSet(s *schema.Set) (interface{}, error) {
+	list := make([]interface{}, 0, len(s.List()))
+	for _, v := range s.List() {
+		list = append(list, v)
+	}
+	return rv.visitList(list)
 }
 
 func (rv *RequestVisitor) visitResourceData(rd *schema.ResourceData) (interface{}, error) {
@@ -57,7 +68,9 @@ func (rv *RequestVisitor) visitMap(data map[string]interface{}) (interface{}, er
 			return nil, err
 		}
 
-		req[snakeToCamel(key)] = reqVal
+		if reqVal != nil && reqVal != "" {
+			req[snakeToCamel(key)] = reqVal
+		}
 	}
 
 	return req, nil

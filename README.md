@@ -26,4 +26,4 @@ is not officially endorsed or sponsored by MATTR.
 | PDF template              | PDF template based on a .zip file                       | `░░░░░░░░ 0 %`   | `░░░░░░░░ 0 %`| `░░░░░░░░ 0%`     |
 | Digital pass template     | Template for Apple Pass                                 | `░░░░░░░░ 0 %`   | `░░░░░░░░ 0 %`| `░░░░░░░░ 0%`     |
 | Apple Pass template       | Template for Apple Pass                                 | `░░░░░░░░ 0 %`   | `░░░░░░░░ 0 %`| `░░░░░░░░ 0%`     |
-| Compact credential PDF    | Template for compact credential PDF                     | `█░░░░░░░ 12.5`  | `░░░░░░░░ 0 %`| `░░░░░░░░ 0%`     |
+| Compact credential PDF    | Template for compact credential PDF                     | `░░░░░░░░ 0 %`   | `░░░░░░░░ 0 %`| `░░░░░░░░ 0%`     |
