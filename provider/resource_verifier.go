@@ -1,19 +1,14 @@
 package provider
 
 import (
-	"log"
 	"nz.antunovic/mattr-terraform-provider/api"
+	"nz.antunovic/mattr-terraform-provider/generator"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func resourceVerifier() *schema.Resource {
-	return &schema.Resource{
-		Create: resourceVerifierCreate,
-		Read:   resourceVerifierRead,
-		Update: resourceVerifierUpdate,
-		Delete: resourceVerifierDelete,
-		Schema: map[string]*schema.Schema{
+	verifierSchema := map[string]*schema.Schema{
 			"verifier_did": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
@@ -42,11 +37,19 @@ func resourceVerifier() *schema.Resource {
 				Type:     schema.TypeBool,
 				Required: true,
 			},
-		},
-	}
+		}
+
+		verifierGenerator := generator.Generator {
+			Path: "/ext/oidc/v1/verifiers",
+			Client:  &api.HttpClient{},
+			Schema: verifierSchema,
+		}
+
+		provider := verifierGenerator.GenResource()
+		return &provider
 }
 
-func resourceVerifierCreate(d *schema.ResourceData, m interface{}) error {
+/*func resourceVerifierCreate(d *schema.ResourceData, m interface{}) error {
 	log.Println("Creating verifier")
 
 	api := m.(api.ProviderConfig).Api
@@ -172,4 +175,4 @@ func flattenVerifierClaimMappings(claimMappings []api.VerifierClaimMapping) []ma
 		}
 	}
 	return mappings
-}
+}*/

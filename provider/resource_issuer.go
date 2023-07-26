@@ -10,7 +10,6 @@ import (
 )
 
 func resourceIssuer() *schema.Resource {
-	// TODO proof_type field
 	schema := map[string]*schema.Schema{
 		"issuer_did": &schema.Schema{
 			Type:     schema.TypeString,
