@@ -12,9 +12,8 @@ import (
 	"nz.antunovic/mattr-terraform-provider/generator"
 )
 
-func resourceCompactCredentialTemplate() *schema.Resource {
+func templateGenerator() generator.Generator {
 	generator := generator.Generator{
-		Path:   "/v2/credentials/compact/pdf/templates",
 		Client: &api.HttpClient{},
 		Schema: map[string]*schema.Schema{
 			"template_path": &schema.Schema{
@@ -157,6 +156,20 @@ func resourceCompactCredentialTemplate() *schema.Resource {
 		return nil
 	}
 
+	return generator
+}
+
+func resourceSemanticCompactCredentialTemplate() *schema.Resource {
+	generator := templateGenerator()
+	generator.Path = "/v2/credentials/compact-semantic/pdf/templates"
+	resource := generator.GenResource()
+
+	return &resource
+}
+
+func resourceCompactCredentialTemplate() *schema.Resource {
+	generator := templateGenerator()
+	generator.Path = "/v2/credentials/compact/pdf/templates"
 	resource := generator.GenResource()
 
 	return &resource
