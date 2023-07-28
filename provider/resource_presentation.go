@@ -92,6 +92,7 @@ func modifyRequestBody(body interface{}) (interface{}, error) {
 func modifyResponseBody(body interface{}) (interface{}, error) {
 	return transformBody(body, false)
 }
+
 // TODO: fix this monstrosity
 func transformBody(body interface{}, isRequest bool) (interface{}, error) {
 	bodyMap, ok := body.(map[string]interface{})
@@ -105,7 +106,7 @@ func transformBody(body interface{}, isRequest bool) (interface{}, error) {
 	}
 
 	for j, bodyQuery := range bodyQueryList {
-		bodyQueryMap, ok := bodyQuery.(map[string]interface{}) 
+		bodyQueryMap, ok := bodyQuery.(map[string]interface{})
 		if !ok {
 			return nil, fmt.Errorf("Unexpected type for /v2/credentials/web-semantic/presentations/templates 'query' index %d: %T", j, bodyQueryList)
 		}

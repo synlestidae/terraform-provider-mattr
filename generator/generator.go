@@ -48,6 +48,7 @@ func (generator *Generator) GenResource() schema.Resource {
 		if err != nil {
 			return err
 		}
+		log.Printf("Creating resource at %s\n", path)
 		accessToken, err := api.GetAccessToken()
 		if err != nil {
 			return err
@@ -147,7 +148,7 @@ func (generator *Generator) GenResource() schema.Resource {
 		} else {
 			fullUrl = fmt.Sprintf("%s/%s", url, d.Id())
 		}
-		fmt.Printf("FULL URL %s", fullUrl)
+		fmt.Printf("Using URL: %s", fullUrl)
 		accessToken, err := api.GetAccessToken()
 		if err != nil {
 			return err

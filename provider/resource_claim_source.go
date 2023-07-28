@@ -129,7 +129,7 @@ func convertResParamsBody(body interface{}) (interface{}, error) {
 		}
 
 		param := map[string]interface{}{
-			"name":     property,
+			"name":         property,
 			"mapFrom":      paramMapTyped["mapFrom"].(string),
 			"defaultValue": paramMapTyped["defaultValue"].(string),
 		}
