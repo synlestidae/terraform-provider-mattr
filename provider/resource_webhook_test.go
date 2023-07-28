@@ -1,9 +1,6 @@
 package provider
 
 import (
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"math"
-	"nz.antunovic/mattr-terraform-provider/api"
 	"testing"
 )
 
@@ -18,8 +15,50 @@ func TestResourceWebhookCreate(t *testing.T) {
 			},
 		},
 	}
-	resource := resourceWebhook(&client)
 
+	// Test Create
+	createData := map[string]interface{}{
+		"events":   []interface{}{"OidcIssuerCredentialIssued"},
+		"url":      "https://test.api/webhook",
+		"disabled": false,
+	}
+
+	resource := resourceWebhook(&client)
+	resourceData := runCreate(t, resource, &createData, &client)
+
+	AssertEqual(t, createData["events"], resourceData.Get("events"), "Events should match")
+	AssertEqual(t, createData["url"], resourceData.Get("url"), "URL should match")
+	AssertEqual(t, createData["disabled"], resourceData.Get("disabled"), "Disabled should match")
+}
+
+func TestResourceWebhookCreateExtraneousFields(t *testing.T) {
+	client := TestClient{
+		responses: map[string]interface{}{
+			"POST https://test.api/core/v1/webhooks": map[string]interface{}{
+				"id":          "8e485582-6ef6-49bc-80fa-25a1b36a8322",
+				"events":      []interface{}{"OidcIssuerCredentialIssued"},
+				"url":         "https://test.api/webhook",
+				"disabled":    false,
+				"extraneous":  true,
+				"unnecessary": "absolutely",
+			},
+		},
+	}
+	createData := map[string]interface{}{
+		"events":   []interface{}{"OidcIssuerCredentialIssued"},
+		"url":      "https://test.api/webhook",
+		"disabled": false,
+	}
+
+	resource := resourceWebhook(&client)
+	resourceData := runCreate(t, resource, createData, &client)
+
+	AssertEqual(t, createData["events"], resourceData.Get("events"), "Events should match")
+	AssertEqual(t, createData["url"], resourceData.Get("url"), "URL should match")
+	AssertEqual(t, createData["disabled"], resourceData.Get("disabled"), "Disabled should match")
+}
+
+/*func runCreate(t *testing.T, resource *schema.Resource, data interface{}, client api.Client) *schema.ResourceData {
 	provider_config := api.ProviderConfig{
 		Api: api.Api{
 			ClientId:             "test-id",
@@ -58,9 +97,6 @@ func TestResourceWebhookCreate(t *testing.T) {
 		t.Fatal("Create should set the ID")
 	}
 
-	// Assert that the resource data matches the input data
-	AssertEqual(t, createData["events"], createCtx.Get("events"), "Events should match")
-	AssertEqual(t, createData["url"], createCtx.Get("url"), "URL should match")
-	AssertEqual(t, createData["disabled"], createCtx.Get("disabled"), "Disabled should match")
-}
+	return createCtx
 
+}*/
