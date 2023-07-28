@@ -7,10 +7,10 @@ import (
 	"nz.antunovic/mattr-terraform-provider/generator"
 )
 
-func resourceWebhook() *schema.Resource {
+func resourceWebhook(client api.Client) *schema.Resource {
 	generator := generator.Generator{
 		Path:   "/core/v1/webhooks",
-		Client: &api.HttpClient{},
+		Client: client,
 		Schema: map[string]*schema.Schema{
 			"events": &schema.Schema{
 				Type: schema.TypeList,

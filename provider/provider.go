@@ -6,6 +6,7 @@ import (
 )
 
 func Provider() *schema.Provider {
+	client := api.HttpClient{}
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"client_id": &schema.Schema{
@@ -31,9 +32,9 @@ func Provider() *schema.Provider {
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"mattr_did":                         resourceDid(),
-			"mattr_webhook":                     resourceWebhook(),
+			"mattr_webhook":                     resourceWebhook(&client),
 			"mattr_issuer":                      resourceIssuer(),
-			"mattr_credential_web":                  resourceCredentialConfig(),
+			"mattr_credential_web":              resourceCredentialConfig(),
 			"mattr_claim_source":                resourceClaimSource(),
 			"mattr_authentication_provider":     resourceAuthentication(),
 			"mattr_issuer_client":               resourceIssuerClient(),
