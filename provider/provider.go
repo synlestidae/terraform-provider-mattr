@@ -42,6 +42,7 @@ func Provider() *schema.Provider {
 			"mattr_verifier_client":             resourceVerifierClient(),
 			"mattr_custom_domain":               resourceCustomDomain(),
 			"mattr_compact_credential_template": resourceCompactCredentialTemplate(),
+			"mattr_semantic_compact_credential_template": resourceSemanticCompactCredentialTemplate(),
 			"mattr_credential_offer":            resourceCredentialOffer(),
 			"mattr_presentation":                resourcePresentation(),
 		},
