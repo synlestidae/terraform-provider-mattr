@@ -4,7 +4,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"math"
 	"nz.antunovic/mattr-terraform-provider/api"
-	"reflect"
 	"testing"
 )
 
@@ -65,10 +64,3 @@ func TestResourceWebhookCreate(t *testing.T) {
 	AssertEqual(t, createData["disabled"], createCtx.Get("disabled"), "Disabled should match")
 }
 
-// Helper function to compare values and fail the test if not equal
-
-func AssertEqual(t *testing.T, expected, actual interface{}, msg string) {
-	if !reflect.DeepEqual(expected, actual) {
-		t.Fatalf("%s. Expected: %v, but got: %v", msg, expected, actual)
-	}
-}
