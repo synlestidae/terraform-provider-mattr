@@ -97,9 +97,6 @@ func (generator *Generator) GenResource() schema.Resource {
 			generator.ModifyResponse(&map[string]string{}, &response) // TODO response headers
 		}
 
-		// process response
-		log.Printf("Resource %v", d)
-
 		responseVisitor := ResponseVisitor{}
 		transformedResponse, err := responseVisitor.accept(response)
 		if err != nil {
@@ -118,9 +115,13 @@ func (generator *Generator) GenResource() schema.Resource {
 		d.SetId(id)
 		if data, ok := transformedResponse.(map[string]interface{}); ok {
 			for key, val := range data {
-				if _, ok := d.GetOk(key); ok {
-					d.Set(key, val)
-				}
+				//if _, ok := d.GetOk(key); ok {
+					log.Printf("Setting resource key '%s'", key)
+					err := d.Set(key, val)
+					if err != nil {
+						log.Printf("Error setting '%s': %s", key, err)
+					}
+				//}
 			}
 		}
 
@@ -187,7 +188,10 @@ func (generator *Generator) GenResource() schema.Resource {
 		}
 		if data, ok := transformedResponse.(map[string]interface{}); ok {
 			for key, val := range data {
-				d.Set(key, val)
+				err := d.Set(key, val)
+				if err != nil {
+					log.Printf("Error setting '%s': %s", key, err)
+				}
 			}
 		}
 
@@ -289,7 +293,10 @@ func (generator *Generator) GenResource() schema.Resource {
 		d.SetId(id)
 		if data, ok := transformedResponse.(map[string]interface{}); ok {
 			for key, val := range data {
-				d.Set(key, val)
+				err := d.Set(key, val)
+				if err != nil {
+					log.Printf("Error setting '%s': %s", key, err)
+				}
 			}
 		}
 
