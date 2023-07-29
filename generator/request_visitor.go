@@ -53,7 +53,9 @@ func (rv *RequestVisitor) visitResourceData(rd *schema.ResourceData) (interface{
 			return nil, err
 		}
 
-		req[snakeToCamel(key)] = reqVal
+		if reqVal != "" && reqVal != nil {
+			req[snakeToCamel(key)] = reqVal
+		}
 	}
 
 	return req, nil
@@ -68,7 +70,7 @@ func (rv *RequestVisitor) visitMap(data map[string]interface{}) (interface{}, er
 			return nil, err
 		}
 
-		if reqVal != nil && reqVal != "" {
+		if reqVal != nil && reqVal != "" && reqVal != nil {
 			req[snakeToCamel(key)] = reqVal
 		}
 	}
@@ -86,6 +88,10 @@ func (rv *RequestVisitor) visitList(data []interface{}) (interface{}, error) {
 		}
 
 		req[i] = reqVal
+	}
+
+	if len(req) == 0 {
+		return nil, nil
 	}
 
 	return req, nil
