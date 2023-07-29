@@ -2,7 +2,6 @@ package generator
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 )
 
@@ -31,7 +30,6 @@ func (rv *ResponseVisitor) visitMap(data map[string]interface{}) (interface{}, e
 	newMap := make(map[string]interface{})
 
 	for key, value := range data {
-		log.Printf("Visiting key '%s'", key)
 		schemaVal, err := rv.accept(value)
 		if err != nil {
 			return nil, err
@@ -39,7 +37,6 @@ func (rv *ResponseVisitor) visitMap(data map[string]interface{}) (interface{}, e
 
 		schemaName := snakeCase(key)
 		if schemaName != "id" {
-			log.Printf("Setting %s = %v", schemaName, schemaVal)
 			newMap[schemaName] = schemaVal
 		} else if schemaName == "id" && schemaVal != nil {
 			rv.id = schemaVal.(string) // todo

@@ -14,7 +14,7 @@ func AssertEqual(t *testing.T, expected, actual interface{}, msg string) {
 	}
 }
 
-func runCreate(t *testing.T, resource *schema.Resource, data interface{}, client api.Client) *schema.ResourceData {
+func runCreate(t *testing.T, resource *schema.Resource, createData map[string]interface{}, client api.Client) *schema.ResourceData {
 	provider_config := api.ProviderConfig{
 		Api: api.Api{
 			ClientId:             "test-id",
@@ -25,13 +25,6 @@ func runCreate(t *testing.T, resource *schema.Resource, data interface{}, client
 			AccessToken:          "test-token",
 			AccessTokenExpiresAt: math.MaxInt,
 		},
-	}
-
-	// Test Create
-	createData := map[string]interface{}{
-		"events":   []interface{}{"OidcIssuerCredentialIssued"},
-		"url":      "https://test.api/webhook",
-		"disabled": false,
 	}
 
 	createCtx := schema.TestResourceDataRaw(t, resource.Schema, createData)

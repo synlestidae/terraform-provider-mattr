@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func resourceVerifierClient() *schema.Resource {
+func resourceVerifierClient(client api.Client) *schema.Resource {
 	verifierClientSchema := map[string]*schema.Schema{
 		"verifier_id": &schema.Schema{
 			Type:     schema.TypeString,
@@ -67,7 +67,7 @@ func resourceVerifierClient() *schema.Resource {
 	}
 
 	getPath := func(d *schema.ResourceData) (string, error) {
-		if verifierId, ok := d.Get("verifier_id").(string); ok {
+		if verifierId, ok := d.Get("verifier_id").(string); ok && len(verifierId) != 0 {
 			return fmt.Sprintf("/ext/oidc/v1/verifiers/%s/clients", verifierId), nil
 		}
 
@@ -85,7 +85,7 @@ func resourceVerifierClient() *schema.Resource {
 
 	generator := generator.Generator{
 		GetPath:           getPath,
-		Client:            &api.HttpClient{},
+		Client:            client,
 		Schema:            verifierClientSchema,
 		ModifyRequestBody: verifierClientModifyRes,
 	}
