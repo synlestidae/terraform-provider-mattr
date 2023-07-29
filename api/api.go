@@ -3,11 +3,12 @@ package api
 import (
 	"bytes"
 	"encoding/json"
+	"strings"
 	"fmt"
 	"io/ioutil"
 	"log"
-	"net/http"
 	"time"
+	"net/http"
 )
 
 type Api struct {
@@ -20,27 +21,49 @@ type Api struct {
 	AccessTokenExpiresAt int64
 }
 
-func (*ApiError) Error() string {
-	// Got (status code ${Status}|error) from (${Method} ${Url}|API)
-	// API responded with error( ${Code})(: ${Message})
-	// For detail in Details:
-	//   Error in '${Param}': ${Msg}
-	return ""
+func (e ApiError) Error() string {
+	var sb strings.Builder
+
+	// Format the main error message
+	if e.StatusCode != 0 && e.Method != "" && e.Url != "" {
+		sb.WriteString(fmt.Sprintf("Got status code %d from %s %s\n", e.StatusCode, e.Method, e.Url))
+	}
+
+	if e.Code != "" && e.Message != "" {
+		sb.WriteString(fmt.Sprintf("Got '%s' error: %s\n", e.Code, e.Message))
+	}
+
+	// Format the error details, if any
+	if len(e.Details) > 0 {
+		for _, detail := range e.Details {
+			if detail.Param != "" && detail.Msg != "" {
+				sb.WriteString(fmt.Sprintf("Error in %s with '%s': %s\n", detail.Location, detail.Param, detail.Msg))
+			}
+		}
+	}
+
+	return sb.String()
 }
 
 type ErrorDetail struct {
-	Msg string
-	Param string
-	Location string
+	Msg string `json:"msg,omitempty"`
+	Param string `json:"param,omitempty"`
+	Location string `json:"location,omitempty"`
 }
 
 type ApiError struct {
-	Method string
-	Url string
-	Code string
-	Status int
-	Message string
-	Details []ErrorDetail 
+	Method string `json:"method,omitempty"`
+	Url string `json:"url,omitempty"`
+	Code string `json:"code,omitempty"`
+	StatusCode int `json:"statusCode,omitempty"`
+	Message string `json:"message,omitempty"`
+	Details []ErrorDetail `json:"details,omitempty"`
+}
+
+func ParseError(responseBody []byte) (ApiError, error) {
+	var apiError ApiError
+	err := json.Unmarshal(responseBody, &apiError)
+	return apiError, err
 }
 
 type ProviderConfig struct {

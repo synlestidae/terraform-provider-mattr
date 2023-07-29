@@ -100,9 +100,18 @@ func send[T any](method string, url string, headers map[string]string, body *int
 		return nil, err
 	}
 	if 400 <= resp.StatusCode && resp.StatusCode < 599 {
-		response_body, _ := ioutil.ReadAll(resp.Body)
-		log.Printf("Error response body: %s", response_body)
-		return nil, fmt.Errorf("%s %s gave error status code %d", method, url, resp.StatusCode)
+		responseBody, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+		apiError, apiErrorErr := ParseError(responseBody)
+		if apiErrorErr != nil {
+			apiError.Method = method
+			apiError.Url = url
+			apiError.StatusCode = resp.StatusCode
+			return nil, apiError
+		}
+		return nil, fmt.Errorf("%s %s gave error status code: %d", method, url, resp.StatusCode)
 	}
 	if resp.StatusCode == 204 {
 		return nil, nil
