@@ -3,12 +3,12 @@ package provider
 import (
 	"archive/zip"
 	"bytes"
-	"fmt"
 	"encoding/json"
-	"log"
+	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	_ "github.com/motemen/go-loghttp/global"
 	"io/ioutil"
+	"log"
 	"nz.antunovic/mattr-terraform-provider/api"
 	"nz.antunovic/mattr-terraform-provider/generator"
 	"path/filepath"
@@ -78,14 +78,13 @@ func (z *ZipCreator) writeConfig(config interface{}) error {
 	if err != nil {
 		return err
 	}
-	
+
 	if _, err := configWriter.Write(bodyJson); err != nil {
 		return err
 	}
 
 	return nil
 }
-
 
 func templateGenerator() generator.Generator {
 	generator := generator.Generator{
@@ -170,7 +169,7 @@ func templateGenerator() generator.Generator {
 		delete(bodyMap, "fontPaths")
 
 		writer := zip.NewWriter(buffer)
-		zipCreator := ZipCreator {
+		zipCreator := ZipCreator{
 			writer: writer,
 		}
 		if err := zipCreator.writeTemplate(templatePath); err != nil {
