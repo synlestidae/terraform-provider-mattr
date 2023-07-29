@@ -72,7 +72,10 @@ func (generator *Generator) GenResource() schema.Resource {
 		}
 
 		if generator.ModifyRequest != nil {
-			generator.ModifyRequest(&url, &headers, &body)
+			err = generator.ModifyRequest(&url, &headers, &body)
+			if err != nil {
+				return err
+			}
 		}
 
 		// send
@@ -243,7 +246,10 @@ func (generator *Generator) GenResource() schema.Resource {
 		}
 
 		if generator.ModifyRequest != nil {
-			generator.ModifyRequest(&url, &headers, &body)
+			err = generator.ModifyRequest(&url, &headers, &body)
+			if err != nil {
+				return err
+			}
 		}
 
 		// send

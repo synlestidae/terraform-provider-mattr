@@ -66,12 +66,17 @@ func send[T any](method string, url string, headers map[string]string, body *int
 
 	// raw bytes do not get converted to json
 
+	log.Printf("Body type is %T", body)
+
 	if body != nil {
-		if reflect.TypeOf(body) == reflect.TypeOf(&[]byte{}) {
+		if reflect.TypeOf(*body) == reflect.TypeOf([]byte{}) {
+			log.Printf("Uploading binary payload")
 			// Handle the case when body is of type *[]byte
 			byteSlice := (*body).([]byte)
 			bodyJson = byteSlice
+			headers["Content-Type"] = "application/zip"
 		} else {
+			log.Printf("Creating JSON body")
 			bodyJson, err = json.Marshal(body)
 			if err != nil {
 				return nil, err
@@ -80,6 +85,7 @@ func send[T any](method string, url string, headers map[string]string, body *int
 		}
 	}
 
+	log.Printf("Uploading %d byte(s)", len(bodyJson))
 	bodyBuf := bytes.NewBuffer(bodyJson)
 	request, err := http.NewRequest(method, url, bodyBuf)
 	if err != nil {

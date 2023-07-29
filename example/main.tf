@@ -1,4 +1,4 @@
-resource "mattr_did" "did" {
+/*resource "mattr_did" "did" {
   method = "key"
 }
 
@@ -110,8 +110,60 @@ resource "mattr_issuer" "test_issuer" {
     json_ld_term = "alumniOf"
     oidc_claim   = "alumni_of"
   }
+}*/
+
+resource "mattr_compact_credential_template" "compact_credential_template" {
+  name = "Test Compact Credential"
+  template_path = "template.pdf"
+  file_name = "certificate.pdf"
+  metadata = {
+    title = "Certificate"
+  }
+
+  fonts {
+    name = "PublicSans-Bold"
+    file_name = "fonts/PublicSans-Bold.ttf"
+  }
+
+  fonts {
+    name = "PublicSans-Regular"
+    file_name = "fonts/PublicSans-Regular.ttf"
+  }
+
+  fields {
+    key = "name"
+    value = "{{name}}"
+    is_required = true
+    alternative_text = "NAME" 
+    font_name = "PublicSans-Bold"
+  }
 }
 
-resource "mattr_verifier_client" "mattr_verifier_client" {
-}
 
+resource "mattr_semantic_compact_credential_template" "semantic_compact_credential_template" {
+  name = "Test Compact Credential"
+  template_path = "template.pdf"
+  file_name = "certificate.pdf"
+
+  metadata = {
+    title = "Certificate of Completion" 
+  }
+
+  fonts {
+    name = "PublicSans-Bold"
+    file_name = "fonts/PublicSans-Bold.ttf"
+  }
+
+  fonts {
+    name = "PublicSans-Regular"
+    file_name = "fonts/PublicSans-Regular.ttf"
+  }
+
+  fields {
+    key = "name"
+    value = "{{name}}"
+    is_required = true
+    alternative_text = "NAME" 
+    font_name = "PublicSans-Bold"
+  }
+}
