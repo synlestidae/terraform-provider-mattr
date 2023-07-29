@@ -110,7 +110,7 @@ func templateGenerator() generator.Generator {
 				Optional: true,
 			},
 			"fonts": &schema.Schema{
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -126,7 +126,7 @@ func templateGenerator() generator.Generator {
 				},
 			},
 			"fields": &schema.Schema{
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Required: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
