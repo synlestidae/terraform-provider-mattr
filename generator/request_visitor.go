@@ -70,7 +70,7 @@ func (rv *RequestVisitor) visitMap(data map[string]interface{}) (interface{}, er
 			return nil, err
 		}
 
-		if reqVal != nil && reqVal != "" && reqVal != nil {
+		if reqVal != nil && reqVal != "" {
 			req[snakeToCamel(key)] = reqVal
 		}
 	}

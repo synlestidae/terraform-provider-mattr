@@ -48,7 +48,6 @@ func (generator *Generator) GenResource() schema.Resource {
 		if err != nil {
 			return err
 		}
-		log.Printf("Creating resource at %s\n", path)
 		accessToken, err := api.GetAccessToken()
 		if err != nil {
 			return err
@@ -115,13 +114,10 @@ func (generator *Generator) GenResource() schema.Resource {
 		d.SetId(id)
 		if data, ok := transformedResponse.(map[string]interface{}); ok {
 			for key, val := range data {
-				//if _, ok := d.GetOk(key); ok {
-					log.Printf("Setting resource key '%s'", key)
-					err := d.Set(key, val)
-					if err != nil {
-						log.Printf("Error setting '%s': %s", key, err)
-					}
-				//}
+				err := d.Set(key, val)
+				if err != nil {
+					log.Printf("Unable to set '%s' = '%s'. Ignoring.", key, err)
+				}
 			}
 		}
 
@@ -190,7 +186,7 @@ func (generator *Generator) GenResource() schema.Resource {
 			for key, val := range data {
 				err := d.Set(key, val)
 				if err != nil {
-					log.Printf("Error setting '%s': %s", key, err)
+					log.Printf("Unable to set '%s': '%s'. Ignoring.", key, err)
 				}
 			}
 		}
@@ -295,7 +291,7 @@ func (generator *Generator) GenResource() schema.Resource {
 			for key, val := range data {
 				err := d.Set(key, val)
 				if err != nil {
-					log.Printf("Error setting '%s': %s", key, err)
+					log.Printf("Unable to set'%s': '%s'. Ignoring.", key, err)
 				}
 			}
 		}
