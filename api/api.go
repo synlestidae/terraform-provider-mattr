@@ -42,7 +42,7 @@ func (e ApiError) Error() string {
 		}
 	}
 
-	return sb.String()
+	return strings.TrimSpace(sb.String())
 }
 
 type ErrorDetail struct {

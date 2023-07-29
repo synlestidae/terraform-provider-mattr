@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-func TestParseError(t *testing.T) {
+func TestParseValidationRedirectUriError(t *testing.T) {
 	inputJSON := `
 	{
 		"code": "BadRequest",
@@ -71,11 +71,25 @@ func TestParseError(t *testing.T) {
 	}
 
 	expectedError := `Got 'BadRequest' error: Validation Error
-Error in body with 'redirectUris': redirectUris is not array of strings
-`
+Error in body with 'redirectUris': redirectUris is not array of strings`
 
 	if apiErr.Error() != expectedError {
 		t.Fatalf("Unexpected error format. Expected: \n%s\n\nActual:\n%s", apiErr.Error(), expectedError)
+	}
+}
+
+func TestParseValidationProofTypeError(t *testing.T) {
+	proofTypeError := `{"code":"BadRequest","message":"Validation Error","details":[{"value":["BbsBlsSignature2020"],"msg":"must be a valid credential proof type","param":"proofType","location":"body"}]}`
+
+	apiErr, err := ParseError([]byte(proofTypeError))
+	if err != nil {
+		t.Fatalf("Failed to parse error: %v", err)
+	}
+
+	expectedError := "Got 'BadRequest' error: Validation Error\nError in body with 'proofType': must be a valid credential proof type"
+
+	if apiErr.Error() != expectedError {
+		t.Fatalf("Unexpected error format. Expected: \n%s\nActual:\n%s", apiErr.Error(), expectedError)
 	}
 }
 
