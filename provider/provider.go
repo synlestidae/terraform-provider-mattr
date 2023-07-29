@@ -52,11 +52,11 @@ func Provider() *schema.Provider {
 
 func ProviderConfigure(d *schema.ResourceData) (interface{}, error) {
 	a := api.Api{
-		ClientId:     "",
-		ClientSecret: "",
-		Audience:     "",
-		AuthUrl:      "",
-		ApiUrl:       "",
+		ClientId:     getOrEmpty(d, "client_id"),
+		ClientSecret: getOrEmpty(d, "client_secret"),
+		Audience:     getOrEmpty(d, "audience"),
+		AuthUrl:      getOrEmpty(d, "auth_url"),
+		ApiUrl:       getOrEmpty(d, "api_url"),
 	}
 
 	config := api.ProviderConfig{
