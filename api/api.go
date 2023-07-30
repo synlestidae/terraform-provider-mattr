@@ -3,12 +3,12 @@ package api
 import (
 	"bytes"
 	"encoding/json"
-	"strings"
 	"fmt"
 	"io/ioutil"
 	"log"
-	"time"
 	"net/http"
+	"strings"
+	"time"
 )
 
 type Api struct {
@@ -46,18 +46,18 @@ func (e ApiError) Error() string {
 }
 
 type ErrorDetail struct {
-	Msg string `json:"msg,omitempty"`
-	Param string `json:"param,omitempty"`
+	Msg      string `json:"msg,omitempty"`
+	Param    string `json:"param,omitempty"`
 	Location string `json:"location,omitempty"`
 }
 
 type ApiError struct {
-	Method string `json:"method,omitempty"`
-	Url string `json:"url,omitempty"`
-	Code string `json:"code,omitempty"`
-	StatusCode int `json:"statusCode,omitempty"`
-	Message string `json:"message,omitempty"`
-	Details []ErrorDetail `json:"details,omitempty"`
+	Method     string        `json:"method,omitempty"`
+	Url        string        `json:"url,omitempty"`
+	Code       string        `json:"code,omitempty"`
+	StatusCode int           `json:"statusCode,omitempty"`
+	Message    string        `json:"message,omitempty"`
+	Details    []ErrorDetail `json:"details,omitempty"`
 }
 
 func ParseError(responseBody []byte) (ApiError, error) {
