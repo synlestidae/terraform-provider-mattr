@@ -92,7 +92,7 @@ resource "mattr_issuer" "test_issuer" {
   background_color    = "#B00AA0"
   watermark_image_url = "https://example.edu/img/watermark.png"
 
-  url                        = "https://accounts.google.com"
+  url                        = "https://accounts.google.com/"
   scope                      = ["openid", "profile", "email"]
   client_id                  = "vJ0SCKchr4XjC0xHNE8DkH6Pmlg2lkCN"
   client_secret              = "QNwfa4Yi4Im9zy1u_15n7SzWKt-9G5cdH0r1bONRpUPfN-UIRaaXv_90z8V6-OjH"
