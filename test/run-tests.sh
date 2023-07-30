@@ -38,6 +38,7 @@ for DIRECTORY in */; do
   echo "Booting server"
   python3 server.py "$DIRECTORY" &
   server_pid=$!
+  echo "Booted server"
 
   # Wait for the server to be up and running
   MAX_WAIT_TIME=5  # Maximum wait time in seconds
@@ -58,8 +59,6 @@ for DIRECTORY in */; do
   done
 
   echo "Server ready"
-
-  echo "Booted server"
 
   # Run the test for the current directory
   pushd "$DIRECTORY" >/dev/null

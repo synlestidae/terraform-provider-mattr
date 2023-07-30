@@ -4,7 +4,7 @@ resource "mattr_did" "did" {
 
 resource "mattr_claim_source" "test_claim_source" {
   name = "My claims from testo-claimo.claims.studio"
-  url  = "https://testo-claimo.claims.studio/api/data"
+  url  = "https://your-claim-source-here.claims.studio/api/data"
 
   authorization_type  = "api-key"
   authorization_value = "your-api-key-here"
@@ -61,8 +61,6 @@ resource "mattr_credential_web" "test_credential" {
   hours           = 0
   minutes         = 0
   seconds         = 0
-
- //proof_type = ["BbsBlsSignature2020"]
 }
 
 resource "mattr_credential_offer" "test_credential_offer" {

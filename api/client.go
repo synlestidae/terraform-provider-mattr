@@ -66,8 +66,6 @@ func send[T any](method string, url string, headers map[string]string, body *int
 
 	// raw bytes do not get converted to json
 
-	log.Printf("Body type is %T", body)
-
 	if body != nil {
 		if reflect.TypeOf(*body) == reflect.TypeOf([]byte{}) {
 			log.Printf("Uploading binary payload")
