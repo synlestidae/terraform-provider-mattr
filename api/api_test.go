@@ -17,7 +17,7 @@ func TestParseValidationRedirectUriError(t *testing.T) {
 			}
 		]
 	}`
-	
+
 	apiErr, err := ParseError([]byte(inputJSON))
 	if err != nil {
 		t.Fatalf("Failed to parse error: %v", err)
@@ -92,4 +92,3 @@ func TestParseValidationProofTypeError(t *testing.T) {
 		t.Fatalf("Unexpected error format. Expected: \n%s\nActual:\n%s", apiErr.Error(), expectedError)
 	}
 }
-

@@ -10,7 +10,7 @@ import (
 
 type Generator struct {
 	Path      string
-	GetPath func(*schema.ResourceData) (string, error)
+	GetPath   func(*schema.ResourceData) (string, error)
 	Immutable bool
 	Singleton bool
 	Schema    map[string]*schema.Schema
@@ -34,7 +34,7 @@ func (generator *Generator) GenResource() schema.Resource {
 		}
 
 		var path string
-		var err error 
+		var err error
 		if generator.GetPath != nil {
 			path, err = generator.GetPath(d)
 			if err != nil {
@@ -128,7 +128,7 @@ func (generator *Generator) GenResource() schema.Resource {
 		api := m.(api.ProviderConfig).Api
 
 		var path string
-		var err error 
+		var err error
 		if generator.GetPath != nil {
 			path, err = generator.GetPath(d)
 			if err != nil {
