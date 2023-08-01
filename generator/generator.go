@@ -84,7 +84,7 @@ func (generator *Generator) sendRequestAndProcessResponse(d *schema.ResourceData
 	log.Printf("Url is '%s'", url)
 
 	fullUrl := url
-	if !generator.Singleton && (method == "read" || method == "update") {
+	if !generator.Singleton && method != "create" {
 		fullUrl = fmt.Sprintf("%s/%s", url, d.Id())
 	}
 
