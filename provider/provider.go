@@ -61,7 +61,7 @@ func ProviderConfigure(d *schema.ResourceData) (interface{}, error) {
 		Audience:     getOrEmpty(d, "audience"),
 		AuthUrl:      getOrEmpty(d, "auth_url"),
 		ApiUrl:       getOrEmpty(d, "api_url"),
-		AccessToken: getOrEmpty(d, "access_token"),
+		AccessToken:  getOrEmpty(d, "access_token"),
 	}
 
 	config := api.ProviderConfig{
