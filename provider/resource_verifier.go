@@ -48,4 +48,3 @@ func resourceVerifier() *schema.Resource {
 	provider := verifierGenerator.GenResource()
 	return &provider
 }
-
