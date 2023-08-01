@@ -104,6 +104,9 @@ func send[T any](method string, url string, headers map[string]string, body *int
 		}
 		apiError, apiErrorErr := ParseError(responseBody)
 		if apiErrorErr != nil {
+			apiError.StatusCode = resp.StatusCode
+			apiError.Method = method
+			apiError.Url = url
 			return nil, fmt.Errorf("%s %s gave error status code: %d", method, url, resp.StatusCode)
 		}
 		return nil, apiError

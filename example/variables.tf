@@ -34,3 +34,8 @@ variable "mattr_audience" {
   default     = null
 }
 
+variable "mattr_access_token" {
+  description = "Access token for API if you want to use a fixed access token"
+  type        = string
+  default     = null
+}

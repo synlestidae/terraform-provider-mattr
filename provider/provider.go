@@ -29,6 +29,10 @@ func Provider() *schema.Provider {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"access_token": &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"mattr_did":                                  resourceDid(),
@@ -57,6 +61,7 @@ func ProviderConfigure(d *schema.ResourceData) (interface{}, error) {
 		Audience:     getOrEmpty(d, "audience"),
 		AuthUrl:      getOrEmpty(d, "auth_url"),
 		ApiUrl:       getOrEmpty(d, "api_url"),
+		AccessToken: getOrEmpty(d, "access_token"),
 	}
 
 	config := api.ProviderConfig{
