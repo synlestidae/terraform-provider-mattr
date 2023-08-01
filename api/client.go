@@ -74,12 +74,13 @@ func send[T any](method string, url string, headers map[string]string, body *int
 			bodyJson = byteSlice
 			headers["Content-Type"] = "application/zip"
 		} else {
-			log.Printf("Creating JSON body")
+			log.Printf("Creating JSON body for %s", url)
 			bodyJson, err = json.Marshal(body)
 			if err != nil {
 				return nil, err
 			}
 			headers["Content-Type"] = "application/json"
+			log.Printf("JSON body for %s: %s", url, string(bodyJson))
 		}
 	}
 

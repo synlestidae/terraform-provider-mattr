@@ -2,6 +2,7 @@ package generator
 
 import (
 	"fmt"
+	"log"
 	"reflect"
 	"strings"
 	"unicode"
@@ -53,8 +54,10 @@ func (rv *RequestVisitor) visitResourceData(rd *schema.ResourceData) (interface{
 			return nil, err
 		}
 
-		if reqVal != "" && reqVal != nil {
-			req[snakeToCamel(key)] = reqVal
+		if reqVal != nil && reqVal != "" {
+			property := snakeToCamel(key)
+			log.Printf("Setting '%s' = '%v'", property, reqVal)
+			req[property] = reqVal
 		}
 	}
 

@@ -142,7 +142,10 @@ func issuerConvertReq(body interface{}) (interface{}, error) {
 	credential["description"] = bodyMap["description"]
 	credential["context"] = bodyMap["context"]
 	credential["type"] = bodyMap["type"]
-	credential["proofType"] = bodyMap["proofType"]
+	proofType := bodyMap["proofType"]
+	if proofType != nil {
+		credential["proofType"] = proofType
+	}
 	credential["credentialBranding"] = credentialBranding
 	credentialBranding["backgroundColor"] = bodyMap["backgroundColor"]
 	credentialBranding["watermarkImageUrl"] = bodyMap["watermarkImageUrl"]
