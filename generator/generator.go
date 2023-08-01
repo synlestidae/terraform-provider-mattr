@@ -56,7 +56,6 @@ func (generator *Generator) GenResource() schema.Resource {
 	return resource
 }
 
-// Helper function for sending requests and processing responses
 func (generator *Generator) sendRequestAndProcessResponse(d *schema.ResourceData, m interface{}, operation string) error {
 	api := m.(api.ProviderConfig).Api
 	requestVisitor := RequestVisitor{
@@ -74,19 +73,21 @@ func (generator *Generator) sendRequestAndProcessResponse(d *schema.ResourceData
 		path = generator.Path
 	}
 
-	log.Printf("Path is %s", path)
+	log.Printf("Going to send request for resource: %s", path)
 
 	url, err := api.GetUrl(path)
 	if err != nil {
 		return err
 	}
 
-	log.Printf("Url is '%s'", url)
-
 	fullUrl := url
 	if !generator.Singleton && operation != "create" {
 		fullUrl = fmt.Sprintf("%s/%s", url, d.Id())
 	}
+
+
+	log.Printf("Full resource URL is: %s", fullUrl)
+	log.Printf("Getting access token for %s", fullUrl)
 
 	accessToken, err := api.GetAccessToken()
 	if err != nil {
@@ -97,7 +98,8 @@ func (generator *Generator) sendRequestAndProcessResponse(d *schema.ResourceData
 	}
 
 	var body interface{}
-	if operation != "read" {
+	if operation == "create" || operation == "update" {
+		log.Printf("Operation for %s is create or update, generating request body", fullUrl)
 		body, err = requestVisitor.accept(d)
 		if err != nil {
 			return err
@@ -106,6 +108,7 @@ func (generator *Generator) sendRequestAndProcessResponse(d *schema.ResourceData
 
 	// modify request
 	if generator.ModifyRequestBody != nil && (operation == "create" || operation == "update") {
+		log.Printf("Operation for %s is create or update, modifying request body", fullUrl)
 		body, err = generator.ModifyRequestBody(body)
 		if err != nil {
 			return err
@@ -113,13 +116,12 @@ func (generator *Generator) sendRequestAndProcessResponse(d *schema.ResourceData
 	}
 
 	if generator.ModifyRequest != nil && (operation == "create" || operation == "update") {
+		log.Printf("Operation for %s is create or update, modifying request", fullUrl)
 		err = generator.ModifyRequest(&url, &headers, &body)
 		if err != nil {
 			return err
 		}
 	}
-
-	log.Printf("Full URL '%s'", fullUrl)
 
 	// send request
 	var response interface{}
@@ -142,18 +144,24 @@ func (generator *Generator) sendRequestAndProcessResponse(d *schema.ResourceData
 
 	// on successful delete, exit early
 	if operation == "delete" {
+		log.Printf("Delete for %s was successful", fullUrl)
 		return nil
 	}
 
 	// modify response
 	if generator.ModifyResponseBody != nil {
+		log.Printf("Modifying response body for %s", fullUrl)
 		response, err = generator.ModifyResponseBody(response)
 		if err != nil {
 			return err
 		}
 	}
 	if generator.ModifyResponse != nil {
-		generator.ModifyResponse(&map[string]string{}, &response) // TODO response headers
+		log.Printf("Modifying response for %s", fullUrl)
+		err = generator.ModifyResponse(&map[string]string{}, &response) // TODO response headers
+		if err != nil {
+			return err
+		}
 	}
 
 	// process response
@@ -171,6 +179,7 @@ func (generator *Generator) sendRequestAndProcessResponse(d *schema.ResourceData
 	}
 
 	d.SetId(id)
+	// TODO: move this to visitor
 	if data, ok := transformedResponse.(map[string]interface{}); ok {
 		for key, val := range data {
 			err := d.Set(key, val)
