@@ -105,7 +105,7 @@ func (generator *Generator) sendRequestAndProcessResponse(d *schema.ResourceData
 	}
 
 	// modify request
-	if generator.ModifyRequestBody != nil {
+	if generator.ModifyRequestBody != nil && (method == "create" || method == "update") {
 		body, err = generator.ModifyRequestBody(body)
 		if err != nil {
 			return err
@@ -138,6 +138,11 @@ func (generator *Generator) sendRequestAndProcessResponse(d *schema.ResourceData
 
 	if err != nil {
 		return err
+	}
+
+	// on successful delete, exit early
+	if method == "delete" {
+		return nil
 	}
 
 	// modify response
