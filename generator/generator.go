@@ -57,7 +57,7 @@ func (generator *Generator) GenResource() schema.Resource {
 }
 
 // Helper function for sending requests and processing responses
-func (generator *Generator) sendRequestAndProcessResponse(d *schema.ResourceData, m interface{}, method string) error {
+func (generator *Generator) sendRequestAndProcessResponse(d *schema.ResourceData, m interface{}, operation string) error {
 	api := m.(api.ProviderConfig).Api
 	requestVisitor := RequestVisitor{
 		schema: generator.Schema,
@@ -84,7 +84,7 @@ func (generator *Generator) sendRequestAndProcessResponse(d *schema.ResourceData
 	log.Printf("Url is '%s'", url)
 
 	fullUrl := url
-	if !generator.Singleton && method != "create" {
+	if !generator.Singleton && operation != "create" {
 		fullUrl = fmt.Sprintf("%s/%s", url, d.Id())
 	}
 
@@ -97,7 +97,7 @@ func (generator *Generator) sendRequestAndProcessResponse(d *schema.ResourceData
 	}
 
 	var body interface{}
-	if method != "read" {
+	if operation != "read" {
 		body, err = requestVisitor.accept(d)
 		if err != nil {
 			return err
@@ -105,14 +105,14 @@ func (generator *Generator) sendRequestAndProcessResponse(d *schema.ResourceData
 	}
 
 	// modify request
-	if generator.ModifyRequestBody != nil && (method == "create" || method == "update") {
+	if generator.ModifyRequestBody != nil && (operation == "create" || operation == "update") {
 		body, err = generator.ModifyRequestBody(body)
 		if err != nil {
 			return err
 		}
 	}
 
-	if generator.ModifyRequest != nil && (method == "create" || "method" == "update") {
+	if generator.ModifyRequest != nil && (operation == "create" || operation == "update") {
 		err = generator.ModifyRequest(&url, &headers, &body)
 		if err != nil {
 			return err
@@ -123,7 +123,7 @@ func (generator *Generator) sendRequestAndProcessResponse(d *schema.ResourceData
 
 	// send request
 	var response interface{}
-	switch method {
+	switch operation {
 	case "create":
 		response, err = generator.Client.Post(fullUrl, headers, body)
 	case "read":
@@ -133,7 +133,7 @@ func (generator *Generator) sendRequestAndProcessResponse(d *schema.ResourceData
 	case "delete":
 		err = generator.Client.Delete(fullUrl, headers)
 	default:
-		return fmt.Errorf("unknown method: %s", method)
+		return fmt.Errorf("unknown operation: %s", operation)
 	}
 
 	if err != nil {
@@ -141,7 +141,7 @@ func (generator *Generator) sendRequestAndProcessResponse(d *schema.ResourceData
 	}
 
 	// on successful delete, exit early
-	if method == "delete" {
+	if operation == "delete" {
 		return nil
 	}
 
