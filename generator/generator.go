@@ -112,7 +112,7 @@ func (generator *Generator) sendRequestAndProcessResponse(d *schema.ResourceData
 		}
 	}
 
-	if generator.ModifyRequest != nil {
+	if generator.ModifyRequest != nil && (method == "create" || "method" == "update") {
 		err = generator.ModifyRequest(&url, &headers, &body)
 		if err != nil {
 			return err
