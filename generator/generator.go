@@ -85,7 +85,6 @@ func (generator *Generator) sendRequestAndProcessResponse(d *schema.ResourceData
 		fullUrl = fmt.Sprintf("%s/%s", url, d.Id())
 	}
 
-
 	log.Printf("Full resource URL is: %s", fullUrl)
 	log.Printf("Getting access token for %s", fullUrl)
 
