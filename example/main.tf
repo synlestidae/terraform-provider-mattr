@@ -85,7 +85,6 @@ resource "mattr_issuer" "test_issuer" {
   description     = "This credential shows that the person has attended the mentioned course and attained the relevant awards."
   context         = ["https://schema.org"]
   type            = ["AlumniCredential"]
-  proof_type      = "Ed25519Signature2018"
 
   background_color    = "#B00AA0"
   watermark_image_url = "https://example.edu/img/watermark.png"
