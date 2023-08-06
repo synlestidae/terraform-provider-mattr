@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net/url"
 	"log"
 	"net/http"
 	"strings"
@@ -80,7 +81,7 @@ func (a *Api) Init() {
 }
 
 func (a *Api) GetUrl(path string) (string, error) {
-	return fmt.Sprintf("%s%s", a.ApiUrl, path), nil
+	return url.JoinPath(a.ApiUrl, path)
 }
 
 func (a *Api) GetAccessToken() (string, error) {
