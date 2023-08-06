@@ -3,12 +3,12 @@
 page_title: "mattr_claim_source Resource - terraform-provider-mattr"
 subcategory: ""
 description: |-
-  
+  Represents the resource at /core/v1/claimsources
 ---
 
 # mattr_claim_source (Resource)
 
-
+Represents the resource at /core/v1/claimsources
 
 
 

@@ -3,12 +3,12 @@
 page_title: "mattr_credential_web Resource - terraform-provider-mattr"
 subcategory: ""
 description: |-
-  
+  Represents the resource at /core/v2/credentials/web-semantic/configurations
 ---
 
 # mattr_credential_web (Resource)
 
-
+Represents the resource at /core/v2/credentials/web-semantic/configurations
 
 
 

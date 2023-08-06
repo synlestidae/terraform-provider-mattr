@@ -3,12 +3,12 @@
 page_title: "mattr_verifier Resource - terraform-provider-mattr"
 subcategory: ""
 description: |-
-  
+  Represents the resource at /ext/oidc/v1/verifiers
 ---
 
 # mattr_verifier (Resource)
 
-
+Represents the resource at /ext/oidc/v1/verifiers
 
 
 

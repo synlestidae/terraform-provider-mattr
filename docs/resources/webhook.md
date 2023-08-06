@@ -3,12 +3,12 @@
 page_title: "mattr_webhook Resource - terraform-provider-mattr"
 subcategory: ""
 description: |-
-  
+  Represents the resource at /core/v1/webhooks
 ---
 
 # mattr_webhook (Resource)
 
-
+Represents the resource at /core/v1/webhooks
 
 
 

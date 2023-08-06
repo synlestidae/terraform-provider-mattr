@@ -3,12 +3,12 @@
 page_title: "mattr_issuer Resource - terraform-provider-mattr"
 subcategory: ""
 description: |-
-  
+  Represents the resource at /ext/oidc/v1/issuers
 ---
 
 # mattr_issuer (Resource)
 
-
+Represents the resource at /ext/oidc/v1/issuers
 
 
 

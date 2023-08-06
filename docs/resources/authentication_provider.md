@@ -3,12 +3,12 @@
 page_title: "mattr_authentication_provider Resource - terraform-provider-mattr"
 subcategory: ""
 description: |-
-  
+  Represents the resource at /core/v1/users/authenticationproviders
 ---
 
 # mattr_authentication_provider (Resource)
 
-
+Represents the resource at /core/v1/users/authenticationproviders
 
 
 

@@ -9,12 +9,13 @@ import (
 )
 
 type Generator struct {
-	Path      string
-	GetPath   func(*schema.ResourceData) (string, error)
-	Immutable bool
-	Singleton bool
-	Schema    map[string]*schema.Schema
-	Client    api.Client
+	Path        string
+	GetPath     func(*schema.ResourceData) (string, error)
+	Immutable   bool
+	Singleton   bool
+	Schema      map[string]*schema.Schema
+	Client      api.Client
+	Description string
 
 	ModifyRequestBody  func(requestBody interface{}) (interface{}, error)
 	ModifyResponseBody func(responseBody interface{}) (interface{}, error)
@@ -42,11 +43,17 @@ func (generator *Generator) GenResource() schema.Resource {
 		return generator.sendRequestAndProcessResponse(d, m, "delete")
 	}
 
+	var description = generator.Description
+	if len(generator.Path) != 0 {
+		description = fmt.Sprintf("Represents the resource at %s", generator.Path)
+	}
+
 	resource := schema.Resource{
-		Create: create,
-		Read:   read,
-		Delete: deleteResource,
-		Schema: generator.Schema,
+		Description: description,
+		Create:      create,
+		Read:        read,
+		Delete:      deleteResource,
+		Schema:      generator.Schema,
 	}
 
 	if !generator.Immutable {

@@ -3,12 +3,12 @@
 page_title: "mattr_presentation Resource - terraform-provider-mattr"
 subcategory: ""
 description: |-
-  
+  Represents the resource at /v2/credentials/web-semantic/presentations/templates
 ---
 
 # mattr_presentation (Resource)
 
-
+Represents the resource at /v2/credentials/web-semantic/presentations/templates
 
 
 
