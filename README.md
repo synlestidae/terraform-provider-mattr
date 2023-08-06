@@ -8,22 +8,41 @@ save time. This provider allows you to declare and manage resources without havi
 This project is independent, fan-made software intended to be used with [MATTR](https://mattr.global)'s platform. It
 is not officially endorsed or sponsored by MATTR.
 
-# Feature progress
+# Installing
 
-| Feature                   | Description                                             | Implementation   | Unit tests    | Integration tests |
-| ------------------------- | --------------------------------------------------------| ---------------- | ------------- | ----------------- |
-| DID                       | Creating DIDs for issuing                               | `████████ 100 %` | `░░░░░░░░ 0%` | `░░░░░░░░ 0%`     |
-| Webhook                   | Webhooks to receive events                              | `████████ 100 %` | `░░░░░░░░ 0%` | `░░░░░░░░ 0%`     |
-| Credential config         | Specifies a credential to issue                         | `██████░░ 75 %`  | `░░░░░░░░ 0%` | `░░░░░░░░ 0%`     |
-| Claim source
-| Claim source config       | Used by credential config to retrieve claims            | `████████ 100 %` | `░░░░░░░░ 0%` | `░░░░░░░░ 0%`     |
-| Authentication provider   | Just an authorization server for credential config      | `█████░░░ 75 %`  | `░░░░░░░░ 0%` | `░░░░░░░░ 0%`     |
-| Issuer resource           | Specify credentials to issue                            | `██████░░ 75 %`  | `░░░░░░░░ 0%` | `░░░░░░░░ 0%`     |
-| Issuer clients            | Configure credentials to issue in wallet                | `██████░░ 75 %`  | `░░░░░░░░ 0%` | `░░░░░░░░ 0%`     |
-| Verifier resource         | Specify which credentials are valid                     | `███░░░░░ 37.5 %`| `░░░░░░░░ 0%` | `░░░░░░░░ 0%`     |
-| Verifier client           | Configure presentations for valid creds                 | `███░░░░░ 37.5 %`| `░░░░░░░░ 0%` | `░░░░░░░░ 0%`     |
-| Custom domain resource    | Configure issuer and verifier pages under your domain   | `█░░░░░░░ 12.5 %`| `░░░░░░░░ 0%` | `░░░░░░░░ 0%`     |
-| PDF template              | PDF template based on a .zip file                       | `░░░░░░░░ 0 %`   | `░░░░░░░░ 0 %`| `░░░░░░░░ 0%`     |
-| Digital pass template     | Template for Apple Pass                                 | `░░░░░░░░ 0 %`   | `░░░░░░░░ 0 %`| `░░░░░░░░ 0%`     |
-| Apple Pass template       | Template for Apple Pass                                 | `░░░░░░░░ 0 %`   | `░░░░░░░░ 0 %`| `░░░░░░░░ 0%`     |
-| Compact credential PDF    | Template for compact credential PDF                     | `░░░░░░░░ 0 %`   | `░░░░░░░░ 0 %`| `░░░░░░░░ 0%`     |
+To build and install the project locally:
+
+1. Make sure you have Go installed. Terraform providers are written in Go. brew install go should do it
+2. In the root of the repo, run ./build.sh.
+3. Then run ./deploy.sh. This will just copy it to a location on your machine that Terraform can find
+
+# Try it out
+
+Check out the [example project](./example/).
+
+# Set-up
+
+For the provider to work, it will need to authenticate with your secret MATTR credentials. You will have received some credentials like these:
+
+```json
+{
+    "tenantSubdomain": "https://YOUR_TENANT_DOMAIN.vii.mattr.global",
+    "tenantId": "d97H2lc0-3ht5-4bea-ht92-41052f047440",
+    "url": "https://auth.mattr.global/oauth/token",
+    "audience": "https://vii.mattr.global",
+    "client_id": "YOUR_CLIENT_ID",
+    "client_secret": "YOUR_CLIENT_SECRET"
+}
+```
+
+You define them in your Terraform provider block:
+
+```terraform
+provider "mattr" {
+  api_url       = "https://YOUR_TENANT_DOMAIN.vii.mattr.global"
+  auth_url      = "https://auth.mattr.global/oauth/token"
+  client_id     = "YOUR_CLIENT_ID"
+  client_secret = "YOUR_CLIENT_SECRET"
+  audience      = "https://vii.mattr.global"
+}
+```
