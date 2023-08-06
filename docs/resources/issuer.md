@@ -43,7 +43,9 @@ Represents the resource at /ext/oidc/v1/issuers
 
 ### Read-Only
 
+- `callback_url` (String)
 - `id` (String) The ID of this resource.
+- `openid_configuration_url` (String)
 
 <a id="nestedblock--claim_mappings"></a>
 ### Nested Schema for `claim_mappings`
