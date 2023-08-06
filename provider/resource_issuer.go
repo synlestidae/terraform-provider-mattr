@@ -2,15 +2,13 @@ package provider
 
 import (
 	"fmt"
-
 	"nz.antunovic/mattr-terraform-provider/api"
 	"nz.antunovic/mattr-terraform-provider/generator"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func resourceIssuer() *schema.Resource {
-	schema := map[string]*schema.Schema{
+	issuerSchema := map[string]*schema.Schema{
 		"issuer_did": &schema.Schema{
 			Type:     schema.TypeString,
 			Required: true,
@@ -78,6 +76,10 @@ func resourceIssuer() *schema.Resource {
 			Type:     schema.TypeString,
 			Optional: true,
 		},
+		"callback_url": &schema.Schema{
+			Type:     schema.TypeString,
+			Computed: true,
+		},
 		"claims_source": &schema.Schema{
 			Type:     schema.TypeString,
 			Optional: true,
@@ -108,18 +110,68 @@ func resourceIssuer() *schema.Resource {
 				},
 			},
 		},
+		"openid_configuration_url": &schema.Schema {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
 	}
 
 	issuerGenerator := generator.Generator{
 		Path:               "/ext/oidc/v1/issuers",
-		Schema:             schema,
+		Schema:             issuerSchema,
 		Client:             &api.HttpClient{},
 		ModifyRequestBody:  issuerConvertReq,
 		ModifyResponseBody: issuerConvertRes,
 	}
 
 	issuerResource := issuerGenerator.GenResource()
+
+	// we need to integrate data from generator and resource data
+	// to compute openid-configuration url
+	// TODO: this is complicated because the generator "modify" functions aren't 
+	// powerful enough.
+
+	createOrig := issuerResource.Create
+	readOrig := issuerResource.Read
+	updateOrig := issuerResource.Update
+
+	issuerResource.Create = func (d *schema.ResourceData, m interface{}) error {
+		err := createOrig(d, m)
+		if err != nil {
+			return err
+		}
+		return setOpenIdConfigurationUrl(d, m)
+	}
+
+	issuerResource.Read = func (d *schema.ResourceData, m interface{}) error {
+		err := readOrig(d, m)
+		if err != nil {
+			return err
+		}
+		return setOpenIdConfigurationUrl(d, m)
+	}
+
+	issuerResource.Update = func (d *schema.ResourceData, m interface{}) error {
+		err := updateOrig(d, m)
+		if err != nil {
+			return err
+		}
+		return setOpenIdConfigurationUrl(d, m)
+	}
+
 	return &issuerResource
+}
+
+func setOpenIdConfigurationUrl(d *schema.ResourceData, m interface{}) error {
+	// e.g. GET https://YOUR_TENANT_URL/ext/oidc/v1/issuers/983c0a86-204f-4431-9371-f5a22e506599/.well-known/openid-configuration
+	api := m.(api.ProviderConfig).Api
+	id := d.Id()
+	path := fmt.Sprintf("%s/.well-known/openid-configuration", id)
+	openIdConfigurationUrl, err := api.GetUrl(path)
+	if err != nil {
+		return d.Set("openid_configuration_url", openIdConfigurationUrl)
+	}
+	return err
 }
 
 func issuerConvertReq(body interface{}) (interface{}, error) {
@@ -169,26 +221,33 @@ func issuerConvertReq(body interface{}) (interface{}, error) {
 }
 
 func issuerConvertRes(body interface{}) (interface{}, error) {
-	return flattenMap(body), nil
+	bodyMap, ok := body.(map[string]interface{}) // TODO cast safely
+	if !ok {
+		return nil, fmt.Errorf("Unexpected response type for issuer: %T", body)
+	}
+	staticRequestParameters := bodyMap["staticRequestParameters"]
+	delete(bodyMap, "staticRequestParameters")
+	flattenedMap := flattenMap(body).(map[string]interface{})
+	flattenedMap["staticRequestParameters"] = staticRequestParameters
+	return flattenedMap, nil
 }
 
 func flattenMap(input interface{}) interface{} {
 	if inputMap, ok := input.(map[string]interface{}); ok {
-		flattenedMap := make(map[string]interface{})
+		outputMap := make(map[string]interface{})
 
 		for key, value := range inputMap {
-			if subValue, ok := value.(map[string]interface{}); ok {
-				for skey, sval := range subValue {
-					if skey != "" {
-						flattenedMap[skey] = flattenMap(sval)
-					}
+			flattened := flattenMap(value)
+			if flattenedMap, ok := flattened.(map[string]interface{}); ok {
+				for subKey, subValue := range flattenedMap {
+					outputMap[subKey] = subValue
 				}
-			} else if key != "" {
-				flattenedMap[key] = value
+			} else {
+				outputMap[key] = value
 			}
 		}
 
-		return flattenedMap
+		return outputMap
 	}
 
 	return input
