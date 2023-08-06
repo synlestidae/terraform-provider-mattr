@@ -202,7 +202,6 @@ func templateGenerator() generator.Generator {
 		}
 		fonts := responseMap["fonts"]
 		if fonts == nil {
-			log.Printf("Fonts field is nil in %s")
 			return responseBody, nil
 		}
 		fontList, ok := fonts.([]interface{})
