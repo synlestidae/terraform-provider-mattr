@@ -17,6 +17,7 @@ description: |-
 
 ### Optional
 
+- `access_token` (String)
 - `api_url` (String)
 - `audience` (String)
 - `auth_url` (String)

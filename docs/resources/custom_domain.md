@@ -3,12 +3,12 @@
 page_title: "mattr_custom_domain Resource - terraform-provider-mattr"
 subcategory: ""
 description: |-
-  
+  Represents the resource at /core/v1/config/domain
 ---
 
 # mattr_custom_domain (Resource)
 
-
+Represents the resource at /core/v1/config/domain
 
 
 

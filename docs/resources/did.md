@@ -3,12 +3,12 @@
 page_title: "mattr_did Resource - terraform-provider-mattr"
 subcategory: ""
 description: |-
-  
+  Represents the resource at /core/v1/dids
 ---
 
 # mattr_did (Resource)
 
-
+Represents the resource at /core/v1/dids
 
 
 

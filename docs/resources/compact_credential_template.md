@@ -3,12 +3,12 @@
 page_title: "mattr_compact_credential_template Resource - terraform-provider-mattr"
 subcategory: ""
 description: |-
-  
+  Represents the resource at /v2/credentials/compact/pdf/templates
 ---
 
 # mattr_compact_credential_template (Resource)
 
-
+Represents the resource at /v2/credentials/compact/pdf/templates
 
 
 

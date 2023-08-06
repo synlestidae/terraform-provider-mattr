@@ -3,12 +3,12 @@
 page_title: "mattr_credential_offer Resource - terraform-provider-mattr"
 subcategory: ""
 description: |-
-  
+  Represents the resource at /core/v1/openid/offers
 ---
 
 # mattr_credential_offer (Resource)
 
-
+Represents the resource at /core/v1/openid/offers
 
 
 
