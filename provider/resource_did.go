@@ -45,10 +45,23 @@ func resourceDid() *schema.Resource {
 		if orig, ok := (responseBody).(map[string]interface{}); ok {
 			if localMetadata, ok := orig["localMetadata"].(map[string]interface{}); ok {
 				newResponse := make(map[string]interface{})
-
-				newResponse["id"] = orig["did"]
 				newResponse["keys"] = localMetadata["keys"]
 
+				did, ok := orig["did"].(string)
+				if ok && len(did) != 0 {
+					newResponse["id"] = did
+					return newResponse, nil
+				}
+
+				initialDidDocument, ok := localMetadata["initialDidDocument"].(map[string]interface{})
+				if !ok {
+					return nil, fmt.Errorf("Internal error: unable to determine did")
+				}
+				did, ok = initialDidDocument["id"].(string)
+				if !ok {
+					return nil, fmt.Errorf("Internal error: unable to determine did")
+				}
+				newResponse["id"] = did
 				return newResponse, nil
 			} else {
 				return nil, fmt.Errorf("Unexpected type for DID `localMetadata` field: %T", orig["localMetadata"])
