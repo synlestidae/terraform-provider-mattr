@@ -1,17 +1,20 @@
-# This workflow will build a golang project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
-
-name: Go
+name: Generate changelog
 
 on:
   push:
-    branches: [ "master" ]
+    branches:
+      - main
+
 jobs:
-  release:
+  build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
+
     steps:
-      - name: Conventional Changelog Action
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Generate Changelog
         uses: TriPSs/conventional-changelog-action@v4.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
