@@ -5,13 +5,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	//"strings"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	_ "github.com/motemen/go-loghttp/global"
 	"io/ioutil"
 	"log"
+	"net/url"
 	"nz.antunovic/mattr-terraform-provider/api"
 	"nz.antunovic/mattr-terraform-provider/generator"
-	"path/filepath"
 )
 
 type ZipCreator struct {
@@ -44,8 +45,8 @@ func (z *ZipCreator) writeFontPaths(fonts []interface{}) error {
 			return err
 		}
 
-		dstPath := filepath.Base(fontPath)
-		fontWriter, err := z.writer.Create(fmt.Sprintf("fonts/%s", dstPath))
+		dstPath := fmt.Sprintf("fonts/%s", url.PathEscape(fontPath))
+		fontWriter, err := z.writer.Create(dstPath)
 
 		if err != nil {
 			log.Printf("Error creating font file %s in ZIP.", fontPath)
@@ -66,7 +67,7 @@ func (z *ZipCreator) writeConfig(config interface{}) error {
 
 	for _, font := range fontList {
 		font := font.(map[string]interface{})
-		fontFile := filepath.Base(font["fileName"].(string))
+		fontFile := url.PathEscape(font["fileName"].(string))
 		font["fileName"] = fontFile
 	}
 
@@ -191,6 +192,41 @@ func templateGenerator() generator.Generator {
 		*body = bytes
 
 		return nil
+	}
+
+	generator.ModifyResponseBody = func(responseBody interface{}) (interface{}, error) {
+		responseMap, ok := responseBody.(map[string]interface{})
+		if !ok {
+			log.Printf("Unexpected type for body in %s: %T", generator.Path, responseBody)
+			return responseBody, nil
+		}
+		fonts := responseMap["fonts"]
+		if fonts == nil {
+			log.Printf("Fonts field is nil in %s")
+			return responseBody, nil
+		}
+		fontList, ok := fonts.([]interface{})
+		if !ok {
+			log.Printf("Unexpected type for `fonts in %s: %T", generator.Path, fonts)
+			return responseBody, nil
+		}
+
+		for i, fontObj := range fontList {
+			fontMap := fontObj.(map[string]interface{})
+			if fileName, ok := fontMap["fileName"].(string); ok {
+				decodedFileName, err := url.QueryUnescape(fileName)
+
+				if len(decodedFileName) != 0 {
+					fontMap["fileName"] = decodedFileName
+				} else {
+					log.Printf("Failed to decode `fonts[%d].fileName`: %s", i, err)
+				}
+			} else {
+				log.Printf("Unexpected type for `fonts[%d].fileName in %s: %T", i, generator.Path, fontMap["fileName"])
+			}
+		}
+
+		return responseBody, nil
 	}
 
 	return generator
