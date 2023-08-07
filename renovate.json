@@ -4,8 +4,15 @@
     "config:base"
   ],
   "packageRules": [
-    {
-      "updateTypes": ["patch"]
+     {
+      "matchPackagePatterns": [
+        "*"
+      ],
+      "matchUpdateTypes": [
+        "minor"
+      ],
+      "groupName": "all patch dependencies",
+      "groupSlug": "all-patch"
     }
   ]
 }
