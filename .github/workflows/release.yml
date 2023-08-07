@@ -20,3 +20,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Commit and push Changelog
+        run: |
+          git config --global user.name "synlestidae"
+          git config --global user.email "mate AT schnooty.com"
+          git add CHANGELOG.md
+          git commit -m "Update changelog"
+          git push origin master
