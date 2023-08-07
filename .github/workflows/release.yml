@@ -18,5 +18,6 @@ jobs:
         with:
           fallback-version: v0.1.3
           git-push: true
+          skip-version-file: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
