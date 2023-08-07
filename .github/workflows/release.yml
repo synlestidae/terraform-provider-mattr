@@ -17,13 +17,6 @@ jobs:
         uses: TriPSs/conventional-changelog-action@v4.0.0
         with:
           fallback-version: v0.1.3
+          git-push: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Commit and push Changelog
-        run: |
-          git config --global user.name "synlestidae"
-          git config --global user.email "mate AT schnooty.com"
-          git add CHANGELOG.md
-          git commit -m "Update changelog"
-          git push origin master
