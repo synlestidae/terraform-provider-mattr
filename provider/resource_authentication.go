@@ -50,7 +50,7 @@ func resourceAuthentication() *schema.Resource {
 		},
 		"redirect_url": &schema.Schema{
 			Type:     schema.TypeString,
-			Optional: true,
+			Computed: true,
 		},
 	}
 
