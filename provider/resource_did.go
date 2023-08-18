@@ -22,7 +22,7 @@ func resourceDid() *schema.Resource {
 			ForceNew:    true,
 		},
 		"keys": &schema.Schema{
-			Type:     schema.TypeList,
+			Type:     schema.TypeSet,
 			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
