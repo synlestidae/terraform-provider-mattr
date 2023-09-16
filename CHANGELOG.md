@@ -1,3 +1,13 @@
+## [0.2.1](https://github.com/synlestidae/terraform-provider-mattr/compare/v0.2.0...v0.2.1) (2023-08-18)
+
+
+### Bug Fixes
+
+* fix crash when claim source default value not present ([193bad9](https://github.com/synlestidae/terraform-provider-mattr/commit/193bad9946e39b274a3562de9573560df3122749))
+* redirect url on authentication provider is computed ([6769b4c](https://github.com/synlestidae/terraform-provider-mattr/commit/6769b4cae3bfffbc8475a3b9aca2a1239013aaca))
+
+
+
 # [0.2.0](https://github.com/synlestidae/terraform-provider-mattr/compare/v0.1.3...v0.2.0) (2023-08-07)
 
 
