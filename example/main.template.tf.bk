@@ -1,0 +1,24 @@
+resource "mattr_did" "did" {
+  method = "key"
+}
+
+resource "mattr_claim_source" "test_claim_source" {
+  name = "My claims from testo-claimo.claims.studio"
+  url  = "https://your-claim-source-here.claims.studio/api/data"
+
+  authorization_type  = "api-key"
+  authorization_value = "your-api-key-here"
+
+  request_parameter {
+    name = "given_name"
+    map_from      = "claims.given_name"
+    default_value = "Firsty"
+  }
+
+  request_parameter {
+    name = "family_name"
+    map_from      = "claims.family_name"
+    default_value = "Lastyname"
+  }
+}
+

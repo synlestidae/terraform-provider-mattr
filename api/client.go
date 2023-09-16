@@ -91,6 +91,7 @@ func send[T any](method string, url string, headers map[string]string, body *int
 		return nil, err
 	}
 	for name, value := range headers {
+		log.Printf("Setting header '%s' = '%s'", name, value)
 		request.Header.Set(name, value)
 	}
 

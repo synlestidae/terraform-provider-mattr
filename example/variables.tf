@@ -39,3 +39,7 @@ variable "mattr_access_token" {
   type        = string
   default     = null
 }
+
+variable "ngrok_url" {
+  type = string
+}

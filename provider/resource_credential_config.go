@@ -38,11 +38,11 @@ func resourceCredentialConfig() *schema.Resource {
 		},
 		"issuer_logo_url": &schema.Schema{
 			Type:     schema.TypeString,
-			Required: true,
+			Optional: true,
 		},
 		"issuer_icon_url": &schema.Schema{
 			Type:     schema.TypeString,
-			Required: true,
+			Optional: true,
 		},
 		"proof_type": &schema.Schema{
 			Type:     schema.TypeSet,

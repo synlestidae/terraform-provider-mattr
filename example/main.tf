@@ -1,30 +1,23 @@
-resource "mattr_did" "did" {
-  method = "key"
-}
-
 resource "mattr_claim_source" "test_claim_source" {
-  name = "My claims from testo-claimo.claims.studio"
-  url  = "https://your-claim-source-here.claims.studio/api/data"
-
-  authorization_type  = "api-key"
-  authorization_value = "your-api-key-here"
+  name = "Testo claim source"
+  url = "https://webhook.site/09c0daf8-8306-413a-a30f-9e52de2db41a"
+  authorization_type = "api-key"
+  authorization_value = "DRPWCO7eVf81mi4mGqBV-evPkIBh4s8A"
 
   request_parameter {
-    name = "given_name"
-    map_from      = "claims.given_name"
-    default_value = "Firsty"
+    name = "profile"
+    map_from = "credentialConfiguration.profile"
   }
 
   request_parameter {
-    name = "family_name"
-    map_from      = "claims.family_name"
-    default_value = "Lastyname"
+    name = "profile"
+    map_from = "credentialConfiguration.id"
   }
 }
 
-resource "mattr_credential_web" "test_credential" {
-  name        = "Test credential"
-  description = "This credential shows information about a person."
+resource "mattr_credential_web" "test_cred_config" {
+  name        = "My Test Credential"
+  description = "This credential for testing only."
   type        = "ThingyCredential"
   additional_types = [
   ]
@@ -63,104 +56,20 @@ resource "mattr_credential_web" "test_credential" {
   seconds         = 0
 }
 
-resource "mattr_credential_offer" "test_credential_offer" {
-  credentials = [
-    mattr_credential_web.test_credential.id
-  ]
+resource "mattr_authentication_provider" "test_provider" {
+  url = "https://dev-s8my1837fpnxqetu.us.auth0.com"
+  scope = ["openid"]
+  client_id = "OQGBbQP5GB9YopSUOru4dBNJcVBvkzRA"
+  client_secret = "1Fc0PoLDwZBw_7TwHKAoNB-60mjfNlU9JjhmrAsJO9Os_ua-8qioQLBNM8peOgrm"
 }
 
-resource "mattr_custom_domain" "site_worker_custom_domain" {
-  name     = "Site Worker Cert"
-  logo_url = "https://s3.siteworkercert.com/logo2.jpg"
-  domain   = "certificate.siteworkercert.com"
-  homepage = "https://siteworkercert.com"
+resource "mattr_custom_domain" "test_domain" {
+  name = "My NGrok"
+  domain = "53f4-161-29-134-3.ngrok.io"
+  logo_url = "https://mattr.global/favicon.ico"
+  homepage = "https://mattr.global"
 }
 
-resource "mattr_issuer" "test_issuer" {
-  name            = "Qualification Credential"
-  issuer_name     = "Example University"
-  issuer_did      = mattr_did.did.id
-  issuer_logo_url = "https://example.edu/img/logo.png"
-  issuer_icon_url = "https://example.edu/img/icon.png"
-  description     = "This credential shows that the person has attended the mentioned course and attained the relevant awards."
-  context         = ["https://schema.org"]
-  type            = ["AlumniCredential"]
-
-  background_color    = "#B00AA0"
-  watermark_image_url = "https://example.edu/img/watermark.png"
-
-  url                        = "https://accounts.google.com/"
-  scope                      = ["openid", "profile", "email"]
-  client_id                  = "vJ0SCKchr4XjC0xHNE8DkH6Pmlg2lkCN"
-  client_secret              = "QNwfa4Yi4Im9zy1u_15n7SzWKt-9G5cdH0r1bONRpUPfN-UIRaaXv_90z8V6-OjH"
-  token_endpoint_auth_method = "client_secret_post"
-  claims_source              = "userInfo"
-
-  static_request_parameters = {
-    prompt  = "login"
-    max_age = 10000
-  }
-
-  forwarded_request_parameters = ["login_hint"]
-
-  claim_mappings {
-    json_ld_term = "alumniOf"
-    oidc_claim   = "alumni_of"
-  }
-}
-
-resource "mattr_compact_credential_template" "compact_credential_template" {
-  name = "Test Compact Credential"
-  template_path = "template.pdf"
-  file_name = "certificate.pdf"
-  metadata = {
-    title = "Certificate"
-  }
-
-  fonts {
-    name = "PublicSans-Bold"
-    file_name = "fonts/PublicSans-Bold.ttf"
-  }
-
-  fonts {
-    name = "PublicSans-Regular"
-    file_name = "fonts/PublicSans-Regular.ttf"
-  }
-
-  fields {
-    key = "name"
-    value = "{{name}}"
-    is_required = true
-    alternative_text = "NAME" 
-    font_name = "PublicSans-Bold"
-  }
-}
-
-
-resource "mattr_semantic_compact_credential_template" "semantic_compact_credential_template" {
-  name = "Test Compact Credential"
-  template_path = "template.pdf"
-  file_name = "certificate.pdf"
-
-  metadata = {
-    title = "Certificate of Completion" 
-  }
-
-  fonts {
-    name = "PublicSans-Bold"
-    file_name = "fonts/PublicSans-Bold.ttf"
-  }
-
-  fonts {
-    name = "PublicSans-Regular"
-    file_name = "fonts/PublicSans-Regular.ttf"
-  }
-
-  fields {
-    key = "name"
-    value = "{{name}}"
-    is_required = true
-    alternative_text = "NAME" 
-    font_name = "PublicSans-Bold"
-  }
+resource "mattr_credential_offer" "test_offer" {
+  credentials = [mattr_credential_web.test_cred_config.id]
 }

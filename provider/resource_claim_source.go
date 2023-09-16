@@ -24,7 +24,28 @@ func resourceClaimSource() *schema.Resource {
 		},
 		"authorization_value": &schema.Schema{
 			Type:     schema.TypeString,
-			Required: true,
+			Optional: true,
+		},
+		"authorization_token_endpoint": &schema.Schema{
+			Type:     schema.TypeString,
+			Optional: true,
+		},
+		"authorization_client_id": &schema.Schema{
+			Type:     schema.TypeString,
+			Optional: true,
+		},
+		"authorization_client_secret": &schema.Schema{
+			Type:     schema.TypeString,
+			Optional: true,
+		},
+		"authorization_token_endpoint_auth_method": &schema.Schema{
+			Type:     schema.TypeString,
+			Optional: true,
+			Default: "client_secret_post",
+		},
+		"authorization_audience": &schema.Schema{
+			Type:     schema.TypeString,
+			Optional: true,
 		},
 		"request_parameter": &schema.Schema{
 			Type:     schema.TypeSet,
@@ -69,7 +90,15 @@ func convertReqParamsBody(body interface{}) (interface{}, error) {
 
 	authorization := make(map[string]interface{}, 2)
 	authorization["type"] = reqMap["authorizationType"]
+
 	authorization["value"] = reqMap["authorizationValue"]
+
+	authorization["tokenEndpoint"] = reqMap["authorizationTokenEndpoint"]
+	authorization["tokenEndpointAuthMethod"] = reqMap["authorizationTokenEndpointAuthMethod"]
+	authorization["clientId"] = reqMap["authorizationClientId"]
+	authorization["clientSecret"] = reqMap["authorizationClientSecret"]
+	authorization["audience"] = reqMap["authorizationAudience"]
+
 	reqMap["authorization"] = authorization
 	delete(reqMap, "authorizationType")
 	delete(reqMap, "authorizationValue")
@@ -116,6 +145,12 @@ func convertResParamsBody(body interface{}) (interface{}, error) {
 	authorizationMap := reqMap["authorization"].(map[string]interface{})
 	reqMap["authorization_type"] = authorizationMap["type"]
 	reqMap["authorization_value"] = authorizationMap["value"]
+	reqMap["authorization_token_endpoint"] = authorizationMap["tokenEndpoint"]
+	reqMap["authorization_client_id"] = authorizationMap["clientId"]
+	reqMap["authorization_client_secret"] = authorizationMap["clientSecret"]
+	reqMap["authorization_token_endpoint_auth_method"] = authorizationMap["tokenEndpointAuthMethod"]
+	reqMap["authorization_audience"] = authorizationMap["tokenAudience"]
+
 	delete(reqMap, "authorization")
 
 	paramsMap, ok := reqMap["requestParameters"].(map[string]interface{})
