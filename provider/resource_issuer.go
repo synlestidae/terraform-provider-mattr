@@ -229,6 +229,12 @@ func issuerConvertRes(body interface{}) (interface{}, error) {
 	delete(bodyMap, "staticRequestParameters")
 	flattenedMap := flattenMap(body).(map[string]interface{})
 	flattenedMap["staticRequestParameters"] = staticRequestParameters
+
+	// type needs to be converted to array of strings
+	if issuerType, ok := flattenedMap["type"].(string); ok {
+		flattenedMap["type"] = []interface{} { issuerType };
+	}
+
 	return flattenedMap, nil
 }
 
