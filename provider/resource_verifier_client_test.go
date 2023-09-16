@@ -2,6 +2,7 @@ package provider
 
 import (
 	"encoding/json"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"testing"
 )
 
@@ -55,9 +56,9 @@ func TestResourceVerifierClientCreate(t *testing.T) {
 	AssertEqual(t, "OIDC Client for the verifier", resourceData.Get("name"), "Name should match")
 	AssertEqual(t, "402c65eb-48e9-4a4c-b5e9-1ea615baccee", resourceData.Get("verifier_id"), "Verifier ID should be correct")
 	AssertEqual(t, "H2epdcmNJ46hXJo5opdzvhbZK9W2ZGPkQh.E", resourceData.Get("secret"), "Secret should be correct")
-	AssertEqual(t, []interface{}{"https://example.com/callback"}, resourceData.Get("redirect_uris"), "Redirect URIs should be correct")
-	AssertEqual(t, []interface{}{"code"}, resourceData.Get("response_types"), "Response types should be correct")
-	AssertEqual(t, []interface{}{"authorization_code"}, resourceData.Get("grant_types"), "Grant types should be correct")
+	AssertEqual(t, []interface{}{"https://example.com/callback"}, resourceData.Get("redirect_uris").(*schema.Set).List(), "Redirect URIs should be correct")
+	AssertEqual(t, []interface{}{"code"}, resourceData.Get("response_types").(*schema.Set).List(), "Response types should be correct")
+	AssertEqual(t, []interface{}{"authorization_code"}, resourceData.Get("grant_types").(*schema.Set).List(), "Grant types should be correct")
 	AssertEqual(t, "client_secret_post", resourceData.Get("token_endpoint_auth_method"), "Auth method should be correct")
 	AssertEqual(t, "ES256", resourceData.Get("id_token_signed_response_alg"), "Algorithm should be correct")
 	AssertEqual(t, "web", resourceData.Get("application_type"), "Application type should be correct")

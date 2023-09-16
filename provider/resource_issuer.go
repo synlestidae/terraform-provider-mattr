@@ -2,9 +2,9 @@ package provider
 
 import (
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"nz.antunovic/mattr-terraform-provider/api"
 	"nz.antunovic/mattr-terraform-provider/generator"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func resourceIssuer() *schema.Resource {
@@ -34,12 +34,12 @@ func resourceIssuer() *schema.Resource {
 			Optional: true,
 		},
 		"context": &schema.Schema{
-			Type:     schema.TypeList,
+			Type:     schema.TypeSet,
 			Required: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
 		"type": &schema.Schema{
-			Type:     schema.TypeList,
+			Type:     schema.TypeSet,
 			Required: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
@@ -60,7 +60,7 @@ func resourceIssuer() *schema.Resource {
 			Required: true,
 		},
 		"scope": &schema.Schema{
-			Type:     schema.TypeList,
+			Type:     schema.TypeSet,
 			Optional: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
@@ -90,7 +90,7 @@ func resourceIssuer() *schema.Resource {
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
 		"forwarded_request_parameters": &schema.Schema{
-			Type:     schema.TypeList,
+			Type:     schema.TypeSet,
 			Optional: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
@@ -110,7 +110,7 @@ func resourceIssuer() *schema.Resource {
 				},
 			},
 		},
-		"openid_configuration_url": &schema.Schema {
+		"openid_configuration_url": &schema.Schema{
 			Type:     schema.TypeString,
 			Computed: true,
 		},
@@ -128,14 +128,14 @@ func resourceIssuer() *schema.Resource {
 
 	// we need to integrate data from generator and resource data
 	// to compute openid-configuration url
-	// TODO: this is complicated because the generator "modify" functions aren't 
+	// TODO: this is complicated because the generator "modify" functions aren't
 	// powerful enough.
 
 	createOrig := issuerResource.Create
 	readOrig := issuerResource.Read
 	updateOrig := issuerResource.Update
 
-	issuerResource.Create = func (d *schema.ResourceData, m interface{}) error {
+	issuerResource.Create = func(d *schema.ResourceData, m interface{}) error {
 		err := createOrig(d, m)
 		if err != nil {
 			return err
@@ -143,7 +143,7 @@ func resourceIssuer() *schema.Resource {
 		return setOpenIdConfigurationUrl(d, m)
 	}
 
-	issuerResource.Read = func (d *schema.ResourceData, m interface{}) error {
+	issuerResource.Read = func(d *schema.ResourceData, m interface{}) error {
 		err := readOrig(d, m)
 		if err != nil {
 			return err
@@ -151,7 +151,7 @@ func resourceIssuer() *schema.Resource {
 		return setOpenIdConfigurationUrl(d, m)
 	}
 
-	issuerResource.Update = func (d *schema.ResourceData, m interface{}) error {
+	issuerResource.Update = func(d *schema.ResourceData, m interface{}) error {
 		err := updateOrig(d, m)
 		if err != nil {
 			return err

@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"testing"
 )
 
@@ -26,7 +27,7 @@ func TestResourceWebhookCreate(t *testing.T) {
 	resource := resourceWebhook(&client)
 	resourceData := runCreate(t, resource, createData, &client)
 
-	AssertEqual(t, createData["events"], resourceData.Get("events"), "Events should match")
+	AssertEqual(t, createData["events"], resourceData.Get("events").(*schema.Set).List(), "Events should match")
 	AssertEqual(t, createData["url"], resourceData.Get("url"), "URL should match")
 	AssertEqual(t, createData["disabled"], resourceData.Get("disabled"), "Disabled should match")
 }
@@ -53,7 +54,7 @@ func TestResourceWebhookCreateExtraneousFields(t *testing.T) {
 	resource := resourceWebhook(&client)
 	resourceData := runCreate(t, resource, createData, &client)
 
-	AssertEqual(t, createData["events"], resourceData.Get("events"), "Events should match")
+	AssertEqual(t, createData["events"], resourceData.Get("events").(*schema.Set).List(), "Events should match")
 	AssertEqual(t, createData["url"], resourceData.Get("url"), "URL should match")
 	AssertEqual(t, createData["disabled"], resourceData.Get("disabled"), "Disabled should match")
 }
