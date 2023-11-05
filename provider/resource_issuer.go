@@ -60,7 +60,7 @@ func resourceIssuer() *schema.Resource {
 			Required: true,
 		},
 		"scope": &schema.Schema{
-			Type:     schema.TypeSet,
+			Type:     schema.TypeList,
 			Optional: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},

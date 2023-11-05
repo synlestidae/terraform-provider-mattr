@@ -23,12 +23,12 @@ func resourceCredentialConfig() *schema.Resource {
 			Required: true,
 		},
 		"additional_types": &schema.Schema{
-			Type:     schema.TypeSet,
+			Type:     schema.TypeList,
 			Optional: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
 		"contexts": &schema.Schema{
-			Type:     schema.TypeSet,
+			Type:     schema.TypeList,
 			Required: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
