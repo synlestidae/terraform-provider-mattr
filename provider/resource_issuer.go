@@ -34,12 +34,12 @@ func resourceIssuer() *schema.Resource {
 			Optional: true,
 		},
 		"context": &schema.Schema{
-			Type:     schema.TypeList,
+			Type:     schema.TypeSet,
 			Required: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
 		"type": &schema.Schema{
-			Type:     schema.TypeList,
+			Type:     schema.TypeSet,
 			Required: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
@@ -60,7 +60,7 @@ func resourceIssuer() *schema.Resource {
 			Required: true,
 		},
 		"scope": &schema.Schema{
-			Type:     schema.TypeList,
+			Type:     schema.TypeSet,
 			Optional: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
@@ -90,12 +90,12 @@ func resourceIssuer() *schema.Resource {
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
 		"forwarded_request_parameters": &schema.Schema{
-			Type:     schema.TypeList,
+			Type:     schema.TypeSet,
 			Optional: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
 		"claim_mappings": &schema.Schema{
-			Type:     schema.TypeList,
+			Type:     schema.TypeSet,
 			Required: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
