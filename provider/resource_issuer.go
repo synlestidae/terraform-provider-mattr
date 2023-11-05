@@ -249,7 +249,8 @@ func flattenMap(input interface{}) interface{} {
 					outputMap[subKey] = subValue
 				}
 			} else {
-				outputMap[key] = value
+				valueStr = fmt.Sprintf("%v", value)
+				outputMap[key] = valueStr
 			}
 		}
 
