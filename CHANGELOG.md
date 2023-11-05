@@ -1,3 +1,12 @@
+## [0.2.2](https://github.com/synlestidae/terraform-provider-mattr/compare/v0.2.1...v0.2.2) (2023-11-05)
+
+
+### Bug Fixes
+
+* **deps:** update github.com/motemen/go-loghttp digest to 51803ca ([dfa05bf](https://github.com/synlestidae/terraform-provider-mattr/commit/dfa05bfc6167d2445652bc6e688a3465e2e5bd70))
+
+
+
 ## [0.2.1](https://github.com/synlestidae/terraform-provider-mattr/compare/v0.2.0...v0.2.1) (2023-08-18)
 
 
@@ -31,10 +40,6 @@
 
 
 ## [0.1.3](https://github.com/synlestidae/terraform-provider-mattr/compare/v0.1.2...v0.1.3) (2023-07-30)
-
-
-
-## [0.1.1](https://github.com/synlestidae/terraform-provider-mattr/compare/v0.1.0...v0.1.1) (2023-07-30)
 
 
 
