@@ -1,3 +1,12 @@
+## [0.2.3](https://github.com/synlestidae/terraform-provider-mattr/compare/v0.2.2...v0.2.3) (2023-11-07)
+
+
+### Bug Fixes
+
+* **deps:** update github.com/motemen/go-loghttp digest to 29ae44b ([6faf4c9](https://github.com/synlestidae/terraform-provider-mattr/commit/6faf4c9bd476e35f87284dbbbb792a6e6b72a27f))
+
+
+
 ## [0.2.2](https://github.com/synlestidae/terraform-provider-mattr/compare/v0.2.1...v0.2.2) (2023-11-05)
 
 
@@ -36,10 +45,6 @@
 ### Features
 
 * better logging and access token support ([2a3c525](https://github.com/synlestidae/terraform-provider-mattr/commit/2a3c525d035b30245c44c0ad40e3c122904c4b51))
-
-
-
-## [0.1.3](https://github.com/synlestidae/terraform-provider-mattr/compare/v0.1.2...v0.1.3) (2023-07-30)
 
 
 
