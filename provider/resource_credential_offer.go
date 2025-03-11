@@ -28,7 +28,7 @@ func resourceCredentialOffer() *schema.Resource {
 		ModifyResponseBody: credOfferModifyRes,
 		Schema: map[string]*schema.Schema{
 			"credentials": &schema.Schema{
-				Type: schema.TypeList,
+				Type: schema.TypeSet,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
