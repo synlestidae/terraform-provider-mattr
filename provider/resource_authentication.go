@@ -10,10 +10,10 @@ func resourceAuthentication() *schema.Resource {
 	schema := map[string]*schema.Schema{
 		"url": &schema.Schema{
 			Type:     schema.TypeString,
-			Optional: true,
+			Required: true,
 		},
 		"scope": &schema.Schema{
-			Type:     schema.TypeList,
+			Type:     schema.TypeSet,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 			Optional: true,
 		},
@@ -39,12 +39,12 @@ func resourceAuthentication() *schema.Resource {
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
 		"forwarded_request_parameters": &schema.Schema{
-			Type:     schema.TypeList,
+			Type:     schema.TypeSet,
 			Optional: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
 		"claims_to_sync": &schema.Schema{
-			Type:     schema.TypeList,
+			Type:     schema.TypeSet,
 			Optional: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},

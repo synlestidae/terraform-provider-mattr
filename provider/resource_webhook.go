@@ -13,7 +13,7 @@ func resourceWebhook(client api.Client) *schema.Resource {
 		Client: client,
 		Schema: map[string]*schema.Schema{
 			"events": &schema.Schema{
-				Type: schema.TypeList,
+				Type: schema.TypeSet,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},

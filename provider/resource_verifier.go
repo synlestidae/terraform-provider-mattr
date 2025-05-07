@@ -18,7 +18,7 @@ func resourceVerifier() *schema.Resource {
 			Required: true,
 		},
 		"claim_mapping": &schema.Schema{
-			Type:     schema.TypeList,
+			Type:     schema.TypeSet,
 			Required: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
