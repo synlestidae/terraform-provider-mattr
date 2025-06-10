@@ -1,6 +1,6 @@
 module nz.antunovic/mattr-terraform-provider
 
-go 1.19
+go 1.22.0
 
 require (
 	github.com/hashicorp/terraform-plugin-docs v0.16.0
@@ -17,7 +17,7 @@ require (
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
 	github.com/armon/go-radix v1.0.0 // indirect
 	github.com/bgentry/speakeasy v0.1.0 // indirect
-	github.com/cloudflare/circl v1.3.7 // indirect
+	github.com/cloudflare/circl v1.6.1 // indirect
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
