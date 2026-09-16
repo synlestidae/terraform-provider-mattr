@@ -18,12 +18,12 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v5
       with:
-        go-version: 1.19
+        go-version: 1.27
 
     - name: Set up Terraform
       uses: hashicorp/setup-terraform@v2
       with:
-        terraform_version: 1.1.7
+        terraform_version: v1.16.3
 
     - name: Build locally
       run: ./build.sh
